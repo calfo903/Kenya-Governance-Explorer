@@ -14,6 +14,9 @@ import {
   County, Representative, ScorecardMetrics, FilterState, ComparisonItem,
   getScoreColor, getScoreLabel, getAuditColor, AUDIT_OPINIONS, REGIONS,
 } from '@/data/types';
+import WhistleblowerPage from '@/components/whistleblower-page';
+import ConstitutionPage from '@/components/constitution-page';
+import PoliticalXPostsPage from '@/components/political-x-posts-page';
 
 // ─── ICONS ────────────────────────────────────────────────────────
 import {
@@ -26,6 +29,7 @@ import {
   Library, ChevronUp, Leaf, Zap, Gavel,
   Radio, Megaphone, BookOpen, Hand, Layers,
   ArrowRight, TrendingUp, TrendingDown, Minus,
+  Eye, BookMarked, Menu, X, Volume2,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -41,8 +45,27 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// ─── TAB TYPES ───────────────────────────────────────────────────
-type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema';
+// ─── SIDEBAR NAV ITEMS ───────────────────────────────────────────
+type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema' | 'whistleblower' | 'constitution' | 'xposts';
+
+interface NavItem {
+  id: TabId;
+  label: string;
+  icon: React.ElementType;
+  section?: string;
+}
+
+const navItems: NavItem[] = [
+  { id: 'summary', label: 'National Summary', icon: BarChart3, section: 'Governance' },
+  { id: 'tree', label: '47 Counties', icon: TreePine, section: 'Governance' },
+  { id: 'county', label: 'County Deep-Dive', icon: MapPin, section: 'Governance' },
+  { id: 'compare', label: 'Compare', icon: GitCompare, section: 'Governance' },
+  { id: 'sources', label: 'Sources Hub', icon: Library, section: 'Governance' },
+  { id: 'schema', label: 'JSON Schema', icon: Database, section: 'Governance' },
+  { id: 'whistleblower', label: 'Whistleblower', icon: Eye, section: 'Civic Tools' },
+  { id: 'constitution', label: 'Constitution', icon: BookMarked, section: 'Civic Tools' },
+  { id: 'xposts', label: 'Political X Posts', icon: Volume2, section: 'Civic Tools' },
+];
 
 // ─── ICON MAP FOR SOURCES ────────────────────────────────────────
 function SourceIcon({ name, className }: { name: string; className?: string }) {
@@ -72,6 +95,7 @@ export default function KenyaGovernancePage() {
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
   const [filters, setFilters] = useState<FilterState>({});
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const allCounties = useMemo(() => {
     const placeholders = getPlaceholderCounties();
@@ -107,107 +131,231 @@ export default function KenyaGovernancePage() {
     });
   }, [filters]);
 
+  // Group nav items by section
+  const governanceItems = navItems.filter(n => n.section === 'Governance');
+  const civicItems = navItems.filter(n => n.section === 'Civic Tools');
+
   return (
     <TooltipProvider>
       <div className="min-h-screen flex flex-col bg-stone-50">
         {/* ══════════ HEADER ══════════ */}
-        <header className="bg-white border-b border-stone-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="py-5 flex items-start justify-between gap-4">
+        <header className="bg-white border-b border-stone-200 sticky top-0 z-50">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-3 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
-                  <Shield className="h-5 w-5 text-white" />
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="lg:hidden h-9 w-9 rounded-lg border border-stone-200 flex items-center justify-center hover:bg-stone-50 transition-colors"
+                >
+                  <Menu className="h-4 w-4 text-stone-600" />
+                </button>
+                <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+                  <Shield className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-lg sm:text-xl font-bold text-stone-900 tracking-tight leading-tight">
-                    Kenya County Governance Explorer
+                  <h1 className="text-sm sm:text-base font-bold text-stone-900 tracking-tight leading-tight">
+                    Kenya Governance Explorer
                   </h1>
-                  <p className="text-xs text-stone-500 mt-0.5">
-                    2022–2027 Term · 47 Counties · Evidence-Based
+                  <p className="text-[10px] sm:text-xs text-stone-500">
+                    2022–2027 · 47 Counties · Evidence-Based
                   </p>
                 </div>
               </div>
-              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-stone-400">
-                <span className="px-2 py-1 bg-stone-100 rounded-full">Non-Partisan</span>
-                <span className="px-2 py-1 bg-stone-100 rounded-full">OAG · CoB · TI-Kenya · IEBC</span>
+              <div className="flex items-center gap-2">
                 {comparisonList.length > 0 && (
-                  <Badge variant="secondary" className="text-[11px] h-6 bg-emerald-100 text-emerald-700">
-                    {comparisonList.length}/4 to compare
+                  <Badge variant="secondary" className="text-[10px] h-6 bg-emerald-100 text-emerald-700">
+                    {comparisonList.length}/4 compare
                   </Badge>
                 )}
+                <a href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-400 hover:text-emerald-600 transition-colors">
+                  <BookMarked className="h-3 w-3" />Constitution
+                </a>
               </div>
             </div>
           </div>
         </header>
 
-        {/* ══════════ TAB NAVIGATION ══════════ */}
-        <nav className="bg-white border-b border-stone-200 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex gap-0 overflow-x-auto no-scrollbar">
-              {([
-                { id: 'summary', label: 'National Summary', icon: BarChart3 },
-                { id: 'tree', label: '47 Counties', icon: TreePine },
-                { id: 'county', label: 'County Deep-Dive', icon: MapPin },
-                { id: 'sources', label: 'Sources Hub', icon: Library },
-                { id: 'compare', label: 'Compare', icon: GitCompare },
-                { id: 'schema', label: 'JSON Schema', icon: Database },
-              ] as { id: TabId; label: string; icon: React.ElementType }[]).map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`
-                    flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors
-                    ${activeTab === tab.id
-                      ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                      : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-50'}
-                  `}
-                >
-                  <tab.icon className="h-4 w-4" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </nav>
+        {/* ══════════ LAYOUT: SIDEBAR + MAIN ══════════ */}
+        <div className="flex flex-1">
+          {/* Sidebar - Desktop (always visible on lg+) */}
+          <aside className="hidden lg:flex flex-col w-60 border-r border-stone-200 bg-white shrink-0 sticky top-[52px] h-[calc(100vh-52px)] overflow-y-auto">
+            <nav className="flex-1 py-3 px-2 space-y-4">
+              {/* Governance Section */}
+              <div>
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Governance</p>
+                {governanceItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+                      activeTab === item.id
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                    }`}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
 
-        {/* ══════════ MAIN CONTENT ══════════ */}
-        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
-          {activeTab === 'summary' && <NationalSummaryDashboard />}
-          {activeTab === 'tree' && (
-            <GovernorsTreeView
-              governors={filteredGovernors}
-              expandedCounties={expandedCounties}
-              toggleCounty={toggleCounty}
-              allCounties={allCounties}
-              filters={filters}
-              setFilters={setFilters}
-              addToComparison={addToComparison}
-              comparisonList={comparisonList}
-            />
+              <Separator className="bg-stone-100" />
+
+              {/* Civic Tools Section */}
+              <div>
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Civic Tools</p>
+                {civicItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+                      activeTab === item.id
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                    }`}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <Separator className="bg-stone-100" />
+
+              {/* Quick Stats */}
+              <div className="px-3 py-2">
+                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Quick Stats</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-stone-500">Counties</span>
+                    <span className="font-bold text-stone-700">47</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-stone-500">Data Sources</span>
+                    <span className="font-bold text-stone-700">{allSources.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-stone-500">Term</span>
+                    <span className="font-bold text-stone-700">2022–2027</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Primary Sources Links */}
+              <div className="px-3 py-2 mt-auto">
+                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Primary Sources</p>
+                <div className="space-y-1">
+                  {[
+                    { label: 'OAG Kenya', url: 'https://oagkenya.go.ke/' },
+                    { label: 'Controller of Budget', url: 'https://cob.go.ke/' },
+                    { label: 'TI-Kenya', url: 'https://tikenya.org/' },
+                    { label: 'IEBC', url: 'https://www.iebc.or.ke/' },
+                    { label: 'EACC', url: 'https://eacc.go.ke/' },
+                  ].map(s => (
+                    <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
+                      <ExternalLink className="h-2.5 w-2.5" /> {s.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </nav>
+          </aside>
+
+          {/* Mobile Sidebar Overlay */}
+          {sidebarOpen && (
+            <div className="lg:hidden fixed inset-0 z-50">
+              <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
+              <aside className="absolute left-0 top-0 bottom-0 w-72 bg-white border-r border-stone-200 flex flex-col shadow-xl z-50">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
+                  <span className="text-sm font-bold text-stone-800">Navigation</span>
+                  <button onClick={() => setSidebarOpen(false)} className="h-8 w-8 rounded-lg hover:bg-stone-100 flex items-center justify-center">
+                    <X className="h-4 w-4 text-stone-500" />
+                  </button>
+                </div>
+                <nav className="flex-1 py-3 px-2 space-y-4 overflow-y-auto">
+                  <div>
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Governance</p>
+                    {governanceItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+                          activeTab === item.id
+                            ? 'bg-emerald-600 text-white'
+                            : 'text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <Separator />
+                  <div>
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Civic Tools</p>
+                    {civicItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+                          activeTab === item.id
+                            ? 'bg-blue-600 text-white'
+                            : 'text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </nav>
+              </aside>
+            </div>
           )}
-          {activeTab === 'county' && (
-            <CountyExplorer
-              countyCode={selectedCounty}
-              allCounties={allCounties}
-              onSelectCounty={setSelectedCounty}
-              addToComparison={addToComparison}
-              comparisonList={comparisonList}
-            />
-          )}
-          {activeTab === 'sources' && <SourcesHub />}
-          {activeTab === 'compare' && (
-            <ComparisonView
-              comparisonList={comparisonList}
-              removeFromComparison={removeFromComparison}
-              addToComparison={addToComparison}
-              allCounties={allCounties}
-            />
-          )}
-          {activeTab === 'schema' && <JsonSchemaView />}
-        </main>
+
+          {/* ══════════ MAIN CONTENT ══════════ */}
+          <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+            {activeTab === 'summary' && <NationalSummaryDashboard />}
+            {activeTab === 'tree' && (
+              <GovernorsTreeView
+                governors={filteredGovernors}
+                expandedCounties={expandedCounties}
+                toggleCounty={toggleCounty}
+                allCounties={allCounties}
+                filters={filters}
+                setFilters={setFilters}
+                addToComparison={addToComparison}
+                comparisonList={comparisonList}
+              />
+            )}
+            {activeTab === 'county' && (
+              <CountyExplorer
+                countyCode={selectedCounty}
+                allCounties={allCounties}
+                onSelectCounty={setSelectedCounty}
+                addToComparison={addToComparison}
+                comparisonList={comparisonList}
+              />
+            )}
+            {activeTab === 'sources' && <SourcesHub />}
+            {activeTab === 'compare' && (
+              <ComparisonView
+                comparisonList={comparisonList}
+                removeFromComparison={removeFromComparison}
+                addToComparison={addToComparison}
+                allCounties={allCounties}
+              />
+            )}
+            {activeTab === 'schema' && <JsonSchemaView />}
+            {activeTab === 'whistleblower' && <WhistleblowerPage />}
+            {activeTab === 'constitution' && <ConstitutionPage />}
+            {activeTab === 'xposts' && <PoliticalXPostsPage />}
+          </main>
+        </div>
 
         {/* ══════════ FOOTER ══════════ */}
-        <footer className="bg-stone-900 text-stone-400 py-8 mt-auto">
+        <footer className="bg-stone-900 text-stone-400 py-6 mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
               <div>
