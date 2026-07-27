@@ -9,50 +9,63 @@ import {
   governorCoalitionDistribution, governorPartyDistribution,
 } from '@/data/national-summary';
 import { kajiadoCounty } from '@/data/kajiado-county';
+import { sourceCategories, allSources, SourceEntry, SourceCategoryGroup } from '@/data/sources';
 import {
   County, Representative, ScorecardMetrics, FilterState, ComparisonItem,
   getScoreColor, getScoreLabel, getAuditColor, AUDIT_OPINIONS, REGIONS,
 } from '@/data/types';
 
-// ════════════════════════════════════════════════════════════════
-// ICON IMPORTS (Lucide)
-// ════════════════════════════════════════════════════════════════
+// ─── ICONS ────────────────────────────────────────────────────────
 import {
   Shield, ChevronDown, ChevronRight, Search, Filter,
   Users, MapPin, Building2, Scale, FileText,
   BarChart3, GitCompare, TreePine, Database,
   ExternalLink, AlertTriangle, CheckCircle2,
-  XCircle, MinusCircle, Globe, Phone, Mail,
-  BadgeCheck, ArrowUpDown, Landmark, User,
-  GripVertical, Star
+  XCircle, Globe, Phone, Mail,
+  Landmark, User, GripVertical, Star,
+  Library, ChevronUp, Leaf, Zap, Gavel,
+  Radio, Megaphone, BookOpen, Hand, Layers,
+  ArrowRight, TrendingUp, TrendingDown, Minus,
 } from 'lucide-react';
 
-// shadcn/ui
+// ─── shadcn/ui ───────────────────────────────────────────────────
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
-} from '@/components/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Skeleton } from '@/components/ui/skeleton';
 
-// ════════════════════════════════════════════════════════════════
-// TAB TYPES
-// ════════════════════════════════════════════════════════════════
-type TabId = 'summary' | 'tree' | 'county' | 'compare' | 'schema';
+// ─── TAB TYPES ───────────────────────────────────────────────────
+type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema';
 
-// ════════════════════════════════════════════════════════════════
+// ─── ICON MAP FOR SOURCES ────────────────────────────────────────
+function SourceIcon({ name, className }: { name: string; className?: string }) {
+  const props = { className: className || 'h-5 w-5' };
+  switch (name) {
+    case 'Scale': return <Scale {...props} />;
+    case 'BarChart3': return <BarChart3 {...props} />;
+    case 'FileText': return <FileText {...props} />;
+    case 'Shield': return <Shield {...props} />;
+    case 'Landmark': return <Landmark {...props} />;
+    case 'Globe': return <Globe {...props} />;
+    case 'Building2': return <Building2 {...props} />;
+    case 'Users': return <Users {...props} />;
+    case 'Database': return <Database {...props} />;
+    case 'CheckCircle2': return <CheckCircle2 {...props} />;
+    case 'Search': return <Search {...props} />;
+    default: return <Library {...props} />;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
 // MAIN PAGE
-// ════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
 export default function KenyaGovernancePage() {
   const [activeTab, setActiveTab] = useState<TabId>('summary');
   const [selectedCounty, setSelectedCounty] = useState<string>('034');
@@ -60,7 +73,6 @@ export default function KenyaGovernancePage() {
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
   const [filters, setFilters] = useState<FilterState>({});
 
-  // Replace Kajiado placeholder with full data
   const allCounties = useMemo(() => {
     const placeholders = getPlaceholderCounties();
     return placeholders.map((c) => c.code === '034' ? kajiadoCounty : c);
@@ -82,7 +94,6 @@ export default function KenyaGovernancePage() {
     setComparisonList(comparisonList.filter(c => c.representative.id !== id));
   };
 
-  // Filter governors
   const filteredGovernors = useMemo(() => {
     return all47Governors.filter((g) => {
       if (filters.region && g.region !== filters.region) return false;
@@ -98,153 +109,188 @@ export default function KenyaGovernancePage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-        {/* ─── HEADER ─── */}
-        <header className="bg-gradient-to-r from-green-800 via-green-700 to-green-600 text-white shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Shield className="h-8 w-8" />
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  Kenya County Governance Explorer
-                </h1>
-                <p className="text-green-100 text-sm sm:text-base mt-1">
-                  2022–2027 Term · Constitution of Kenya 2010 · Devolved Government · 47 Counties
-                </p>
+      <div className="min-h-screen flex flex-col bg-stone-50">
+        {/* ══════════ HEADER ══════════ */}
+        <header className="bg-white border-b border-stone-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-5 flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
+                  <Shield className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold text-stone-900 tracking-tight leading-tight">
+                    Kenya County Governance Explorer
+                  </h1>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    2022–2027 Term · 47 Counties · Evidence-Based
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-4 mt-3 text-xs sm:text-sm text-green-200">
-              <span className="flex items-center gap-1"><Landmark className="h-3.5 w-3.5" /> Non-Partisan</span>
-              <span>·</span>
-              <span className="flex items-center gap-1"><FileText className="h-3.5 w-3.5" /> Evidence-Based</span>
-              <span>·</span>
-              <span>Sources: OAG · CoB · TI-Kenya · IEBC · EACC</span>
+              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-stone-400">
+                <span className="px-2 py-1 bg-stone-100 rounded-full">Non-Partisan</span>
+                <span className="px-2 py-1 bg-stone-100 rounded-full">OAG · CoB · TI-Kenya · IEBC</span>
+                {comparisonList.length > 0 && (
+                  <Badge variant="secondary" className="text-[11px] h-6 bg-emerald-100 text-emerald-700">
+                    {comparisonList.length}/4 to compare
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         </header>
 
-        {/* ─── MAIN CONTENT ─── */}
-        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
-            <TabsList className="grid w-full grid-cols-5 mb-6 h-auto p-1">
-              <TabsTrigger value="summary" className="text-xs sm:text-sm gap-1.5 py-2.5">
-                <BarChart3 className="h-4 w-4" />
-                <span className="hidden sm:inline">National Summary</span>
-                <span className="sm:hidden">Summary</span>
-              </TabsTrigger>
-              <TabsTrigger value="tree" className="text-xs sm:text-sm gap-1.5 py-2.5">
-                <TreePine className="h-4 w-4" />
-                <span className="hidden sm:inline">Governors Tree</span>
-                <span className="sm:hidden">Tree</span>
-              </TabsTrigger>
-              <TabsTrigger value="county" className="text-xs sm:text-sm gap-1.5 py-2.5">
-                <MapPin className="h-4 w-4" />
-                <span className="hidden sm:inline">County Explorer</span>
-                <span className="sm:hidden">County</span>
-              </TabsTrigger>
-              <TabsTrigger value="compare" className="text-xs sm:text-sm gap-1.5 py-2.5">
-                <GitCompare className="h-4 w-4" />
-                <span className="hidden sm:inline">Compare</span>
-                <span className="sm:hidden">Compare</span>
-              </TabsTrigger>
-              <TabsTrigger value="schema" className="text-xs sm:text-sm gap-1.5 py-2.5">
-                <Database className="h-4 w-4" />
-                <span className="hidden sm:inline">JSON Schema</span>
-                <span className="sm:hidden">Schema</span>
-              </TabsTrigger>
-            </TabsList>
+        {/* ══════════ TAB NAVIGATION ══════════ */}
+        <nav className="bg-white border-b border-stone-200 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex gap-0 overflow-x-auto no-scrollbar">
+              {([
+                { id: 'summary', label: 'National Summary', icon: BarChart3 },
+                { id: 'tree', label: '47 Counties', icon: TreePine },
+                { id: 'county', label: 'County Deep-Dive', icon: MapPin },
+                { id: 'sources', label: 'Sources Hub', icon: Library },
+                { id: 'compare', label: 'Compare', icon: GitCompare },
+                { id: 'schema', label: 'JSON Schema', icon: Database },
+              ] as { id: TabId; label: string; icon: React.ElementType }[]).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors
+                    ${activeTab === tab.id
+                      ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
+                      : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-50'}
+                  `}
+                >
+                  <tab.icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </nav>
 
-            {/* ════════════════════════════════════════════════════
-                TAB 1: NATIONAL SUMMARY
-            ════════════════════════════════════════════════════ */}
-            <TabsContent value="summary">
-              <NationalSummaryDashboard />
-            </TabsContent>
-
-            {/* ════════════════════════════════════════════════════
-                TAB 2: GOVERNORS TREE
-            ════════════════════════════════════════════════════ */}
-            <TabsContent value="tree">
-              <GovernorsTreeView
-                governors={filteredGovernors}
-                expandedCounties={expandedCounties}
-                toggleCounty={toggleCounty}
-                allCounties={allCounties}
-                filters={filters}
-                setFilters={setFilters}
-                addToComparison={addToComparison}
-                comparisonList={comparisonList}
-              />
-            </TabsContent>
-
-            {/* ════════════════════════════════════════════════════
-                TAB 3: COUNTY EXPLORER
-            ════════════════════════════════════════════════════ */}
-            <TabsContent value="county">
-              <CountyExplorer
-                countyCode={selectedCounty}
-                allCounties={allCounties}
-                onSelectCounty={setSelectedCounty}
-                addToComparison={addToComparison}
-                comparisonList={comparisonList}
-              />
-            </TabsContent>
-
-            {/* ════════════════════════════════════════════════════
-                TAB 4: COMPARISON
-            ════════════════════════════════════════════════════ */}
-            <TabsContent value="compare">
-              <ComparisonView
-                comparisonList={comparisonList}
-                removeFromComparison={removeFromComparison}
-                addToComparison={addToComparison}
-                allCounties={allCounties}
-              />
-            </TabsContent>
-
-            {/* ════════════════════════════════════════════════════
-                TAB 5: JSON SCHEMA
-            ════════════════════════════════════════════════════ */}
-            <TabsContent value="schema">
-              <JsonSchemaView />
-            </TabsContent>
-          </Tabs>
+        {/* ══════════ MAIN CONTENT ══════════ */}
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+          {activeTab === 'summary' && <NationalSummaryDashboard />}
+          {activeTab === 'tree' && (
+            <GovernorsTreeView
+              governors={filteredGovernors}
+              expandedCounties={expandedCounties}
+              toggleCounty={toggleCounty}
+              allCounties={allCounties}
+              filters={filters}
+              setFilters={setFilters}
+              addToComparison={addToComparison}
+              comparisonList={comparisonList}
+            />
+          )}
+          {activeTab === 'county' && (
+            <CountyExplorer
+              countyCode={selectedCounty}
+              allCounties={allCounties}
+              onSelectCounty={setSelectedCounty}
+              addToComparison={addToComparison}
+              comparisonList={comparisonList}
+            />
+          )}
+          {activeTab === 'sources' && <SourcesHub />}
+          {activeTab === 'compare' && (
+            <ComparisonView
+              comparisonList={comparisonList}
+              removeFromComparison={removeFromComparison}
+              addToComparison={addToComparison}
+              allCounties={allCounties}
+            />
+          )}
+          {activeTab === 'schema' && <JsonSchemaView />}
         </main>
 
-        {/* ─── FOOTER ─── */}
-        <footer className="bg-gray-900 text-gray-300 py-6 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 text-sm">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* ══════════ FOOTER ══════════ */}
+        <footer className="bg-stone-900 text-stone-400 py-8 mt-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
               <div>
-                <h3 className="font-semibold text-white mb-2">Data Sources</h3>
-                <ul className="space-y-1 text-xs">
-                  <li><a href="https://oagkenya.go.ke/" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 flex items-center gap-1"><ExternalLink className="h-3 w-3" /> oagkenya.go.ke</a></li>
-                  <li><a href="https://cob.go.ke/" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 flex items-center gap-1"><ExternalLink className="h-3 w-3" /> cob.go.ke</a></li>
-                  <li><a href="https://tikenya.org/" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 flex items-center gap-1"><ExternalLink className="h-3 w-3" /> tikenya.org</a></li>
-                  <li><a href="https://www.iebc.or.ke/" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 flex items-center gap-1"><ExternalLink className="h-3 w-3" /> iebc.or.ke</a></li>
-                  <li><a href="https://eacc.go.ke/" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 flex items-center gap-1"><ExternalLink className="h-3 w-3" /> eacc.go.ke</a></li>
+                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Primary Sources</h3>
+                <ul className="space-y-1.5 text-xs">
+                  {[
+                    { label: 'OAG', url: 'https://oagkenya.go.ke/' },
+                    { label: 'CoB', url: 'https://cob.go.ke/' },
+                    { label: 'TI-Kenya', url: 'https://tikenya.org/' },
+                    { label: 'IEBC', url: 'https://www.iebc.or.ke/' },
+                    { label: 'EACC', url: 'https://eacc.go.ke/' },
+                  ].map(s => (
+                    <li key={s.label}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+                        <ExternalLink className="h-3 w-3" /> {s.label}
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-white mb-2">Methodology</h3>
-                <p className="text-xs leading-relaxed">
-                  All scorecard metrics are based exclusively on publicly verifiable primary sources.
-                  Data gaps are explicitly marked. This tool is non-partisan, factual, and transparent.
-                  No data is invented, estimated, or approximated.
-                </p>
+                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Parliament & Oversight</h3>
+                <ul className="space-y-1.5 text-xs">
+                  {[
+                    { label: 'Parliament Hansard', url: 'https://parliament.go.ke/' },
+                    { label: 'Senate CPAIC', url: 'https://parliament.go.ke/committees' },
+                    { label: 'PPRA / PPIP', url: 'https://ppra.go.ke/' },
+                    { label: 'CRA', url: 'https://cra.go.ke/' },
+                    { label: 'PSC', url: 'https://psc.go.ke/' },
+                    { label: 'CAJ Ombudsman', url: 'https://caj.go.ke/' },
+                  ].map(s => (
+                    <li key={s.label}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+                        <ExternalLink className="h-3 w-3" /> {s.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-white mb-2">Last Updated</h3>
-                <p className="text-xs">2026-07-25</p>
-                <p className="text-xs mt-1">
-                  Designed to connect to live feeds from OAG, CoB, TI-Kenya, and county portals.
-                </p>
+                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Resources & Data</h3>
+                <ul className="space-y-1.5 text-xs">
+                  {[
+                    { label: 'KNBS Statistics', url: 'https://www.knbs.or.ke/' },
+                    { label: 'Kenya Open Data', url: 'https://opendata.go.ke/' },
+                    { label: 'National Treasury', url: 'https://treasury.go.ke/' },
+                    { label: 'NLC Land', url: 'https://nlc.go.ke/' },
+                    { label: 'WASREB Water', url: 'https://wasreb.go.ke/' },
+                    { label: 'KFS Forests', url: 'https://kenyaforestservice.org/' },
+                  ].map(s => (
+                    <li key={s.label}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+                        <ExternalLink className="h-3 w-3" /> {s.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Civil Society</h3>
+                <ul className="space-y-1.5 text-xs">
+                  {[
+                    { label: 'Mzalendo', url: 'https://mzalendo.com/' },
+                    { label: 'PesaCheck', url: 'https://pesacheck.africa/' },
+                    { label: 'Katiba Institute', url: 'https://katibainstitute.org/' },
+                    { label: 'AfriCOG', url: 'https://africog.org/' },
+                    { label: 'Bajeti Hub', url: 'https://bajeti.go.ke/' },
+                    { label: 'IEA Kenya', url: 'https://ieakenya.or.ke/' },
+                  ].map(s => (
+                    <li key={s.label}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+                        <ExternalLink className="h-3 w-3" /> {s.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
-            <Separator className="my-4 bg-gray-700" />
-            <p className="text-center text-xs text-gray-500">
-              Kenya County Governance Explorer · Strictly Non-Partisan · Evidence-Based · All Rights Reserved
-            </p>
+            <Separator className="my-6 bg-stone-700" />
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500">
+              <p>Kenya County Governance Explorer · Strictly Non-Partisan · Evidence-Based</p>
+              <p>Last updated: 2026-07-25 · {allSources.length} data sources indexed</p>
+            </div>
           </div>
         </footer>
       </div>
@@ -252,359 +298,315 @@ export default function KenyaGovernancePage() {
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: NATIONAL SUMMARY DASHBOARD
-// ════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// NATIONAL SUMMARY DASHBOARD
+// ══════════════════════════════════════════════════════════════════
 function NationalSummaryDashboard() {
   const latestAudit = getLatestAuditSummary();
-  const latestBudget = getLatestBudgetSummary();
   const prevAudit = nationalSummary.auditSummaries[1];
+  const latestBudget = getLatestBudgetSummary();
 
   return (
-    <div className="space-y-6">
-      {/* OAG Audit Summary */}
-      <Card className="border-l-4 border-l-green-600">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Scale className="h-5 w-5 text-green-600" />
-                OAG County Audit Opinions — {latestAudit.financialYear}
+    <div className="space-y-5">
+      {/* Quick Stats Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Counties', value: '47', sub: 'Devolved Units', icon: MapPin, color: 'text-emerald-600 bg-emerald-50' },
+          { label: 'Clean Audits (Exec)', value: latestAudit.countyExecutive.unmodified.toString(), sub: `of 47 (${latestAudit.financialYear})`, icon: CheckCircle2, color: 'text-green-600 bg-green-50' },
+          { label: 'Avg Dev Absorption', value: `${latestBudget.avgDevelopmentAbsorption}%`, sub: latestBudget.period, icon: TrendingDown, color: 'text-red-600 bg-red-50' },
+          { label: 'Unspent Funds', value: latestBudget.totalUnspentAmount || '—', sub: 'Development Budget', icon: AlertTriangle, color: 'text-amber-600 bg-amber-50' },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white rounded-xl border border-stone-200 p-4">
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className={`h-8 w-8 rounded-lg ${stat.color} flex items-center justify-center`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
+              <span className="text-xs text-stone-500 font-medium">{stat.label}</span>
+            </div>
+            <p className="text-2xl font-bold text-stone-900 leading-tight">{stat.value}</p>
+            <p className="text-[11px] text-stone-400 mt-0.5">{stat.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* OAG Audit */}
+        <Card className="border-stone-200 bg-white">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Scale className="h-4 w-4 text-emerald-600" /> OAG Audit Opinions — {latestAudit.financialYear}
               </CardTitle>
-              <CardDescription className="mt-1">
-                Source: {latestAudit.source.source} — {latestAudit.source.reportTitle}
-              </CardDescription>
+              <Badge variant="outline" className="text-[10px] font-normal">Latest</Badge>
             </div>
-            <Badge variant="outline" className="text-xs">Latest Available</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* County Executives */}
+            <CardDescription className="text-xs">{latestAudit.source.source} — {latestAudit.source.reportTitle}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
             <div>
-              <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                <Building2 className="h-4 w-4" /> County Executives (47 Counties)
-              </h4>
-              <div className="space-y-3">
-                <AuditBar label="Unmodified (Clean)" count={latestAudit.countyExecutive.unmodified} total={47} color="bg-green-500" opinion={AUDIT_OPINIONS.UNMODIFIED} />
-                <AuditBar label="Qualified" count={latestAudit.countyExecutive.qualified} total={47} color="bg-yellow-500" opinion={AUDIT_OPINIONS.QUALIFIED} />
-                <AuditBar label="Adverse" count={latestAudit.countyExecutive.adverse} total={47} color="bg-orange-500" opinion={AUDIT_OPINIONS.ADVERSE} />
-                <AuditBar label="Disclaimer" count={latestAudit.countyExecutive.disclaimer} total={47} color="bg-red-500" opinion={AUDIT_OPINIONS.DISCLAIMER} />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Only <strong className="text-green-700">{latestAudit.countyExecutive.unmodified} of 47</strong> county executives received a clean audit opinion.
-              </p>
-            </div>
-
-            {/* County Assemblies */}
-            <div>
-              <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                <Landmark className="h-4 w-4" /> County Assemblies (47)
-              </h4>
-              <div className="space-y-3">
-                <AuditBar label="Unmodified (Clean)" count={latestAudit.countyAssembly.unmodified} total={47} color="bg-green-500" opinion={AUDIT_OPINIONS.UNMODIFIED} />
-                <AuditBar label="Qualified" count={latestAudit.countyAssembly.qualified} total={47} color="bg-yellow-500" opinion={AUDIT_OPINIONS.QUALIFIED} />
-                <AuditBar label="Adverse" count={latestAudit.countyAssembly.adverse} total={47} color="bg-orange-500" opinion={AUDIT_OPINIONS.ADVERSE} />
-                <AuditBar label="Disclaimer" count={latestAudit.countyAssembly.disclaimer} total={47} color="bg-red-500" opinion={AUDIT_OPINIONS.DISCLAIMER} />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Assemblies perform better: <strong className="text-green-700">{latestAudit.countyAssembly.unmodified} clean</strong> opinions.
-              </p>
-            </div>
-          </div>
-
-          {/* YoY Comparison */}
-          {prevAudit && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-sm mb-3">Year-over-Year Trend</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div>
-                  <p className="text-xs text-muted-foreground">Executive Clean</p>
-                  <p className="text-lg font-bold">{prevAudit.countyExecutive.unmodified} → {latestAudit.countyExecutive.unmodified}</p>
-                  <p className="text-xs text-green-600">{latestAudit.countyExecutive.unmodified > prevAudit.countyExecutive.unmodified ? '↑ Improved' : latestAudit.countyExecutive.unmodified === prevAudit.countyExecutive.unmodified ? '→ Unchanged' : '↓ Declined'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Executive Qualified</p>
-                  <p className="text-lg font-bold">{prevAudit.countyExecutive.qualified} → {latestAudit.countyExecutive.qualified}</p>
-                  <p className="text-xs text-yellow-600">{latestAudit.countyExecutive.qualified > prevAudit.countyExecutive.qualified ? '↑ Increased' : '→'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Assembly Clean</p>
-                  <p className="text-lg font-bold">{prevAudit.countyAssembly.unmodified} → {latestAudit.countyAssembly.unmodified}</p>
-                  <p className="text-xs text-green-600">{latestAudit.countyAssembly.unmodified > prevAudit.countyAssembly.unmodified ? '↑ Improved' : latestAudit.countyAssembly.unmodified === prevAudit.countyAssembly.unmodified ? '→ Unchanged' : '↓ Declined'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Adverse Opinions</p>
-                  <p className="text-lg font-bold">{prevAudit.countyExecutive.adverse} → {latestAudit.countyExecutive.adverse}</p>
-                  <p className="text-xs text-red-600">{latestAudit.countyExecutive.adverse > prevAudit.countyExecutive.adverse ? '↑ Increased' : latestAudit.countyExecutive.adverse === prevAudit.countyExecutive.adverse ? '→ Unchanged' : '↓ Declined'}</p>
-                </div>
+              <p className="text-xs font-semibold text-stone-600 mb-2.5">County Executives</p>
+              <div className="space-y-2">
+                {[
+                  { label: 'Unmodified', count: latestAudit.countyExecutive.unmodified, color: 'bg-green-500' },
+                  { label: 'Qualified', count: latestAudit.countyExecutive.qualified, color: 'bg-yellow-500' },
+                  { label: 'Adverse', count: latestAudit.countyExecutive.adverse, color: 'bg-orange-500' },
+                  { label: 'Disclaimer', count: latestAudit.countyExecutive.disclaimer, color: 'bg-red-500' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2.5">
+                    <span className="text-xs w-24 text-stone-600">{item.label}</span>
+                    <div className="flex-1 h-5 bg-stone-100 rounded-full overflow-hidden">
+                      <div className={`h-full ${item.color} rounded-full flex items-center justify-end pr-1.5 transition-all`}
+                        style={{ width: `${Math.max((item.count / 47) * 100, item.count > 0 ? 6 : 0)}%` }}>
+                        <span className="text-[10px] font-bold text-white">{item.count}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs w-9 text-right text-stone-500">{Math.round((item.count / 47) * 100)}%</span>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* CoB Budget Summary */}
-      <Card className="border-l-4 border-l-red-600">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-red-600" />
-                CoB Budget Absorption — {latestBudget.financialYear} ({latestBudget.period})
+              <p className="text-xs font-semibold text-stone-600 mb-2.5">County Assemblies</p>
+              <div className="space-y-2">
+                {[
+                  { label: 'Unmodified', count: latestAudit.countyAssembly.unmodified, color: 'bg-green-500' },
+                  { label: 'Qualified', count: latestAudit.countyAssembly.qualified, color: 'bg-yellow-500' },
+                  { label: 'Adverse', count: latestAudit.countyAssembly.adverse, color: 'bg-orange-500' },
+                  { label: 'Disclaimer', count: latestAudit.countyAssembly.disclaimer, color: 'bg-red-500' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2.5">
+                    <span className="text-xs w-24 text-stone-600">{item.label}</span>
+                    <div className="flex-1 h-5 bg-stone-100 rounded-full overflow-hidden">
+                      <div className={`h-full ${item.color} rounded-full flex items-center justify-end pr-1.5 transition-all`}
+                        style={{ width: `${Math.max((item.count / 47) * 100, item.count > 0 ? 6 : 0)}%` }}>
+                        <span className="text-[10px] font-bold text-white">{item.count}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs w-9 text-right text-stone-500">{Math.round((item.count / 47) * 100)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {latestAudit.source.url && (
+              <a href={latestAudit.source.url} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 hover:underline flex items-center gap-1">
+                <ExternalLink className="h-3 w-3" /> View full report
+              </a>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* CoB Budget */}
+        <Card className="border-stone-200 bg-white">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-red-600" /> CoB Budget Absorption — {latestBudget.financialYear}
               </CardTitle>
-              <CardDescription className="mt-1">
-                Source: {latestBudget.source.source} — {latestBudget.source.reportTitle}
-              </CardDescription>
+              <Badge variant="outline" className="text-[10px] font-normal">{latestBudget.period}</Badge>
             </div>
-            <Badge variant="outline" className="text-xs">{latestBudget.period}</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="p-4 bg-red-50 rounded-lg text-center">
-                <p className="text-xs text-red-700 font-medium">Avg. Development Budget Absorption</p>
-                <p className="text-4xl font-bold text-red-700 mt-1">{latestBudget.avgDevelopmentAbsorption}%</p>
-                <p className="text-xs text-red-600 mt-1">Alarmingly low — billions left unspent</p>
+            <CardDescription className="text-xs">{latestBudget.source.source} — {latestBudget.source.reportTitle}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 bg-red-50 rounded-xl text-center border border-red-100">
+                <p className="text-[10px] font-medium text-red-600 uppercase tracking-wider">Development</p>
+                <p className="text-3xl font-bold text-red-700 mt-0.5">{latestBudget.avgDevelopmentAbsorption}%</p>
               </div>
-              <div className="p-4 bg-green-50 rounded-lg text-center">
-                <p className="text-xs text-green-700 font-medium">Avg. Recurrent Budget Absorption</p>
-                <p className="text-4xl font-bold text-green-700 mt-1">{latestBudget.avgRecurrentAbsorption}%</p>
-                <p className="text-xs text-green-600 mt-1">Near full absorption (salaries & operations)</p>
-              </div>
-              {latestBudget.totalUnspentAmount && (
-                <div className="p-4 bg-orange-50 rounded-lg text-center">
-                  <p className="text-xs text-orange-700 font-medium">Total Unspent Development Funds</p>
-                  <p className="text-3xl font-bold text-orange-700 mt-1">{latestBudget.totalUnspentAmount}</p>
-                </div>
-              )}
-            </div>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="h-4 w-4" /> Top Performers
-                </h4>
-                <div className="space-y-2">
-                  {latestBudget.topPerformers.map((c) => (
-                    <div key={c.county} className="flex items-center justify-between p-2 bg-green-50 rounded border">
-                      <span className="text-sm font-medium">{c.county}</span>
-                      <Badge className={`${c.rate >= 70 ? 'bg-green-600' : c.rate >= 50 ? 'bg-yellow-600' : 'bg-red-600'}`}>{c.rate}%</Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-red-700">
-                  <AlertTriangle className="h-4 w-4" /> Bottom Performers
-                </h4>
-                <div className="space-y-2">
-                  {latestBudget.bottomPerformers.map((c) => (
-                    <div key={c.county} className="flex items-center justify-between p-2 bg-red-50 rounded border">
-                      <span className="text-sm font-medium">{c.county}</span>
-                      <Badge className="bg-red-600">{c.rate}%</Badge>
-                    </div>
-                  ))}
-                </div>
+              <div className="p-3 bg-emerald-50 rounded-xl text-center border border-emerald-100">
+                <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wider">Recurrent</p>
+                <p className="text-3xl font-bold text-emerald-700 mt-0.5">{latestBudget.avgRecurrentAbsorption}%</p>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            {latestBudget.totalUnspentAmount && (
+              <div className="p-3 bg-amber-50 rounded-xl text-center border border-amber-100">
+                <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wider">Total Unspent</p>
+                <p className="text-xl font-bold text-amber-800 mt-0.5">{latestBudget.totalUnspentAmount}</p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-green-700 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Top Performers</p>
+              {latestBudget.topPerformers.map(c => (
+                <div key={c.county} className="flex justify-between items-center px-3 py-1.5 bg-green-50 rounded-lg text-xs">
+                  <span className="font-medium">{c.county}</span>
+                  <span className="font-bold text-green-700">{c.rate}%</span>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Bottom Performers</p>
+              {latestBudget.bottomPerformers.map(c => (
+                <div key={c.county} className="flex justify-between items-center px-3 py-1.5 bg-red-50 rounded-lg text-xs">
+                  <span className="font-medium">{c.county}</span>
+                  <span className="font-bold text-red-700">{c.rate}%</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Coalition Distribution */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="h-5 w-5 text-green-600" />
-            Governor Coalition Distribution — 47 Counties
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {Object.entries(governorCoalitionDistribution).map(([coalition, count]) => (
-              <div key={coalition} className={`p-4 rounded-lg border text-center ${
-                coalition === 'Kenya Kwanza Alliance' ? 'bg-yellow-50 border-yellow-200' :
-                coalition === 'Azimio la Umoja One Kenya Coalition' ? 'bg-blue-50 border-blue-200' :
-                'bg-gray-50 border-gray-200'
-              }`}>
-                <p className="text-xs text-muted-foreground">{coalition}</p>
-                <p className="text-3xl font-bold mt-1">{count}</p>
-                <p className="text-xs text-muted-foreground">{Math.round((count / 47) * 100)}% of 47</p>
+      {/* YoY + Coalition + Legend */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {prevAudit && (
+          <Card className="border-stone-200 bg-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">Year-over-Year Trend</CardTitle>
+              <CardDescription className="text-xs">FY {prevAudit.financialYear} → {latestAudit.financialYear}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { label: 'Exec Clean', prev: prevAudit.countyExecutive.unmodified, curr: latestAudit.countyExecutive.unmodified },
+                  { label: 'Exec Qualified', prev: prevAudit.countyExecutive.qualified, curr: latestAudit.countyExecutive.qualified },
+                  { label: 'Assembly Clean', prev: prevAudit.countyAssembly.unmodified, curr: latestAudit.countyAssembly.unmodified },
+                  { label: 'Adverse', prev: prevAudit.countyExecutive.adverse, curr: latestAudit.countyExecutive.adverse },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between text-xs">
+                    <span className="text-stone-600 w-28">{item.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-stone-400">{item.prev}</span>
+                      {item.curr > item.prev ? <TrendingUp className="h-3 w-3 text-green-600" /> : item.curr < item.prev ? <TrendingDown className="h-3 w-3 text-red-600" /> : <Minus className="h-3 w-3 text-stone-400" />}
+                      <span className="font-bold">{item.curr}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        <Card className="border-stone-200 bg-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">Governor Coalition Split</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Object.entries(governorCoalitionDistribution).map(([coal, count]) => (
+              <div key={coal} className="flex items-center gap-3">
+                <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+                  coal === 'Kenya Kwanza Alliance' ? 'bg-yellow-100 text-yellow-800' :
+                  coal === 'Azimio la Umoja One Kenya Coalition' ? 'bg-blue-100 text-blue-800' :
+                  'bg-stone-100 text-stone-700'
+                }`}>{count}</div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">{coal}</p>
+                  <div className="h-1.5 bg-stone-100 rounded-full mt-1">
+                    <div className={`h-full rounded-full ${coal === 'Kenya Kwanza Alliance' ? 'bg-yellow-400' : coal === 'Azimio la Umoja One Kenya Coalition' ? 'bg-blue-400' : 'bg-stone-400'}`}
+                      style={{ width: `${(count / 47) * 100}%` }} />
+                  </div>
+                </div>
+                <span className="text-xs text-stone-400">{Math.round((count / 47) * 100)}%</span>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Scorecard Color Legend */}
-      <Card className="bg-gray-50">
-        <CardContent className="py-4">
-          <h4 className="font-semibold text-sm mb-3">Scorecard Color Coding</h4>
-          <div className="flex flex-wrap gap-4 text-xs">
-            <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-green-500 inline-block" /> Green (80–100): Strong Performance</span>
-            <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-yellow-500 inline-block" /> Yellow (50–79): Moderate</span>
-            <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-red-500 inline-block" /> Red (&lt;50): Weak Performance</span>
-            <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-gray-300 inline-block" /> Gray: Data Not Available</span>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: AUDIT BAR
-// ════════════════════════════════════════════════════════════════
-function AuditBar({ label, count, total, color, opinion }: {
-  label: string; count: number; total: number; color: string; opinion: string;
-}) {
-  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs w-40 shrink-0">{label}</span>
-      <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full transition-all duration-500 flex items-center justify-end pr-2`}
-          style={{ width: `${Math.max(pct, pct > 0 ? 8 : 0)}%` }}>
-          <span className="text-white text-xs font-bold">{count}</span>
-        </div>
+          </CardContent>
+        </Card>
+        <Card className="border-stone-200 bg-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">Score Legend</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2.5">
+            {[
+              { color: 'bg-green-500', label: '80–100', desc: 'Strong performance', text: 'text-green-700' },
+              { color: 'bg-yellow-500', label: '50–79', desc: 'Moderate', text: 'text-yellow-700' },
+              { color: 'bg-red-500', label: '< 50', desc: 'Weak performance', text: 'text-red-700' },
+              { color: 'bg-stone-300', label: 'N/A', desc: 'Data not available', text: 'text-stone-500' },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-3 text-xs">
+                <span className={`w-6 h-6 rounded ${item.color}`} />
+                <div>
+                  <span className={`font-semibold ${item.text}`}>{item.label}</span>
+                  <span className="text-stone-500 ml-1.5">{item.desc}</span>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
-      <span className="text-xs font-medium w-10 text-right">{pct}%</span>
     </div>
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: GOVERNORS TREE VIEW
-// ════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// GOVERNORS TREE VIEW
+// ══════════════════════════════════════════════════════════════════
 function GovernorsTreeView({ governors, expandedCounties, toggleCounty, allCounties, filters, setFilters, addToComparison, comparisonList }: {
-  governors: typeof all47Governors;
-  expandedCounties: Set<string>;
-  toggleCounty: (code: string) => void;
-  allCounties: County[];
-  filters: FilterState;
-  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
-  addToComparison: (rep: Representative, countyName: string) => void;
-  comparisonList: ComparisonItem[];
+  governors: typeof all47Governors; expandedCounties: Set<string>; toggleCounty: (code: string) => void;
+  allCounties: County[]; filters: FilterState; setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+  addToComparison: (rep: Representative, countyName: string) => void; comparisonList: ComparisonItem[];
 }) {
   const grouped = useMemo(() => {
     const map: Record<string, typeof governors> = {};
-    for (const g of governors) {
-      if (!map[g.region]) map[g.region] = [];
-      map[g.region].push(g);
-    }
+    for (const g of governors) { if (!map[g.region]) map[g.region] = []; map[g.region].push(g); }
     return map;
   }, [governors]);
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <Card>
-        <CardContent className="py-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter className="h-4 w-4 text-green-600" />
-            <h3 className="font-semibold text-sm">Filters</h3>
+    <div className="space-y-4">
+      {/* Search + Filters */}
+      <div className="bg-white rounded-xl border border-stone-200 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Search className="h-4 w-4 text-stone-400" />
+          <h3 className="text-sm font-semibold text-stone-700">Find a Governor</h3>
+          <span className="ml-auto text-xs text-stone-400">{governors.length} of 47</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="relative col-span-2 md:col-span-1">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-stone-400" />
+            <Input placeholder="Name or county..." className="h-9 text-xs pl-8 border-stone-200" value={filters.keyword || ''} onChange={(e) => setFilters(f => ({ ...f, keyword: e.target.value || undefined }))} />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Select value={filters.region || '_all'} onValueChange={(v) => setFilters(f => ({ ...f, region: v === '_all' ? undefined : v as typeof REGIONS[number] }))}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Region" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_all">All Regions</SelectItem>
-                {REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={filters.coalition || '_all'} onValueChange={(v) => setFilters(f => ({ ...f, coalition: v === '_all' ? undefined : v as any }))}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Coalition" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_all">All Coalitions</SelectItem>
-                <SelectItem value="Kenya Kwanza Alliance">Kenya Kwanza</SelectItem>
-                <SelectItem value="Azimio la Umoja One Kenya Coalition">Azimio</SelectItem>
-                <SelectItem value="Independent">Independent</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filters.party || '_all'} onValueChange={(v) => setFilters(f => ({ ...f, party: v === '_all' ? undefined : v }))}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Party" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_all">All Parties</SelectItem>
-                {Object.keys(governorPartyDistribution).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                placeholder="Search name or county..."
-                className="h-9 text-xs pl-8"
-                value={filters.keyword || ''}
-                onChange={(e) => setFilters(f => ({ ...f, keyword: e.target.value || undefined }))}
-              />
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">Showing {governors.length} of 47 governors</p>
-        </CardContent>
-      </Card>
+          <Select value={filters.region || '_all'} onValueChange={(v) => setFilters(f => ({ ...f, region: v === '_all' ? undefined : v as typeof REGIONS[number] }))}>
+            <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Region" /></SelectTrigger>
+            <SelectContent><SelectItem value="_all">All Regions</SelectItem>{REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+          </Select>
+          <Select value={filters.coalition || '_all'} onValueChange={(v) => setFilters(f => ({ ...f, coalition: v === '_all' ? undefined : v as any }))}>
+            <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Coalition" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all">All Coalitions</SelectItem>
+              <SelectItem value="Kenya Kwanza Alliance">Kenya Kwanza</SelectItem>
+              <SelectItem value="Azimio la Umoja One Kenya Coalition">Azimio</SelectItem>
+              <SelectItem value="Independent">Independent</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filters.party || '_all'} onValueChange={(v) => setFilters(f => ({ ...f, party: v === '_all' ? undefined : v }))}>
+            <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Party" /></SelectTrigger>
+            <SelectContent><SelectItem value="_all">All Parties</SelectItem>{Object.keys(governorPartyDistribution).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      </div>
 
-      {/* Tree by Region */}
+      {/* Regions */}
       {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([region, govs]) => (
         <Accordion key={region} type="multiple" defaultValue={[region]}>
-          <AccordionItem value={region} className="border rounded-lg">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline bg-gray-50 rounded-t-lg">
-              <div className="flex items-center gap-3">
-                <MapPin className="h-4 w-4 text-green-600" />
-                <span className="font-semibold">{region}</span>
-                <Badge variant="secondary" className="text-xs">{govs.length} counties</Badge>
+          <AccordionItem value={region} className="border border-stone-200 rounded-xl overflow-hidden bg-white">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-emerald-600" />
+                <span className="text-sm font-semibold">{region}</span>
+                <Badge variant="secondary" className="text-[10px]">{govs.length}</Badge>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-1 pb-1">
+            <AccordionContent className="px-2 pb-2">
               <div className="space-y-1">
                 {govs.sort((a, b) => a.code.localeCompare(b.code)).map((g) => {
                   const county = allCounties.find(c => c.code === g.code);
                   const isExpanded = expandedCounties.has(g.code);
-                  const isInComparison = comparisonList.some(c => c.representative.id === `gov-${g.code}`);
+                  const isCompared = comparisonList.some(c => c.representative.id === `gov-${g.code}`);
                   return (
-                    <div key={g.code} className="border rounded-lg overflow-hidden">
-                      {/* Governor Row */}
-                      <button
-                        onClick={() => toggleCounty(g.code)}
-                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {isExpanded ? <ChevronDown className="h-4 w-4 text-green-600 shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+                    <div key={g.code} className="border border-stone-100 rounded-lg overflow-hidden">
+                      <button onClick={() => toggleCounty(g.code)} className="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-stone-50 transition-colors text-left">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-stone-400 shrink-0" />}
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium text-sm">{g.name}</span>
-                              <Badge className={`text-xs ${g.coalition === 'Kenya Kwanza Alliance' ? 'bg-yellow-100 text-yellow-800' : g.coalition === 'Azimio la Umoja One Kenya Coalition' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
-                                {g.party}
-                              </Badge>
-                              {county?.executiveAuditOpinion && (
-                                <Badge className={`text-xs ${getAuditColor(county.executiveAuditOpinion)}`}>
-                                  {county.executiveAuditOpinion}
-                                </Badge>
-                              )}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-sm font-medium">{g.name}</span>
+                              <Badge className={`text-[10px] px-1.5 py-0 ${g.coalition === 'Kenya Kwanza Alliance' ? 'bg-yellow-100 text-yellow-800' : g.coalition === 'Azimio la Umoja One Kenya Coalition' ? 'bg-blue-100 text-blue-800' : 'bg-stone-100 text-stone-600'}`}>{g.party}</Badge>
+                              {county?.executiveAuditOpinion && <Badge className={`text-[10px] px-1.5 py-0 border ${getAuditColor(county.executiveAuditOpinion)}`}>{county.executiveAuditOpinion}</Badge>}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {g.county} County · Pop. {g.population.toLocaleString()} · {g.constituenciesCount} Constituencies · {g.wardsCount} Wards
-                            </p>
+                            <p className="text-[11px] text-stone-400 mt-0.5">{g.county} · Pop. {g.population.toLocaleString()} · {g.constituenciesCount} const. · {g.wardsCount} wards</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0 ml-2">
-                          {isInComparison && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className={`text-xs px-2 py-0.5 rounded border ${county?.dataAvailability === 'full' ? 'bg-green-50 border-green-200 text-green-700' : county?.dataAvailability === 'partial' ? 'bg-yellow-50 border-yellow-200 text-yellow-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
-                                {county?.dataAvailability || 'placeholder'}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="text-xs max-w-xs">{county?.dataAvailabilityNote || 'Placeholder — expand to load data'}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
+                        {isCompared && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 shrink-0" />}
                       </button>
-
-                      {/* Expanded Content */}
                       {isExpanded && county && (
-                        <div className="border-t bg-gray-50/50 px-4 py-3 space-y-3">
-                          <CountyQuickView county={county} onAddComparison={addToComparison} isInComparison={isInComparison} />
+                        <div className="border-t border-stone-100 bg-stone-50/50 px-3.5 py-3">
+                          <CountyQuickView county={county} onAddComparison={addToComparison} isInComparison={isCompared} />
                         </div>
                       )}
                     </div>
@@ -619,346 +621,151 @@ function GovernorsTreeView({ governors, expandedCounties, toggleCounty, allCount
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: COUNTY QUICK VIEW (in tree)
-// ════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// COUNTY QUICK VIEW
+// ══════════════════════════════════════════════════════════════════
 function CountyQuickView({ county, onAddComparison, isInComparison }: {
   county: County; onAddComparison: (rep: Representative, countyName: string) => void; isInComparison: boolean;
 }) {
-  const { governor, senator, womanRep, deputyGovernor, countyAssembly, countyExecutive } = county;
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Leadership */}
-      <div className="space-y-2">
-        <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">County Leadership</h5>
-        {governor && <OfficialMiniCard rep={governor} onCompare={() => onAddComparison(governor, county.name)} isCompared={isInComparison} />}
-        {deputyGovernor && <OfficialMiniCard rep={deputyGovernor} onCompare={() => onAddComparison(deputyGovernor, county.name)} />}
-        {senator && <OfficialMiniCard rep={senator} onCompare={() => onAddComparison(senator, county.name)} />}
-        {womanRep && <OfficialMiniCard rep={womanRep} onCompare={() => onAddComparison(womanRep, county.name)} />}
-        {countyAssembly?.speaker && <OfficialMiniCard rep={countyAssembly.speaker} onCompare={() => onAddComparison(countyAssembly.speaker, county.name)} />}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="space-y-1.5">
+        {county.governor && <MiniRow rep={county.governor} onCompare={() => onAddComparison(county.governor!, county.name)} />}
+        {county.deputyGovernor && <MiniRow rep={county.deputyGovernor} onCompare={() => onAddComparison(county.deputyGovernor!, county.name)} />}
+        {county.senator && <MiniRow rep={county.senator} onCompare={() => onAddComparison(county.senator!, county.name)} />}
+        {county.womanRep && <MiniRow rep={county.womanRep} onCompare={() => onAddComparison(county.womanRep!, county.name)} />}
+        {county.countyAssembly?.speaker && <MiniRow rep={county.countyAssembly.speaker} onCompare={() => onAddComparison(county.countyAssembly.speaker!, county.name)} />}
       </div>
-
-      {/* Constituencies & Assemblies */}
-      <div className="space-y-2">
-        <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Structure</h5>
-        {county.constituencies.length > 0 ? (
-          <div className="space-y-1">
-            {county.constituencies.map((con) => (
-              <div key={con.id} className="flex items-center justify-between p-2 bg-white rounded border text-xs">
-                <div>
-                  <span className="font-medium">{con.name}</span>
-                  {con.mp && <span className="text-muted-foreground ml-2">MP: {con.mp.fullName} ({con.mp.politicalParty})</span>}
-                </div>
-                {con.mp && (
-                  <Button variant="ghost" size="sm" className="h-6 text-xs px-1.5" onClick={() => onAddComparison(con.mp, county.name)}>
-                    <GitCompare className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-            ))}
+      <div className="space-y-1.5">
+        {county.constituencies.length > 0 ? county.constituencies.map(con => (
+          <div key={con.id} className="flex items-center justify-between px-2.5 py-2 bg-white rounded-lg border border-stone-100 text-xs">
+            <div><span className="font-medium">{con.name}</span>{con.mp && <span className="text-stone-400 ml-1.5">{con.mp.fullName} ({con.mp.politicalParty})</span>}</div>
+            {con.mp && <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => onAddComparison(con.mp, county.name)}><GitCompare className="h-3 w-3" /></Button>}
           </div>
-        ) : (
-          <p className="text-xs text-muted-foreground bg-white p-2 rounded border">Constituency and MCA data requires expansion. Pull from IEBC and county assembly records.</p>
-        )}
-
-        {countyExecutive && countyExecutive.length > 0 && (
-          <>
-            <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-3">County Executive Committee</h5>
-            <div className="space-y-1">
-              {countyExecutive.map((cecm) => (
-                <div key={cecm.id} className="flex items-center justify-between p-2 bg-white rounded border text-xs">
-                  <span className="font-medium">{cecm.portfolio}</span>
-                  <span className="text-muted-foreground">{cecm.fullName.includes('not publicly') ? 'Name pending verification' : cecm.fullName}</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+        )) : <p className="text-xs text-stone-400 px-2.5 py-2 bg-white rounded-lg border border-stone-100 italic">Constituency data requires expansion from IEBC records.</p>}
       </div>
     </div>
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: OFFICIAL MINI CARD
-// ════════════════════════════════════════════════════════════════
-function OfficialMiniCard({ rep, onCompare, isCompared }: {
-  rep: Representative; onCompare: () => void; isCompared?: boolean;
-}) {
+function MiniRow({ rep, onCompare }: { rep: Representative; onCompare: () => void }) {
   return (
-    <div className="flex items-center justify-between p-2 bg-white rounded border text-xs">
+    <div className="flex items-center justify-between px-2.5 py-2 bg-white rounded-lg border border-stone-100 text-xs">
       <div className="min-w-0">
-        <div className="flex items-center gap-1.5">
-          <User className="h-3 w-3 text-green-600 shrink-0" />
-          <span className="font-medium">{rep.fullName}</span>
-        </div>
-        <div className="flex items-center gap-2 ml-4 mt-0.5 text-muted-foreground">
-          <span>{rep.officialTitle}</span>
-          {rep.politicalParty && <span>· {rep.politicalParty}</span>}
-        </div>
+        <span className="font-medium">{rep.fullName}</span>
+        <span className="text-stone-400 ml-1.5">{rep.officialTitle}{rep.politicalParty ? ` · ${rep.politicalParty}` : ''}</span>
       </div>
-      <div className="flex items-center gap-1.5 shrink-0">
-        {isCompared && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 text-xs px-1.5" onClick={onCompare}>
-              <GitCompare className="h-3 w-3" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent><p className="text-xs">Add to comparison</p></TooltipContent>
-        </Tooltip>
-      </div>
+      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0" onClick={onCompare}><GitCompare className="h-3 w-3" /></Button>
     </div>
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: COUNTY EXPLORER (FULL DETAIL)
-// ════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// COUNTY EXPLORER
+// ══════════════════════════════════════════════════════════════════
 function CountyExplorer({ countyCode, allCounties, onSelectCounty, addToComparison, comparisonList }: {
   countyCode: string; allCounties: County[]; onSelectCounty: (code: string) => void;
   addToComparison: (rep: Representative, countyName: string) => void; comparisonList: ComparisonItem[];
 }) {
   const county = allCounties.find(c => c.code === countyCode) || allCounties[0];
-
   return (
-    <div className="space-y-6">
-      {/* County Selector */}
-      <Card>
-        <CardContent className="py-3">
-          <div className="flex items-center gap-3">
-            <MapPin className="h-4 w-4 text-green-600" />
-            <Select value={county.code} onValueChange={onSelectCounty}>
-              <SelectTrigger className="h-9 text-sm flex-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {allCounties.map(c => (
-                  <SelectItem key={c.code} value={c.code}>
-                    {c.code} — {c.name} ({c.region})
-                    {c.dataAvailability === 'full' ? ' ★' : c.dataAvailability === 'partial' ? ' ◐' : ' ○'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <MapPin className="h-4 w-4 text-emerald-600" />
+        <Select value={county.code} onValueChange={onSelectCounty}>
+          <SelectTrigger className="h-9 text-sm flex-1 max-w-md border-stone-200"><SelectValue /></SelectTrigger>
+          <SelectContent>{allCounties.map(c => <SelectItem key={c.code} value={c.code}>{c.code} — {c.name} ({c.region}) {c.dataAvailability === 'full' ? '★' : c.dataAvailability === 'partial' ? '◐' : '○'}</SelectItem>)}</SelectContent>
+        </Select>
+      </div>
 
-      {/* County Header */}
-      <Card className="border-l-4 border-l-green-600">
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between flex-wrap gap-2">
+      {/* County Header Card */}
+      <Card className="border-stone-200 bg-white">
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <CardTitle className="text-xl">{county.name} County</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Code: {county.code} · Region: {county.region} · Capital: {county.capital}
-              </p>
+              <p className="text-xs text-stone-500 mt-1">Code: {county.code} · {county.region} · Capital: {county.capital}</p>
             </div>
-            <div className="flex gap-2">
-              {county.executiveAuditOpinion && (
-                <Badge className={`border ${getAuditColor(county.executiveAuditOpinion)}`}>
-                  Audit: {county.executiveAuditOpinion}
-                </Badge>
-              )}
-              <Badge variant="outline" className={county.dataAvailability === 'full' ? 'text-green-700 border-green-300' : county.dataAvailability === 'partial' ? 'text-yellow-700 border-yellow-300' : 'text-gray-500'}>
-                {county.dataAvailability === 'full' ? 'Fully Populated' : county.dataAvailability === 'partial' ? 'Partially Populated' : 'Placeholder'}
-              </Badge>
+            <div className="flex gap-1.5">
+              {county.executiveAuditOpinion && <Badge className={`text-[10px] border ${getAuditColor(county.executiveAuditOpinion)}`}>Audit: {county.executiveAuditOpinion}</Badge>}
+              <Badge variant="outline" className={`text-[10px] ${county.dataAvailability === 'partial' ? 'text-yellow-600 border-yellow-200' : 'text-stone-400'}`}>{county.dataAvailability}</Badge>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-            {[
-              { label: 'Population', value: county.population.toLocaleString(), icon: <Users className="h-4 w-4" /> },
-              { label: 'Area (km²)', value: county.areaSqKm.toLocaleString(), icon: <MapPin className="h-4 w-4" /> },
-              { label: 'Constituencies', value: county.constituenciesCount.toString(), icon: <Building2 className="h-4 w-4" /> },
-              { label: 'Wards', value: county.wardsCount.toString(), icon: <Landmark className="h-4 w-4" /> },
-              { label: 'Term', value: '2022–2027', icon: <FileText className="h-4 w-4" /> },
-            ].map((s) => (
-              <div key={s.label} className="p-3 bg-gray-50 rounded-lg text-center">
-                <div className="flex items-center justify-center gap-1 text-green-600 mb-1">{s.icon}<span className="text-xs">{s.label}</span></div>
-                <p className="text-lg font-bold">{s.value}</p>
+          <div className="grid grid-cols-5 gap-2 mb-4">
+            {[{ l: 'Population', v: county.population.toLocaleString() }, { l: 'Area (km²)', v: county.areaSqKm.toLocaleString() }, { l: 'Constituencies', v: county.constituenciesCount.toString() }, { l: 'Wards', v: county.wardsCount.toString() }, { l: 'Term', v: '2022–2027' }].map(s => (
+              <div key={s.l} className="p-2 bg-stone-50 rounded-lg text-center">
+                <p className="text-[10px] text-stone-500">{s.l}</p>
+                <p className="text-sm font-bold text-stone-800 mt-0.5">{s.v}</p>
               </div>
             ))}
           </div>
-
-          {/* Data Availability Notice */}
           {county.dataAvailabilityNote && (
-            <div className={`p-3 rounded-lg text-xs flex items-start gap-2 ${county.dataAvailability === 'full' ? 'bg-green-50 text-green-800' : county.dataAvailability === 'partial' ? 'bg-yellow-50 text-yellow-800' : 'bg-orange-50 text-orange-800'}`}>
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-              <div>
-                <strong>Data Availability: {county.dataAvailability.toUpperCase()}</strong>
-                <p className="mt-1">{county.dataAvailabilityNote}</p>
-              </div>
+            <div className={`p-2.5 rounded-lg text-xs flex items-start gap-2 ${county.dataAvailability === 'partial' ? 'bg-yellow-50 text-yellow-800 border border-yellow-100' : 'bg-orange-50 text-orange-800 border border-orange-100'}`}>
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" /><p>{county.dataAvailabilityNote}</p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Full Details */}
+      {/* Officials */}
       {county.dataAvailability !== 'placeholder' ? (
-        <div className="space-y-6">
-          {/* Governor Scorecard */}
-          {county.governor && (
-            <OfficialFullCard rep={county.governor} countyName={county.name} onCompare={addToComparison} />
-          )}
+        <div className="space-y-3">
+          {[county.governor, county.deputyGovernor, county.senator, county.womanRep, county.countyAssembly?.speaker].filter(Boolean).map(rep => rep && (
+            <OfficialFullCard key={rep!.id} rep={rep!} countyName={county.name} onCompare={addToComparison} />
+          ))}
 
-          {/* Deputy Governor */}
-          {county.deputyGovernor && (
-            <OfficialFullCard rep={county.deputyGovernor} countyName={county.name} onCompare={addToComparison} />
-          )}
-
-          {/* Senator */}
-          {county.senator && (
-            <OfficialFullCard rep={county.senator} countyName={county.name} onCompare={addToComparison} />
-          )}
-
-          {/* Woman Rep */}
-          {county.womanRep && (
-            <OfficialFullCard rep={county.womanRep} countyName={county.name} onCompare={addToComparison} />
-          )}
-
-          {/* County Assembly Speaker */}
-          {county.countyAssembly?.speaker && (
-            <OfficialFullCard rep={county.countyAssembly.speaker} countyName={county.name} onCompare={addToComparison} />
-          )}
-
-          {/* Assembly Audit */}
           {county.countyAssembly?.auditOpinion && (
-            <Card className="border-l-4 border-l-yellow-500">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Scale className="h-4 w-4" />
-                  County Assembly Audit Opinion
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Badge className={`border ${getAuditColor(county.countyAssembly.auditOpinion)}`}>
-                  {county.countyAssembly.auditOpinion}
-                </Badge>
-                {county.countyAssembly.auditSource && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Source: {county.countyAssembly.auditSource.source} — {county.countyAssembly.auditSource.reportTitle} ({county.countyAssembly.auditSource.financialYear})
-                    {county.countyAssembly.auditSource.url && (
-                      <a href={county.countyAssembly.auditSource.url} target="_blank" rel="noopener noreferrer" className="ml-1 text-green-600 hover:underline flex items-center gap-0.5 inline-flex">
-                        <ExternalLink className="h-3 w-3" /> View Report
-                      </a>
-                    )}
-                  </p>
-                )}
+            <Card className="border-stone-200 bg-white">
+              <CardContent className="py-3 px-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs"><Scale className="h-4 w-4 text-emerald-600" /><span className="font-semibold">Assembly Audit:</span><Badge className={`border ${getAuditColor(county.countyAssembly.auditOpinion)}`}>{county.countyAssembly.auditOpinion}</Badge></div>
+                {county.countyAssembly.auditSource?.url && <a href={county.countyAssembly.auditSource.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:underline flex items-center gap-1"><ExternalLink className="h-3 w-3" /> Report</a>}
               </CardContent>
             </Card>
           )}
 
-          {/* Constituencies & MCAs */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-green-600" />
-                Constituencies, MPs & Wards ({county.constituenciesCount} Constituencies · {county.wardsCount} Wards)
-              </CardTitle>
-            </CardHeader>
+          <Card className="border-stone-200 bg-white">
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Constituencies & Wards</CardTitle></CardHeader>
             <CardContent>
               {county.constituencies.length > 0 ? (
-                <Accordion type="multiple" className="space-y-2">
-                  {county.constituencies.map((con) => (
-                    <AccordionItem key={con.id} value={con.id} className="border rounded-lg px-4">
-                      <AccordionTrigger className="py-2 hover:no-underline">
-                        <div className="flex items-center gap-2 text-sm">
-                          <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="font-medium">{con.name} Constituency</span>
-                          {con.mp && <Badge variant="secondary" className="text-xs">{con.mp.fullName} ({con.mp.politicalParty})</Badge>}
-                        </div>
+                <Accordion type="multiple" className="space-y-1.5">
+                  {county.constituencies.map(con => (
+                    <AccordionItem key={con.id} value={con.id} className="border border-stone-100 rounded-lg px-3">
+                      <AccordionTrigger className="py-2 hover:no-underline text-xs">
+                        <span className="font-medium">{con.name}</span>{con.mp && <Badge variant="secondary" className="text-[10px] ml-2">{con.mp.fullName} ({con.mp.politicalParty})</Badge>}
                       </AccordionTrigger>
                       <AccordionContent className="pb-2">
-                        {con.mp && (
-                          <div className="mb-3 p-2 bg-green-50 rounded border">
-                            <p className="text-xs font-medium text-green-800">MP: {con.mp.fullName}</p>
-                            <p className="text-xs text-muted-foreground">Party: {con.mp.politicalParty} {con.mp.coalition ? `(${con.mp.coalition})` : ''} · Term: {con.mp.termStart} to {con.mp.termEnd}</p>
-                            <Button variant="ghost" size="sm" className="h-6 text-xs mt-1" onClick={() => addToComparison(con.mp, county.name)}>
-                              <GitCompare className="h-3 w-3 mr-1" /> Compare
-                            </Button>
-                          </div>
-                        )}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                          {con.wards.map((ward) => (
-                            <div key={ward.id} className="p-2 bg-gray-50 rounded border text-xs">
-                              <p className="font-medium">{ward.name} Ward</p>
-                              {ward.mca ? (
-                                <p className="text-muted-foreground mt-0.5">MCA: {ward.mca.fullName} ({ward.mca.politicalParty})</p>
-                              ) : (
-                                <p className="text-muted-foreground mt-0.5 italic">MCA data not verified — requires IEBC / County Assembly records</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                        {con.mp && <div className="mb-2 p-2 bg-emerald-50 rounded-lg text-xs"><span className="font-medium text-emerald-800">{con.mp.fullName}</span> · {con.mp.politicalParty} <Button variant="ghost" size="sm" className="h-5 text-[10px] ml-2" onClick={() => addToComparison(con.mp, county.name)}><GitCompare className="h-3 w-3 mr-0.5" />Compare</Button></div>}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">{con.wards.map(w => (
+                          <div key={w.id} className="p-1.5 bg-stone-50 rounded text-[11px]"><p className="font-medium">{w.name}</p>{w.mca ? <p className="text-stone-400">MCA: {w.mca.fullName}</p> : <p className="text-stone-400 italic">MCA: pending verification</p>}</div>
+                        ))}</div>
                       </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
-              ) : (
-                <div className="p-4 bg-orange-50 rounded-lg text-xs">
-                  <AlertTriangle className="h-4 w-4 inline mr-1" />
-                  Constituency and ward-level data has not been loaded for this county.
-                  To expand: pull data from <a href="https://www.iebc.or.ke/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline">IEBC</a>,
-                  the <a href={`https://${county.name.toLowerCase().replace(/\s/g, '')}.go.ke/`} target="_blank" rel="noopener noreferrer" className="text-green-600 underline">county portal</a>,
-                  and the <a href={`https://${county.name.toLowerCase().replace(/\s/g, '')}assembly.go.ke/`} target="_blank" rel="noopener noreferrer" className="text-green-600 underline">county assembly</a>.
-                </div>
-              )}
+              ) : <div className="p-3 text-xs text-stone-500 bg-orange-50 rounded-lg border border-orange-100 flex items-start gap-2"><AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" /> Constituency data not loaded — pull from IEBC and county assembly records.</div>}
             </CardContent>
           </Card>
 
-          {/* County Executive Committee */}
           {county.countyExecutive && county.countyExecutive.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-green-600" />
-                  County Executive Committee (CECMs)
-                </CardTitle>
-                <CardDescription>Appointed by the Governor, per Article 179 of the Constitution</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {county.countyExecutive.map((cecm) => (
-                    <div key={cecm.id} className="p-3 bg-gray-50 rounded-lg border">
-                      <p className="text-xs font-semibold text-green-800">{cecm.portfolio}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {cecm.fullName.includes('not publicly') ? (
-                          <span className="italic"><AlertTriangle className="h-3 w-3 inline mr-1" />Name not verified — requires county gazette notice</span>
-                        ) : cecm.fullName}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
+            <Card className="border-stone-200 bg-white">
+              <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">County Executive Committee</CardTitle><CardDescription className="text-xs">Appointed by the Governor — Article 179</CardDescription></CardHeader>
+              <CardContent><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{county.countyExecutive.map(cecm => (
+                <div key={cecm.id} className="p-2.5 bg-stone-50 rounded-lg border border-stone-100"><p className="text-xs font-semibold text-emerald-800">{cecm.portfolio}</p><p className="text-[11px] text-stone-500 mt-0.5">{cecm.fullName.includes('not publicly') ? <span className="italic text-amber-600"><AlertTriangle className="h-3 w-3 inline mr-0.5" />Name pending verification</span> : cem.fullName}</p></div>
+              ))}</div></CardContent>
             </Card>
           )}
         </div>
       ) : (
-        /* Placeholder State */
-        <Card className="bg-orange-50 border-orange-200">
+        <Card className="bg-amber-50 border-amber-200">
           <CardContent className="py-8 text-center">
-            <AlertTriangle className="h-10 w-10 text-orange-500 mx-auto mb-3" />
-            <h3 className="font-semibold text-orange-800">Placeholder Data</h3>
-            <p className="text-sm text-orange-700 mt-2 max-w-lg mx-auto">
-              This county has not been fully populated yet. To expand this county with complete data, pull the latest information from:
-            </p>
-            <div className="flex flex-wrap justify-center gap-3 mt-4">
-              {[
-                { label: 'OAG Audit Reports', url: 'https://oagkenya.go.ke/reports/county-government-audit-reports/' },
-                { label: 'CoB Budget Reports', url: 'https://cob.go.ke/county-budget-implementation-review-reports/' },
-                { label: 'TI-Kenya Governance', url: 'https://tikenya.org/' },
-                { label: 'IEBC Records', url: 'https://www.iebc.or.ke/' },
-                { label: 'County Portal', url: `https://${county.name.toLowerCase().replace(/\s/g, '')}.go.ke/` },
-              ].map((src) => (
-                <a key={src.label} href={src.url} target="_blank" rel="noopener noreferrer"
-                  className="text-xs px-3 py-1.5 bg-white rounded border border-orange-200 text-orange-800 hover:bg-orange-100 flex items-center gap-1">
-                  <ExternalLink className="h-3 w-3" /> {src.label}
-                </a>
-              ))}
-            </div>
+            <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto mb-3" />
+            <h3 className="font-semibold text-amber-800 text-sm">Placeholder — Data Not Yet Loaded</h3>
+            <p className="text-xs text-amber-700 mt-2 max-w-md mx-auto">Pull from IEBC, OAG, CoB, county portal, and county assembly to expand.</p>
+            <div className="flex flex-wrap justify-center gap-2 mt-4">{[
+              { l: 'OAG', u: 'https://oagkenya.go.ke/reports/county-government-audit-reports/' }, { l: 'CoB', u: 'https://cob.go.ke/county-budget-implementation-review-reports/' }, { l: 'TI-Kenya', u: 'https://tikenya.org/' }, { l: 'IEBC', u: 'https://www.iebc.or.ke/' },
+            ].map(s => <a key={s.l} href={s.u} target="_blank" rel="noopener noreferrer" className="text-xs px-2.5 py-1 bg-white rounded border border-amber-200 text-amber-800 hover:bg-amber-100 flex items-center gap-1"><ExternalLink className="h-3 w-3" /> {s.l}</a>)}</div>
           </CardContent>
         </Card>
       )}
@@ -966,219 +773,198 @@ function CountyExplorer({ countyCode, allCounties, onSelectCounty, addToComparis
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: OFFICIAL FULL CARD WITH SCORECARD
-// ════════════════════════════════════════════════════════════════
-function OfficialFullCard({ rep, countyName, onCompare }: {
-  rep: Representative; countyName: string; onCompare: (rep: Representative, countyName: string) => void;
-}) {
+// ══════════════════════════════════════════════════════════════════
+// OFFICIAL FULL CARD WITH SCORECARD
+// ══════════════════════════════════════════════════════════════════
+function OfficialFullCard({ rep, countyName, onCompare }: { rep: Representative; countyName: string; onCompare: (rep: Representative, countyName: string) => void }) {
   const metricLabels: Record<keyof ScorecardMetrics, string> = {
-    overallAccountabilityScore: 'Overall Accountability',
-    transparencyAssetDeclaration: 'Transparency & Asset Declaration',
-    projectDeliveryAbsorptionRate: 'Project/CIDP Delivery & Absorption',
-    manifestoPromiseFulfillment: 'Manifesto Promise Fulfillment',
-    legislativeOversightPerformance: 'Legislative/Oversight Performance',
-    ethicsIntegrity: 'Ethics & Integrity',
-    publicSentimentCitizenAwareness: 'Public Sentiment & Citizen Awareness',
+    overallAccountabilityScore: 'Accountability', transparencyAssetDeclaration: 'Transparency', projectDeliveryAbsorptionRate: 'Project Delivery',
+    manifestoPromiseFulfillment: 'Manifesto', legislativeOversightPerformance: 'Oversight', ethicsIntegrity: 'Ethics', publicSentimentCitizenAwareness: 'Sentiment',
   };
-
   return (
-    <Card className="border-l-4 border-l-green-600">
+    <Card className="border-stone-200 bg-white">
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between flex-wrap gap-2">
+        <div className="flex items-start justify-between gap-2">
           <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <User className="h-4 w-4 text-green-600" />
-              {rep.fullName}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {rep.officialTitle} · {rep.politicalParty} {rep.coalition ? `(${rep.coalition})` : ''} · {rep.jurisdiction}
-            </p>
-            <p className="text-xs text-muted-foreground">Term: {rep.termStart} to {rep.termEnd}</p>
+            <CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4 text-emerald-600" /> {rep.fullName}</CardTitle>
+            <p className="text-xs text-stone-500">{rep.officialTitle} · {rep.politicalParty} {rep.coalition ? `(${rep.coalition})` : ''} · {rep.jurisdiction}</p>
           </div>
-          <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => onCompare(rep, countyName)}>
-            <GitCompare className="h-3 w-3" /> Compare
-          </Button>
+          <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1" onClick={() => onCompare(rep, countyName)}><GitCompare className="h-3 w-3" /> Compare</Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Biography */}
-        {rep.biography && <p className="text-sm leading-relaxed">{rep.biography}</p>}
-
-        {/* Contacts */}
+      <CardContent className="space-y-3">
+        {rep.biography && <p className="text-xs leading-relaxed text-stone-600">{rep.biography}</p>}
         {rep.contacts && Object.values(rep.contacts).some(Boolean) && (
-          <div className="flex flex-wrap gap-3 text-xs">
-            {rep.contacts.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-green-600" /> {rep.contacts.email}</span>}
-            {rep.contacts.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-green-600" /> {rep.contacts.phone}</span>}
-            {rep.contacts.xHandle && <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-green-600" /> @{rep.contacts.xHandle}</span>}
-            {rep.contacts.website && (
-              <a href={rep.contacts.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline">
-                <ExternalLink className="h-3 w-3" /> Website
-              </a>
-            )}
+          <div className="flex flex-wrap gap-3 text-[11px]">
+            {rep.contacts.email && <span className="flex items-center gap-1 text-stone-500"><Mail className="h-3 w-3" /> {rep.contacts.email}</span>}
+            {rep.contacts.xHandle && <span className="flex items-center gap-1 text-stone-500"><Globe className="h-3 w-3" /> @{rep.contacts.xHandle}</span>}
+            {rep.contacts.website && <a href={rep.contacts.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-emerald-600 hover:underline"><ExternalLink className="h-3 w-3" /> Website</a>}
           </div>
         )}
-
-        {/* Scorecard */}
         {rep.scorecard && (
           <div>
-            <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2">
-              <Star className="h-3.5 w-3.5 text-green-600" />
-              Comprehensive Scorecard (0–100)
-            </h5>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-2">Scorecard (0–100)</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
               {(Object.entries(metricLabels) as [keyof ScorecardMetrics, string][]).map(([key, label]) => {
                 const value = rep.scorecard!.metrics[key];
                 const source = rep.scorecard!.sources[key];
                 return (
                   <Tooltip key={key}>
-                    <TooltipTrigger asChild>
-                      <div className={`p-2.5 rounded-lg border text-center ${getScoreColor(value)}`}>
-                        <p className="text-xs opacity-75">{label}</p>
-                        <p className="text-xl font-bold mt-0.5">{getScoreLabel(value)}</p>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p className="font-semibold text-xs">{label}: {getScoreLabel(value)}/100</p>
-                      {source && (
-                        <p className="text-xs mt-1">
-                          Source: {source.source} — {source.reportTitle}<br />
-                          FY: {source.financialYear} {source.section ? `(${source.section})` : ''}<br />
-                          Accessed: {source.accessedDate}
-                          {source.url && <><br /><a href={source.url} target="_blank" rel="noopener noreferrer" className="text-green-500 underline">View source</a></>}
-                        </p>
-                      )}
-                      {!source && <p className="text-xs mt-1 text-muted-foreground">No specific source cited for this metric.</p>}
-                    </TooltipContent>
+                    <TooltipTrigger asChild><div className={`p-2 rounded-lg border text-center ${getScoreColor(value)}`}><p className="text-[10px] opacity-75">{label}</p><p className="text-lg font-bold mt-0.5">{getScoreLabel(value)}</p></div></TooltipTrigger>
+                    <TooltipContent className="max-w-xs"><p className="text-[11px]">{label}: {getScoreLabel(value)}/100</p>{source && <p className="text-[10px] text-stone-400 mt-1">{source.source} — {source.reportTitle}<br />FY: {source.financialYear}{source.url && <> · <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-emerald-500 underline">Source</a></>}</p>}{!source && <p className="text-[10px] text-stone-400 mt-1">No specific source cited.</p>}</TooltipContent>
                   </Tooltip>
                 );
               })}
             </div>
-            {rep.scorecard.dataGapsNote && (
-              <div className="mt-3 p-2.5 bg-yellow-50 rounded-lg text-xs flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
-                <p className="text-yellow-800">{rep.scorecard.dataGapsNote}</p>
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground mt-2">
-              Scorecard last updated: {rep.scorecard.lastUpdated}
-            </p>
+            {rep.scorecard.dataGapsNote && <div className="mt-2 p-2 bg-yellow-50 rounded-lg text-[11px] flex items-start gap-1.5 text-yellow-800"><AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />{rep.scorecard.dataGapsNote}</div>}
           </div>
         )}
-
-        {/* Promise vs Delivery */}
-        {rep.promiseVsDelivery && (
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Promise vs Delivery</h5>
-            <p className="text-xs leading-relaxed">{rep.promiseVsDelivery}</p>
-          </div>
-        )}
+        {rep.promiseVsDelivery && <div className="p-2 bg-stone-50 rounded-lg text-[11px] text-stone-600">{rep.promiseVsDelivery}</div>}
       </CardContent>
     </Card>
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: COMPARISON VIEW
-// ════════════════════════════════════════════════════════════════
-function ComparisonView({ comparisonList, removeFromComparison, addToComparison, allCounties }: {
-  comparisonList: ComparisonItem[];
-  removeFromComparison: (id: string) => void;
-  addToComparison: (rep: Representative, countyName: string) => void;
-  allCounties: County[];
-}) {
-  const metricLabels: Record<keyof ScorecardMetrics, string> = {
-    overallAccountabilityScore: 'Overall Accountability',
-    transparencyAssetDeclaration: 'Transparency & Asset Declaration',
-    projectDeliveryAbsorptionRate: 'Project/CIDP Delivery',
-    manifestoPromiseFulfillment: 'Manifesto Fulfillment',
-    legislativeOversightPerformance: 'Legislative/Oversight',
-    ethicsIntegrity: 'Ethics & Integrity',
-    publicSentimentCitizenAwareness: 'Public Sentiment',
-  };
+// ══════════════════════════════════════════════════════════════════
+// SOURCES HUB — NEW TAB
+// ══════════════════════════════════════════════════════════════════
+function SourcesHub() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+
+  const filtered = useMemo(() => {
+    return sourceCategories.map(cat => ({
+      ...cat,
+      sources: cat.sources.filter(s => {
+        const matchQuery = !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase()) || s.dataTypes.some(d => d.toLowerCase().includes(searchQuery.toLowerCase()));
+        const matchCat = activeCategory === 'all' || cat.id === activeCategory;
+        return matchQuery && matchCat;
+      }),
+    })).filter(cat => cat.sources.length > 0);
+  }, [searchQuery, activeCategory]);
+
+  const totalSources = allSources.length;
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <GitCompare className="h-5 w-5 text-green-600" />
-            Side-by-Side Comparison (Max 4 Officials)
-          </CardTitle>
-          <CardDescription>
-            Add officials from the Tree or County Explorer tabs to compare their scorecards side-by-side.
-            {comparisonList.length === 0 && ' Select officials from the Governors Tree or County Explorer tabs.'}
-          </CardDescription>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="bg-white rounded-xl border border-stone-200 p-5">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <Library className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-stone-900">Integrity & Public Resources Sources</h2>
+            <p className="text-xs text-stone-500 mt-0.5">{totalSources} verified sources across {sourceCategories.length} categories — for researching government accountability and public resource management.</p>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-3">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
+          <Input placeholder="Search sources by name, type, or topic (e.g. &quot;procurement&quot;, &quot;water&quot;, &quot;land&quot;)..." className="h-10 pl-10 text-sm border-stone-200" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        </div>
+
+        {/* Category Filters */}
+        <div className="flex flex-wrap gap-1.5">
+          <button onClick={() => setActiveCategory('all')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${activeCategory === 'all' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>All ({totalSources})</button>
+          {sourceCategories.map(cat => (
+            <button key={cat.id} onClick={() => setActiveCategory(cat.id)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors flex items-center gap-1 ${activeCategory === cat.id ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>
+              <SourceIcon name={cat.icon} className="h-3 w-3" /> {cat.label} ({cat.sources.length})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Source Cards */}
+      <div className="space-y-5">
+        {filtered.map(cat => (
+          <div key={cat.id}>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <SourceIcon name={cat.icon} className={`h-4 w-4 ${cat.color}`} />
+              <h3 className="text-sm font-semibold text-stone-800">{cat.label}</h3>
+              <Badge variant="secondary" className="text-[10px]">{cat.sources.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {cat.sources.map(src => (
+                <a key={src.id} href={src.url} target="_blank" rel="noopener noreferrer"
+                  className="group bg-white rounded-xl border border-stone-200 p-4 hover:border-emerald-300 hover:shadow-sm transition-all block">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h4 className="text-xs font-semibold text-stone-900 group-hover:text-emerald-700 transition-colors leading-tight">{src.name}</h4>
+                    <ExternalLink className="h-3.5 w-3.5 text-stone-300 group-hover:text-emerald-500 shrink-0 transition-colors" />
+                  </div>
+                  <p className="text-[11px] text-stone-500 leading-relaxed mb-3">{src.description}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {src.dataTypes.map(dt => (
+                      <span key={dt} className="px-1.5 py-0.5 bg-stone-50 rounded text-[10px] text-stone-500 border border-stone-100">{dt}</span>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-stone-400 mt-2 truncate">{src.url}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Research Workflow */}
+      <Card className="border-stone-200 bg-white">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2"><ArrowRight className="h-4 w-4 text-emerald-600" /> Research Workflow — Expanding a County</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            {[
+              { step: '1', label: 'Election Data', src: 'IEBC + County Portal', color: 'bg-emerald-100 text-emerald-800' },
+              { step: '2', label: 'Audit Opinion', src: 'OAG County Reports', color: 'bg-blue-100 text-blue-800' },
+              { step: '3', label: 'Budget Absorption', src: 'CoB CBIRR Reports', color: 'bg-amber-100 text-amber-800' },
+              { step: '4', label: 'Procurement', src: 'PPRA / PPIP Portal', color: 'bg-purple-100 text-purple-800' },
+              { step: '5', label: 'Integrity Scores', src: 'TI-Kenya / PesaCheck', color: 'bg-rose-100 text-rose-800' },
+              { step: '6', label: 'Assembly Oversight', src: 'County Hansard', color: 'bg-teal-100 text-teal-800' },
+              { step: '7', label: 'Senate Interrogation', src: 'CPAIC Committee', color: 'bg-indigo-100 text-indigo-800' },
+              { step: '8', label: 'Court Cases', src: 'efile.judiciary.go.ke', color: 'bg-red-100 text-red-800' },
+              { step: '9', label: 'Natural Resources', src: 'NLC + WASREB + KFS', color: 'bg-green-100 text-green-800' },
+              { step: '10', label: 'Ongoing Monitoring', src: 'Google Alerts', color: 'bg-stone-100 text-stone-800' },
+            ].map(item => (
+              <div key={item.step} className={`${item.color} rounded-lg p-2.5 text-center`}>
+                <span className="text-xs font-bold">Step {item.step}</span>
+                <p className="text-[10px] font-medium mt-0.5">{item.label}</p>
+                <p className="text-[9px] opacity-75 mt-0.5">{item.src}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// COMPARISON VIEW
+// ══════════════════════════════════════════════════════════════════
+function ComparisonView({ comparisonList, removeFromComparison, addToComparison, allCounties }: {
+  comparisonList: ComparisonItem[]; removeFromComparison: (id: string) => void;
+  addToComparison: (rep: Representative, countyName: string) => void; allCounties: County[];
+}) {
+  const metricLabels: Record<keyof ScorecardMetrics, string> = {
+    overallAccountabilityScore: 'Accountability', transparencyAssetDeclaration: 'Transparency', projectDeliveryAbsorptionRate: 'Delivery',
+    manifestoPromiseFulfillment: 'Manifesto', legislativeOversightPerformance: 'Oversight', ethicsIntegrity: 'Ethics', publicSentimentCitizenAwareness: 'Sentiment',
+  };
+  return (
+    <div className="space-y-5">
+      <Card className="border-stone-200 bg-white">
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold flex items-center gap-2"><GitCompare className="h-4 w-4 text-emerald-600" /> Side-by-Side Comparison (max 4)</CardTitle><CardDescription className="text-xs">Add officials from the Tree or County Explorer tabs.</CardDescription></CardHeader>
+        <CardContent>
           {comparisonList.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 px-3 font-semibold sticky left-0 bg-white min-w-[180px]">Metric</th>
-                    {comparisonList.map((item) => (
-                      <th key={item.representative.id} className="text-left py-2 px-3 font-semibold min-w-[200px]">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-bold">{item.representative.fullName}</p>
-                            <p className="text-xs text-muted-foreground font-normal">{item.representative.officialTitle} · {item.countyName}</p>
-                          </div>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => removeFromComparison(item.representative.id)}>
-                            <XCircle className="h-4 w-4 text-red-400" />
-                          </Button>
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b bg-gray-50">
-                    <td className="py-2 px-3 font-medium">Political Party</td>
-                    {comparisonList.map((item) => (
-                      <td key={item.representative.id} className="py-2 px-3">
-                        <Badge variant="secondary">{item.representative.politicalParty}</Badge>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b bg-gray-50">
-                    <td className="py-2 px-3 font-medium">Coalition</td>
-                    {comparisonList.map((item) => (
-                      <td key={item.representative.id} className="py-2 px-3">{item.representative.coalition || '—'}</td>
-                    ))}
-                  </tr>
-                  {(Object.entries(metricLabels) as [keyof ScorecardMetrics, string][]).map(([key, label]) => (
-                    <tr key={key} className="border-b hover:bg-gray-50">
-                      <td className="py-2 px-3 font-medium">{label}</td>
-                      {comparisonList.map((item) => {
-                        const val = item.representative.scorecard?.metrics[key];
-                        return (
-                          <td key={item.representative.id} className="py-2 px-3">
-                            <span className={`inline-block px-2 py-0.5 rounded border text-xs font-bold ${getScoreColor(val)}`}>
-                              {getScoreLabel(val)}
-                            </span>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                  <tr className="bg-gray-50">
-                    <td className="py-2 px-3 font-medium">Data Gaps</td>
-                    {comparisonList.map((item) => (
-                      <td key={item.representative.id} className="py-2 px-3 text-muted-foreground max-w-[200px] truncate">
-                        {item.representative.scorecard?.dataGapsNote ? 'See full card' : 'N/A'}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <div className="overflow-x-auto"><table className="w-full text-xs"><thead><tr className="border-b border-stone-200"><th className="text-left py-2 px-2 font-semibold sticky left-0 bg-white min-w-[150px]">Metric</th>{comparisonList.map(item => <th key={item.representative.id} className="text-left py-2 px-2 min-w-[180px]"><div className="flex items-center justify-between"><div><p className="text-xs font-bold">{item.representative.fullName}</p><p className="text-[10px] text-stone-400 font-normal">{item.representative.officialTitle} · {item.countyName}</p></div><Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => removeFromComparison(item.representative.id)}><XCircle className="h-3.5 w-3.5 text-red-400" /></Button></div></th>)}</tr></thead>
+            <tbody>
+              <tr className="border-b border-stone-100 bg-stone-50"><td className="py-1.5 px-2 font-medium">Party</td>{comparisonList.map(item => <td key={item.representative.id} className="py-1.5 px-2"><Badge variant="secondary" className="text-[10px]">{item.representative.politicalParty}</Badge></td>)}</tr>
+              {(Object.entries(metricLabels) as [keyof ScorecardMetrics, string][]).map(([key, label]) => (
+                <tr key={key} className="border-b border-stone-100 hover:bg-stone-50"><td className="py-1.5 px-2">{label}</td>{comparisonList.map(item => { const val = item.representative.scorecard?.metrics[key]; return <td key={item.representative.id} className="py-1.5 px-2"><span className={`inline-block px-2 py-0.5 rounded border text-[11px] font-bold ${getScoreColor(val)}`}>{getScoreLabel(val)}</span></td>; })}</tr>
+              ))}
+            </tbody></table></div>
           ) : (
-            <div className="text-center py-12">
-              <GitCompare className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No officials selected for comparison yet.</p>
-              <p className="text-xs text-muted-foreground mt-1">Visit the Governors Tree or County Explorer to add officials.</p>
-            </div>
+            <div className="text-center py-12"><GitCompare className="h-10 w-10 text-stone-300 mx-auto mb-2" /><p className="text-xs text-stone-400">Select officials from the Tree or County Explorer to compare.</p></div>
           )}
         </CardContent>
       </Card>
@@ -1186,228 +972,41 @@ function ComparisonView({ comparisonList, removeFromComparison, addToComparison,
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// COMPONENT: JSON SCHEMA VIEW
-// ════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// JSON SCHEMA VIEW
+// ══════════════════════════════════════════════════════════════════
 function JsonSchemaView() {
-  const jsonSchema = {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "Kenya County Governance Data Schema",
-    "description": "Reusable data schema for the Kenya County Governance Explorer, 2022-2027 term. All scorecard fields map to verifiable public sources.",
-    "version": "1.0.0",
-    "lastUpdated": "2026-07-25",
-    "types": {
-      "SourceCitation": {
-        "type": "object",
-        "properties": {
-          "source": { "type": "string", "description": "e.g. Office of the Auditor-General" },
-          "reportTitle": { "type": "string" },
-          "financialYear": { "type": "string", "pattern": "^FY \\d{4}/\\d{2}$" },
-          "url": { "type": "string", "format": "uri" },
-          "section": { "type": "string" },
-          "accessedDate": { "type": "string", "format": "date" }
-        },
-        "required": ["source", "reportTitle", "financialYear", "accessedDate"]
-      },
-      "ScorecardMetrics": {
-        "type": "object",
-        "properties": {
-          "overallAccountabilityScore": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
-          "transparencyAssetDeclaration": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
-          "projectDeliveryAbsorptionRate": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
-          "manifestoPromiseFulfillment": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
-          "legislativeOversightPerformance": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
-          "ethicsIntegrity": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
-          "publicSentimentCitizenAwareness": { "type": ["number", "null"], "minimum": 0, "maximum": 100 }
-        }
-      },
-      "Scorecard": {
-        "type": "object",
-        "properties": {
-          "metrics": { "$ref": "#/types/ScorecardMetrics" },
-          "sources": {
-            "type": "object",
-            "additionalProperties": { "$ref": "#/types/SourceCitation" },
-            "description": "Per-metric source citations"
-          },
-          "lastUpdated": { "type": "string", "format": "date" },
-          "dataGapsNote": { "type": "string" }
-        }
-      },
-      "Representative": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "fullName": { "type": "string" },
-          "officialTitle": { "type": "string" },
-          "politicalParty": { "type": "string" },
-          "coalition": { "type": "string", "enum": ["Kenya Kwanza Alliance", "Azimio la Umoja One Kenya Coalition", "Independent"] },
-          "termStart": { "type": "string", "format": "date" },
-          "termEnd": { "type": "string", "format": "date" },
-          "jurisdiction": { "type": "string" },
-          "level": { "type": "string", "enum": ["national", "county", "constituency", "ward"] },
-          "biography": { "type": "string" },
-          "contacts": {
-            "type": "object",
-            "properties": { "email": { "type": "string" }, "phone": { "type": "string" }, "xHandle": { "type": "string" }, "website": { "type": "string", "format": "uri" } }
-          },
-          "scorecard": { "$ref": "#/types/Scorecard" },
-          "promiseVsDelivery": { "type": "string" }
-        },
-        "required": ["id", "fullName", "officialTitle", "politicalParty", "termStart", "termEnd", "jurisdiction", "level"]
-      },
-      "County": {
-        "type": "object",
-        "properties": {
-          "code": { "type": "string", "pattern": "^\\d{3}$" },
-          "name": { "type": "string" },
-          "region": { "type": "string", "enum": ["Coast", "North Eastern", "Eastern", "Central", "Rift Valley", "Western", "Nyanza", "Nairobi"] },
-          "governor": { "$ref": "#/types/Representative" },
-          "deputyGovernor": { "$ref": "#/types/Representative" },
-          "senator": { "$ref": "#/types/Representative" },
-          "womanRep": { "$ref": "#/types/Representative" },
-          "constituencies": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": { "type": "string" },
-                "name": { "type": "string" },
-                "mp": { "$ref": "#/types/Representative" },
-                "wards": {
-                  "type": "array",
-                  "items": { "$ref": "#/types/Ward" }
-                }
-              }
-            }
-          },
-          "countyAssembly": {
-            "type": "object",
-            "properties": {
-              "speaker": { "$ref": "#/types/Representative" },
-              "auditOpinion": { "type": "string", "enum": ["Unmodified", "Qualified", "Adverse", "Disclaimer"] },
-              "auditSource": { "$ref": "#/types/SourceCitation" }
-            }
-          },
-          "countyExecutive": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "fullName": { "type": "string" },
-                "portfolio": { "type": "string" },
-                "scorecard": { "$ref": "#/types/Scorecard" }
-              }
-            }
-          },
-          "executiveAuditOpinion": { "type": "string", "enum": ["Unmodified", "Qualified", "Adverse", "Disclaimer"] },
-          "executiveAuditSource": { "$ref": "#/types/SourceCitation" },
-          "developmentAbsorptionRate": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
-          "dataAvailability": { "type": "string", "enum": ["full", "partial", "placeholder"] },
-          "dataAvailabilityNote": { "type": "string" }
-        }
-      }
-    },
-    "liveFeedEndpoints": {
-      "oagReports": "https://oagkenya.go.ke/reports/county-government-audit-reports/",
-      "cobReports": "https://cob.go.ke/county-budget-implementation-review-reports/",
-      "tiKenya": "https://tikenya.org/",
-      "eaccReports": "https://eacc.go.ke/",
-      "iebcRecords": "https://www.iebc.or.ke/"
-    }
-  };
+  const jsonSchema = { "$schema": "https://json-schema.org/draft/2020-12/schema", title: "Kenya County Governance Data Schema", version: "1.0.0", lastUpdated: "2026-07-25", sourceCount: allSources.length, types: { SourceCitation: { type: "object", properties: { source: { type: "string" }, reportTitle: { type: "string" }, financialYear: { type: "string", pattern: "^FY \\d{4}/\\d{2}$" }, url: { type: "string", format: "uri" }, section: { type: "string" }, accessedDate: { type: "string", format: "date" } }, required: ["source", "reportTitle", "financialYear", "accessedDate"] }, ScorecardMetrics: { type: "object", properties: { overallAccountabilityScore: { type: ["number", "null"], min: 0, max: 100 }, transparencyAssetDeclaration: { type: ["number", "null"], min: 0, max: 100 }, projectDeliveryAbsorptionRate: { type: ["number", "null"], min: 0, max: 100 }, manifestoPromiseFulfillment: { type: ["number", "null"], min: 0, max: 100 }, legislativeOversightPerformance: { type: ["number", "null"], min: 0, max: 100 }, ethicsIntegrity: { type: ["number", "null"], min: 0, max: 100 }, publicSentimentCitizenAwareness: { type: ["number", "null"], min: 0, max: 100 } } }, Representative: { type: "object", properties: { id: { type: "string" }, fullName: { type: "string" }, officialTitle: { type: "string" }, politicalParty: { type: "string" }, coalition: { type: "string" }, termStart: { type: "string" }, termEnd: { type: "string" }, jurisdiction: { type: "string" }, level: { type: "string", enum: ["national", "county", "constituency", "ward"] }, biography: { type: "string" }, scorecard: { "$ref": "#/types/ScorecardMetrics" } }, required: ["id", "fullName", "officialTitle", "politicalParty", "termStart", "termEnd", "jurisdiction", "level"] } }, liveFeedEndpoints: { oag: "https://oagkenya.go.ke/", cob: "https://cob.go.ke/", tikenya: "https://tikenya.org/", eacc: "https://eacc.go.ke/", iebc: "https://www.iebc.or.ke/", ppra: "https://ppra.go.ke/", nlc: "https://nlc.go.ke/", wasreb: "https://wasreb.go.ke/", knbs: "https://www.knbs.or.ke/" } };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Database className="h-5 w-5 text-green-600" />
-            Reusable JSON Data Schema
-          </CardTitle>
-          <CardDescription>
-            Clean, reusable schema for the Kenya County Governance Explorer. Includes fields for source citations,
-            audit opinions, and live feed integration points.
-          </CardDescription>
-        </CardHeader>
+    <div className="space-y-5">
+      <Card className="border-stone-200 bg-white">
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Database className="h-4 w-4 text-emerald-600" /> Reusable JSON Schema</CardTitle><CardDescription className="text-xs">Downloadable schema with source citation fields and live feed endpoints for {allSources.length} data sources.</CardDescription></CardHeader>
         <CardContent>
-          <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-[600px]">
-            <pre className="text-xs text-green-400 leading-relaxed whitespace-pre-wrap break-words">
-              {JSON.stringify(jsonSchema, null, 2)}
-            </pre>
-          </div>
-          <div className="mt-4 flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => {
-              navigator.clipboard.writeText(JSON.stringify(jsonSchema, null, 2));
-            }}>
-              Copy JSON Schema
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <a href="data:application/json;charset=utf-8," download="kenya-governance-schema.json"
-                onClick={(e) => { (e.currentTarget as HTMLAnchorElement).href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(jsonSchema, null, 2))}`; }}>
-                Download Schema
-              </a>
-            </Button>
+          <div className="bg-stone-900 rounded-lg p-4 overflow-auto max-h-[500px]"><pre className="text-[11px] text-emerald-400 leading-relaxed whitespace-pre-wrap break-words">{JSON.stringify(jsonSchema, null, 2)}</pre></div>
+          <div className="mt-3 flex gap-2">
+            <Button variant="outline" size="sm" className="text-xs" onClick={() => navigator.clipboard.writeText(JSON.stringify(jsonSchema, null, 2))}>Copy JSON</Button>
+            <Button variant="outline" size="sm" className="text-xs" asChild><a href="data:application/json;charset=utf-8," download="kenya-governance-schema.json" onClick={(e) => { (e.currentTarget as HTMLAnchorElement).href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(jsonSchema, null, 2))}`; }}>Download</a></Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Instructions for expanding counties */}
-      <Card className="border-l-4 border-l-green-600">
-        <CardHeader>
-          <CardTitle className="text-base">Instructions for Expanding Any County</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4 text-sm">
-            <div>
-              <h4 className="font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-green-600" /> Step 1: Pull Election Data</h4>
-              <p className="text-muted-foreground mt-1">
-                Obtain the complete list of elected officials (Governor, Deputy, Senator, Woman Rep, MPs, MCAs) from
-                the <a href="https://www.iebc.or.ke/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline">Independent Electoral and Boundaries Commission (IEBC)</a> official records.
-                Verify names against the official gazette notices.
-              </p>
+      <Card className="border-stone-200 bg-white">
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Expanding Any County — Step-by-Step</CardTitle></CardHeader>
+        <CardContent className="space-y-3 text-xs">
+          {[{ title: '1. Pull Election Data', desc: 'IEBC official results for Governor, Deputy, Senator, Woman Rep, MPs, MCAs. Verify against official gazette.', url: 'https://www.iebc.or.ke/' },
+            { title: '2. Pull Audit Data', desc: 'Download county-specific audit reports from OAG. Extract audit opinion for Executive and Assembly.', url: 'https://oagkenya.go.ke/reports/county-government-audit-reports/' },
+            { title: '3. Pull Budget Data', desc: 'Download CBIRR from CoB. Extract development absorption rate, recurrent absorption, pending bills.', url: 'https://cob.go.ke/county-budget-implementation-review-reports/' },
+            { title: '4. Pull Procurement Data', desc: 'Search PPIP for county tender awards, contract values, and supplier patterns.', url: 'https://ppip.go.ke/' },
+            { title: '5. Pull Governance Indices', desc: 'Check TI-Kenya CGSR, PesaCheck fact-checks, and EACC public reports.', url: 'https://tikenya.org/' },
+            { title: '6. Check Natural Resources', desc: 'NLC for land, WASREB for water, KFS for forests, Mining for minerals.', url: 'https://nlc.go.ke/' },
+            { title: '7. Verify Contacts', desc: 'Only include publicly available contacts from official county websites.', url: 'https://opendata.go.ke/' },
+          ].map((step, i) => (
+            <div key={i} className="flex items-start gap-3 p-3 bg-stone-50 rounded-lg">
+              <span className="font-bold text-emerald-700 shrink-0">{step.title}</span>
+              <p className="text-stone-600">{step.desc} <a href={step.url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline ml-1">→</a></p>
             </div>
-            <div>
-              <h4 className="font-semibold flex items-center gap-2"><Scale className="h-4 w-4 text-green-600" /> Step 2: Pull Audit Data</h4>
-              <p className="text-muted-foreground mt-1">
-                Download the county-specific audit reports from the
-                <a href="https://oagkenya.go.ke/reports/county-government-audit-reports/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline"> Office of the Auditor-General</a>.
-                Extract the audit opinion (Unmodified/Qualified/Adverse/Disclaimer) for both the County Executive and County Assembly.
-                Note the specific financial year and page number.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4 text-green-600" /> Step 3: Pull Budget Data</h4>
-              <p className="text-muted-foreground mt-1">
-                Download the County Budget Implementation Review Reports from the
-                <a href="https://cob.go.ke/county-budget-implementation-review-reports/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline"> Controller of Budget</a>.
-                Extract the development budget absorption rate, recurrent absorption rate, and any pending bills data.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold flex items-center gap-2"><Star className="h-4 w-4 text-green-600" /> Step 4: Pull Governance Indices</h4>
-              <p className="text-muted-foreground mt-1">
-                Check <a href="https://tikenya.org/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline">Transparency International Kenya</a> for
-                the County Governance Status Report, budget transparency surveys, and county integrity indices.
-                Also check <a href="https://eacc.go.ke/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline">EACC</a> for any public reports or court records.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold flex items-center gap-2"><Landmark className="h-4 w-4 text-green-600" /> Step 5: Populate Scorecard</h4>
-              <p className="text-muted-foreground mt-1">
-                For each scorecard metric (0–100), cite the exact source, financial year, and section where the data was found.
-                If data is unavailable, set the value to null and include a dataGapsNote explaining the gap.
-                Never invent, estimate, or approximate numbers.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold flex items-center gap-2"><Globe className="h-4 w-4 text-green-600" /> Step 6: Verify Contacts</h4>
-              <p className="text-muted-foreground mt-1">
-                Only include publicly available contact information (email, phone, X handle, website) from official county websites
-                or verified public social media accounts.
-              </p>
-            </div>
-          </div>
+          ))}
         </CardContent>
       </Card>
     </div>
