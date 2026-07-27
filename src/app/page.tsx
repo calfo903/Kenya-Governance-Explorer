@@ -17,6 +17,18 @@ import {
 import WhistleblowerPage from '@/components/whistleblower-page';
 import ConstitutionPage from '@/components/constitution-page';
 import PoliticalXPostsPage from '@/components/political-x-posts-page';
+import CountyMapPage from '@/components/county-map-page';
+import RtiGeneratorPage from '@/components/rti-generator-page';
+import PetitionBuilderPage from '@/components/petition-builder-page';
+import CorruptionHeatmapPage from '@/components/corruption-heatmap-page';
+import ManifestoTrackerPage from '@/components/manifesto-tracker-page';
+import AnonymousTipPage from '@/components/anonymous-tip-page';
+import CitizenFeedbackPage from '@/components/citizen-feedback-page';
+import TimelinePage from '@/components/timeline-page';
+import BudgetSimulatorPage from '@/components/budget-simulator-page';
+import DataFetcherPage from '@/components/data-fetcher-page';
+import AlertsSubscriptionPage from '@/components/alerts-subscription-page';
+import ProcurementMonitorPage from '@/components/procurement-monitor-page';
 
 // ─── ICONS ────────────────────────────────────────────────────────
 import {
@@ -30,6 +42,11 @@ import {
   Radio, Megaphone, BookOpen, Hand, Layers,
   ArrowRight, TrendingUp, TrendingDown, Minus,
   Eye, BookMarked, Menu, X, Volume2,
+  Map, MailWarning, MessageSquare, Bell,
+  Thermometer, FileOutput, ClipboardList,
+  Receipt, Hash, Send, Timer,
+  FolderSearch, ShoppingCart, AlertCircle,
+  PieChart, Clock, FileCheck, Target,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -46,7 +63,12 @@ import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ─── SIDEBAR NAV ITEMS ───────────────────────────────────────────
-type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema' | 'whistleblower' | 'constitution' | 'xposts';
+type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema'
+  | 'whistleblower' | 'constitution' | 'xposts'
+  | 'countymap' | 'rti' | 'petition' | 'heatmap'
+  | 'manifesto' | 'tiptsubmit' | 'feedback'
+  | 'timeline' | 'budgetsim' | 'datafetcher'
+  | 'alerts' | 'procurement';
 
 interface NavItem {
   id: TabId;
@@ -56,15 +78,31 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  // ── Governance ──
   { id: 'summary', label: 'National Summary', icon: BarChart3, section: 'Governance' },
   { id: 'tree', label: '47 Counties', icon: TreePine, section: 'Governance' },
+  { id: 'countymap', label: 'County Map', icon: Map, section: 'Governance' },
   { id: 'county', label: 'County Deep-Dive', icon: MapPin, section: 'Governance' },
   { id: 'compare', label: 'Compare', icon: GitCompare, section: 'Governance' },
+  { id: 'heatmap', label: 'Risk Heatmap', icon: Thermometer, section: 'Governance' },
   { id: 'sources', label: 'Sources Hub', icon: Library, section: 'Governance' },
   { id: 'schema', label: 'JSON Schema', icon: Database, section: 'Governance' },
+  { id: 'timeline', label: 'Timeline', icon: Clock, section: 'Governance' },
+  { id: 'budgetsim', label: 'Budget Simulator', icon: PieChart, section: 'Governance' },
+  { id: 'manifesto', label: 'Manifesto Tracker', icon: Target, section: 'Governance' },
+  // ── Civic Tools ──
   { id: 'whistleblower', label: 'Whistleblower', icon: Eye, section: 'Civic Tools' },
+  { id: 'tiptsubmit', label: 'Submit Tip', icon: Send, section: 'Civic Tools' },
   { id: 'constitution', label: 'Constitution', icon: BookMarked, section: 'Civic Tools' },
   { id: 'xposts', label: 'Political X Posts', icon: Volume2, section: 'Civic Tools' },
+  // ── Citizen Action ──
+  { id: 'rti', label: 'RTI Generator', icon: FileCheck, section: 'Citizen Action' },
+  { id: 'petition', label: 'Petition Builder', icon: ClipboardList, section: 'Citizen Action' },
+  { id: 'feedback', label: 'Rate Services', icon: MessageSquare, section: 'Citizen Action' },
+  { id: 'procurement', label: 'Procurement Watch', icon: ShoppingCart, section: 'Citizen Action' },
+  // ── Data & Alerts ──
+  { id: 'datafetcher', label: 'Live Data', icon: FolderSearch, section: 'Data & Alerts' },
+  { id: 'alerts', label: 'Alerts', icon: Bell, section: 'Data & Alerts' },
 ];
 
 // ─── ICON MAP FOR SOURCES ────────────────────────────────────────
@@ -134,6 +172,8 @@ export default function KenyaGovernancePage() {
   // Group nav items by section
   const governanceItems = navItems.filter(n => n.section === 'Governance');
   const civicItems = navItems.filter(n => n.section === 'Civic Tools');
+  const citizenItems = navItems.filter(n => n.section === 'Citizen Action');
+  const dataItems = navItems.filter(n => n.section === 'Data & Alerts');
 
   return (
     <TooltipProvider>
@@ -211,6 +251,48 @@ export default function KenyaGovernancePage() {
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
                       activeTab === item.id
                         ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                    }`}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <Separator className="bg-stone-100" />
+
+              {/* Citizen Action Section */}
+              <div>
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Citizen Action</p>
+                {citizenItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+                      activeTab === item.id
+                        ? 'bg-amber-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                    }`}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <Separator className="bg-stone-100" />
+
+              {/* Data & Alerts Section */}
+              <div>
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Data & Alerts</p>
+                {dataItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+                      activeTab === item.id
+                        ? 'bg-purple-600 text-white shadow-sm'
                         : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
                     }`}
                   >
@@ -309,6 +391,42 @@ export default function KenyaGovernancePage() {
                       </button>
                     ))}
                   </div>
+                  <Separator />
+                  <div>
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Citizen Action</p>
+                    {citizenItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+                          activeTab === item.id
+                            ? 'bg-amber-600 text-white'
+                            : 'text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <Separator />
+                  <div>
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Data & Alerts</p>
+                    {dataItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+                          activeTab === item.id
+                            ? 'bg-purple-600 text-white'
+                            : 'text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </nav>
               </aside>
             </div>
@@ -351,6 +469,18 @@ export default function KenyaGovernancePage() {
             {activeTab === 'whistleblower' && <WhistleblowerPage />}
             {activeTab === 'constitution' && <ConstitutionPage />}
             {activeTab === 'xposts' && <PoliticalXPostsPage />}
+            {activeTab === 'countymap' && <CountyMapPage />}
+            {activeTab === 'rti' && <RtiGeneratorPage />}
+            {activeTab === 'petition' && <PetitionBuilderPage />}
+            {activeTab === 'heatmap' && <CorruptionHeatmapPage />}
+            {activeTab === 'manifesto' && <ManifestoTrackerPage />}
+            {activeTab === 'tiptsubmit' && <AnonymousTipPage />}
+            {activeTab === 'feedback' && <CitizenFeedbackPage />}
+            {activeTab === 'timeline' && <TimelinePage />}
+            {activeTab === 'budgetsim' && <BudgetSimulatorPage />}
+            {activeTab === 'datafetcher' && <DataFetcherPage />}
+            {activeTab === 'alerts' && <AlertsSubscriptionPage />}
+            {activeTab === 'procurement' && <ProcurementMonitorPage />}
           </main>
         </div>
 

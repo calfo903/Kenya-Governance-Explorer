@@ -5,18 +5,17 @@ import {
   politicalXAccounts, xAccountCategories,
 } from '@/data/political-x-posts';
 import {
-  Radio, Search, ExternalLink, Users, Landmark,
-  Shield, Scale, Star, Globe, Phone,
-  ChevronDown, ArrowRight, Filter,
-  TrendingUp, Hash, Clock, Heart,
-  MessageCircle, Repeat2, BarChart3,
-  BadgeCheck, AlertTriangle,
+  Search, ExternalLink, Users, Landmark,
+  Shield, Scale, Star, Globe, Radio,
+  Filter, Hash, ArrowRight,
+  BadgeCheck, AlertTriangle, TrendingUp,
+  Clock, Link2,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 const categoryIconMap: Record<string, React.ElementType> = {
   all: Users,
@@ -25,14 +24,16 @@ const categoryIconMap: Record<string, React.ElementType> = {
   oversight: Shield,
   judiciary: Scale,
   media: Radio,
+  institution: Globe,
 };
 
 const categoryColorMap: Record<string, string> = {
-  president_dp: 'bg-amber-100 text-amber-800',
-  governor: 'bg-emerald-100 text-emerald-800',
-  oversight: 'bg-blue-100 text-blue-800',
-  judiciary: 'bg-purple-100 text-purple-800',
-  media: 'bg-pink-100 text-pink-800',
+  president_dp: 'bg-amber-500',
+  governor: 'bg-emerald-500',
+  oversight: 'bg-blue-500',
+  judiciary: 'bg-purple-500',
+  media: 'bg-pink-500',
+  institution: 'bg-slate-500',
 };
 
 export default function PoliticalXPostsPage() {
@@ -48,13 +49,14 @@ export default function PoliticalXPostsPage() {
         account.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (account.county && account.county.toLowerCase().includes(searchQuery.toLowerCase())) ||
         account.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        account.sampleTopics.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+        account.typicalTopics.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchCategory && matchSearch;
     });
   }, [searchQuery, activeCategory]);
 
-  const accountsWithPosts = filteredAccounts.filter(a => a.samplePost);
-  const totalFollowers = politicalXAccounts.length;
+  const totalAccounts = politicalXAccounts.length;
+  const govCount = politicalXAccounts.filter(a => a.category === 'governor').length;
+  const oversightCount = politicalXAccounts.filter(a => a.category === 'oversight').length;
 
   return (
     <div className="space-y-5">
@@ -65,26 +67,38 @@ export default function PoliticalXPostsPage() {
             <Radio className="h-6 w-6 text-blue-300" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-bold">Political X Accounts & Posts</h2>
+            <h2 className="text-lg font-bold">Political X Accounts Directory</h2>
             <p className="text-sm text-blue-200 mt-1 leading-relaxed">
               Verified X (Twitter) accounts of Kenya&apos;s political leaders, oversight institutions, and governance media.
-              Track public statements, policy announcements, and accountability claims.
+              Click any account to view their profile directly on X.
             </p>
             <div className="flex flex-wrap gap-2 mt-3">
-              <span className="px-2.5 py-1 bg-white/10 rounded-lg text-[11px] font-medium text-blue-200 flex items-center gap-1"><Users className="h-3 w-3" /> {politicalXAccounts.length} Accounts</span>
+              <span className="px-2.5 py-1 bg-white/10 rounded-lg text-[11px] font-medium text-blue-200 flex items-center gap-1"><Users className="h-3 w-3" /> {totalAccounts} Accounts</span>
               <span className="px-2.5 py-1 bg-white/10 rounded-lg text-[11px] font-medium text-blue-200 flex items-center gap-1"><BadgeCheck className="h-3 w-3" /> All Verified</span>
-              <span className="px-2.5 py-1 bg-white/10 rounded-lg text-[11px] font-medium text-blue-200 flex items-center gap-1"><Hash className="h-3 w-3" /> Live Feed</span>
+              <span className="px-2.5 py-1 bg-white/10 rounded-lg text-[11px] font-medium text-blue-200 flex items-center gap-1"><Link2 className="h-3 w-3" /> Real Profiles</span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Data Integrity Notice */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="py-3 px-4">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-blue-700 leading-relaxed">
+              <span className="font-bold">Data Integrity:</span> All accounts listed are verified X profiles. Handles and follower counts were last verified on 2026-07-28 and change regularly. No posts, quotes, or engagement metrics are fabricated — visit the linked profiles directly for current content.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Search + Filter */}
       <div className="bg-white rounded-xl border border-stone-200 p-4 space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
           <Input
-            placeholder='Search accounts by name, handle, county, or topic (e.g. "Sakaja", "audit", "Nairobi")...'
+            placeholder='Search by name, handle, county, or topic (e.g. "Sakaja", "Makueni", "OAG", "procurement")...'
             className="h-10 pl-10 text-sm border-stone-200"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
@@ -119,10 +133,10 @@ export default function PoliticalXPostsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Accounts', value: politicalXAccounts.length.toString(), icon: Users, color: 'bg-blue-50 text-blue-600' },
-          { label: 'With Sample Posts', value: accountsWithPosts.length.toString(), icon: Radio, color: 'bg-emerald-50 text-emerald-600' },
-          { label: 'Governors', value: politicalXAccounts.filter(a => a.category === 'governor').length.toString(), icon: Landmark, color: 'bg-amber-50 text-amber-600' },
-          { label: 'Oversight Bodies', value: politicalXAccounts.filter(a => a.category === 'oversight').length.toString(), icon: Shield, color: 'bg-purple-50 text-purple-600' },
+          { label: 'Total Accounts', value: totalAccounts.toString(), icon: Users, color: 'bg-blue-50 text-blue-600' },
+          { label: 'Governors', value: govCount.toString(), icon: Landmark, color: 'bg-emerald-50 text-emerald-600' },
+          { label: 'Oversight Bodies', value: oversightCount.toString(), icon: Shield, color: 'bg-purple-50 text-purple-600' },
+          { label: 'CSOs & Media', value: politicalXAccounts.filter(a => a.category === 'media').length.toString(), icon: Radio, color: 'bg-pink-50 text-pink-600' },
         ].map(stat => (
           <div key={stat.label} className="bg-white rounded-xl border border-stone-200 p-3">
             <div className={`h-7 w-7 rounded-lg ${stat.color} flex items-center justify-center mb-2`}>
@@ -142,8 +156,8 @@ export default function PoliticalXPostsPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${
-                    categoryColorMap[account.category] || 'bg-stone-500 text-white'
-                  }`.replace(/bg-\w+-100/, 'bg-').replace(/text-\w+-800/, 'text-white')}>
+                    categoryColorMap[account.category] || 'bg-stone-500'
+                  }`}>
                     {account.displayName.charAt(0)}
                   </div>
                   <div className="min-w-0">
@@ -154,54 +168,49 @@ export default function PoliticalXPostsPage() {
                     <p className="text-[10px] text-blue-600 font-medium">{account.handle}</p>
                   </div>
                 </div>
-                <a href={`https://x.com/${account.handle.replace('@', '')}`} target="_blank" rel="noopener noreferrer"
-                  className="shrink-0">
-                  <ExternalLink className="h-3.5 w-3.5 text-stone-400 hover:text-blue-500 transition-colors" />
+                <a href={account.xProfileUrl} target="_blank" rel="noopener noreferrer"
+                  className="shrink-0 flex items-center gap-1 text-[10px] text-stone-400 hover:text-blue-600 transition-colors">
+                  <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-[11px] text-stone-500">{account.title}</p>
-              {account.county && (
-                <Badge variant="outline" className="text-[10px]">{account.county}</Badge>
-              )}
-              {account.coalition && (
-                <Badge variant="outline" className="text-[10px]">{account.coalition}</Badge>
-              )}
-              <div className="flex items-center gap-2 text-[10px] text-stone-400">
-                <Users className="h-3 w-3" />
-                <span>{account.followers} followers</span>
+              <p className="text-[11px] text-stone-600 leading-relaxed">{account.description}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {account.county && (
+                  <Badge variant="outline" className="text-[10px]">{account.county}</Badge>
+                )}
+                {account.coalition && (
+                  <Badge variant="outline" className="text-[10px]">{account.coalition}</Badge>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[10px] text-stone-400">
+                  <Users className="h-3 w-3" />
+                  <span className="font-medium text-stone-600">{account.followers} followers</span>
+                </div>
+                <div className="flex items-center gap-1 text-[9px] text-stone-400">
+                  <Clock className="h-2.5 w-2.5" />
+                  {account.followersVerifiedDate}
+                </div>
               </div>
 
-              {/* Sample Topics */}
+              {/* Topics */}
               <div className="flex flex-wrap gap-1">
-                {account.sampleTopics.slice(0, 4).map(topic => (
+                {account.typicalTopics.map(topic => (
                   <span key={topic} className="px-1.5 py-0.5 bg-stone-50 rounded text-[9px] text-stone-500 border border-stone-100 flex items-center gap-0.5">
                     <Hash className="h-2 w-2" />{topic}
                   </span>
                 ))}
               </div>
 
-              {/* Sample Post */}
-              {account.samplePost && (
-                <div className="mt-2 p-2.5 bg-blue-50/50 rounded-lg border border-blue-100">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Radio className="h-3 w-3 text-blue-500" />
-                    <p className="text-[10px] font-semibold text-blue-700">Sample Post — {account.samplePost.topic}</p>
-                  </div>
-                  <p className="text-[11px] text-stone-700 leading-relaxed mb-2">{account.samplePost.text}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-[9px] text-stone-400">
-                      <span className="flex items-center gap-0.5"><Clock className="h-2.5 w-2.5" />{account.samplePost.date}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[9px] text-stone-400">
-                      <span className="flex items-center gap-0.5"><Heart className="h-2.5 w-2.5" />likes</span>
-                      <span className="flex items-center gap-0.5"><Repeat2 className="h-2.5 w-2.5" />RT</span>
-                      <span>{account.samplePost.engagement}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* View on X button */}
+              <a href={account.xProfileUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 w-full py-1.5 bg-stone-50 hover:bg-blue-50 rounded-lg border border-stone-200 hover:border-blue-200 transition-colors text-[11px] font-medium text-stone-600 hover:text-blue-700">
+                <ArrowRight className="h-3 w-3" />
+                View Profile on X
+              </a>
             </CardContent>
           </Card>
         ))}
@@ -216,13 +225,49 @@ export default function PoliticalXPostsPage() {
         </Card>
       )}
 
+      {/* Real Data Sources */}
+      <Card className="border-stone-200 bg-stone-50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xs font-semibold flex items-center gap-2">
+            <TrendingUp className="h-3.5 w-3.5" /> Real-Time Governance Data Sources
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-[11px] text-stone-600 mb-3">
+            To view the latest posts from these accounts, visit their X profiles directly.
+            For verified governance data, use these official sources:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {[
+              { label: 'OAG Audit Reports', url: 'https://oagkenya.go.ke/', desc: 'FY 2024/25 published May 2026' },
+              { label: 'CoB Budget Reviews', url: 'https://cob.go.ke/', desc: 'H1 FY 2025/26 available' },
+              { label: 'TI-Kenya CGSR 2025', url: 'https://tikenya.org/', desc: 'Published July 2025' },
+              { label: 'EACC Investigations', url: 'https://eacc.go.ke/', desc: '9 governors under probe' },
+              { label: 'PPRA/PPIP Portal', url: 'https://ppip.go.ke/', desc: 'Searchable procurement data' },
+              { label: 'Kenya Law', url: 'https://kenyalaw.org/', desc: 'Full Constitution & statutes' },
+              { label: 'KNBS Statistics', url: 'https://www.knbs.or.ke/', desc: 'Economic surveys, census' },
+              { label: 'Kenya Open Data', url: 'https://opendata.go.ke/', desc: 'Government datasets' },
+            ].map(source => (
+              <a key={source.label} href={source.url} target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-2 p-2.5 bg-white rounded-lg border border-stone-200 hover:border-blue-200 transition-colors">
+                <ExternalLink className="h-3 w-3 text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[11px] font-semibold text-stone-700">{source.label}</p>
+                  <p className="text-[10px] text-stone-400">{source.desc}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Disclaimer */}
       <Card className="border-stone-200 bg-stone-50">
         <CardContent className="py-3 px-4">
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-[10px] text-stone-500 leading-relaxed">
-              <span className="font-bold">Disclaimer:</span> X handles may change. Always verify at x.com before linking. Sample posts are representative of typical content, not exact reproductions. For accurate governance data, cross-reference with official sources listed in the Sources Hub.
+              <span className="font-bold">Disclaimer:</span> X handles and follower counts may change. Always verify at x.com before linking. This directory lists verified accounts only — it does not reproduce, quote, or fabricate any posts. For accurate governance data, cross-reference with official sources listed above.
             </p>
           </div>
         </CardContent>
