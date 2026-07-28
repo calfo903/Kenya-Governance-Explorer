@@ -29,6 +29,18 @@ import BudgetSimulatorPage from '@/components/budget-simulator-page';
 import DataFetcherPage from '@/components/data-fetcher-page';
 import AlertsSubscriptionPage from '@/components/alerts-subscription-page';
 import ProcurementMonitorPage from '@/components/procurement-monitor-page';
+import GovernorReportCardPage from '@/components/governor-report-card-page';
+import AuditTrendsPage from '@/components/audit-trends-page';
+import BudgetScatterPage from '@/components/budget-scatter-page';
+import CoalitionComparisonPage from '@/components/coalition-comparison-page';
+import DevolutionQuizPage from '@/components/devolution-quiz-page';
+import ServiceDeliveryPage from '@/components/service-delivery-page';
+import CitizenStoriesPage from '@/components/citizen-stories-page';
+import CBEFMeetingPage from '@/components/cbef-meeting-page';
+import ProcurementRedFlagsPage from '@/components/procurement-redflags-page';
+import EmbedWidgetPage from '@/components/embed-widget-page';
+import { DataFreshnessIndicator } from '@/components/data-freshness';
+import { useTheme } from 'next-themes';
 
 // ─── ICONS ────────────────────────────────────────────────────────
 import {
@@ -38,7 +50,7 @@ import {
   ExternalLink, AlertTriangle, CheckCircle2,
   XCircle, Globe, Phone, Mail,
   Landmark, User, GripVertical, Star,
-  Library, ChevronUp, Leaf, Zap, Gavel,
+  Library, ChevronUp, Leaf, Gavel,
   Radio, Megaphone, BookOpen, Hand, Layers,
   ArrowRight, TrendingUp, TrendingDown, Minus,
   Eye, BookMarked, Menu, X, Volume2,
@@ -46,7 +58,9 @@ import {
   Thermometer, FileOutput, ClipboardList,
   Receipt, Hash, Send, Timer,
   FolderSearch, ShoppingCart, AlertCircle,
-  PieChart, Clock, FileCheck, Target,
+  PieChart, Clock, FileCheck, Target, Sun, Moon,
+  Keyboard, GraduationCap,
+  AlertOctagon, Calendar, Code2, Zap,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -68,7 +82,10 @@ type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema'
   | 'countymap' | 'rti' | 'petition' | 'heatmap'
   | 'manifesto' | 'tiptsubmit' | 'feedback'
   | 'timeline' | 'budgetsim' | 'datafetcher'
-  | 'alerts' | 'procurement';
+  | 'alerts' | 'procurement'
+  | 'reportcard' | 'audittrends' | 'budgetscatter'
+  | 'coalition' | 'quiz' | 'servicedelivery'
+  | 'stories' | 'cbef' | 'redflags' | 'embed';
 
 interface NavItem {
   id: TabId;
@@ -100,9 +117,20 @@ const navItems: NavItem[] = [
   { id: 'petition', label: 'Petition Builder', icon: ClipboardList, section: 'Citizen Action' },
   { id: 'feedback', label: 'Rate Services', icon: MessageSquare, section: 'Citizen Action' },
   { id: 'procurement', label: 'Procurement Watch', icon: ShoppingCart, section: 'Citizen Action' },
+  { id: 'reportcard', label: 'Report Card', icon: Star, section: 'Citizen Action' },
+  { id: 'quiz', label: 'Devolution Quiz', icon: GraduationCap, section: 'Citizen Action' },
+  { id: 'stories', label: 'Experience Stories', icon: MessageSquare, section: 'Citizen Action' },
+  { id: 'cbef', label: 'CBEF Meetings', icon: Calendar, section: 'Citizen Action' },
   // ── Data & Alerts ──
   { id: 'datafetcher', label: 'Live Data', icon: FolderSearch, section: 'Data & Alerts' },
   { id: 'alerts', label: 'Alerts', icon: Bell, section: 'Data & Alerts' },
+  // ── Analytics ──
+  { id: 'audittrends', label: 'Audit Trends', icon: Zap, section: 'Analytics' },
+  { id: 'budgetscatter', label: 'Budget Scatter', icon: PieChart, section: 'Analytics' },
+  { id: 'coalition', label: 'Coalition Compare', icon: GitCompare, section: 'Analytics' },
+  { id: 'servicedelivery', label: 'Service Delivery', icon: Building2, section: 'Analytics' },
+  { id: 'redflags', label: 'Red Flags', icon: AlertOctagon, section: 'Analytics' },
+  { id: 'embed', label: 'Embed Widgets', icon: Code2, section: 'Analytics' },
 ];
 
 // ─── ICON MAP FOR SOURCES ────────────────────────────────────────
@@ -174,12 +202,29 @@ export default function KenyaGovernancePage() {
   const civicItems = navItems.filter(n => n.section === 'Civic Tools');
   const citizenItems = navItems.filter(n => n.section === 'Citizen Action');
   const dataItems = navItems.filter(n => n.section === 'Data & Alerts');
+  const analyticsItems = navItems.filter(n => n.section === 'Analytics');
+
+  const { theme, setTheme } = useTheme();
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setSidebarOpen(false); return; }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); /* Focus search */ return; }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') { e.preventDefault(); setTheme(theme === 'dark' ? 'light' : 'dark'); return; }
+      if (e.key === '?' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+        alert('Keyboard Shortcuts:\nCtrl+K: Search\nCtrl+D: Toggle Dark Mode\nEsc: Close panels\n?: This help');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [theme, setTheme]);
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen flex flex-col bg-stone-50">
+      <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950">
         {/* ══════════ HEADER ══════════ */}
-        <header className="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="py-3 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -193,7 +238,7 @@ export default function KenyaGovernancePage() {
                   <Shield className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-sm sm:text-base font-bold text-stone-900 tracking-tight leading-tight">
+                  <h1 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
                     Kenya Governance Explorer
                   </h1>
                   <p className="text-[10px] sm:text-xs text-stone-500">
@@ -203,10 +248,17 @@ export default function KenyaGovernancePage() {
               </div>
               <div className="flex items-center gap-2">
                 {comparisonList.length > 0 && (
-                  <Badge variant="secondary" className="text-[10px] h-6 bg-emerald-100 text-emerald-700">
+                  <Badge variant="secondary" className="text-[10px] h-6 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                     {comparisonList.length}/4 compare
                   </Badge>
                 )}
+                <button
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                  title="Toggle Dark Mode (Ctrl+D)"
+                >
+                  {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-stone-600" /> : <Moon className="h-3.5 w-3.5 text-stone-600" />}
+                </button>
                 <a href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-400 hover:text-emerald-600 transition-colors">
                   <BookMarked className="h-3 w-3" />Constitution
                 </a>
@@ -304,6 +356,27 @@ export default function KenyaGovernancePage() {
 
               <Separator className="bg-stone-100" />
 
+              {/* Analytics Section */}
+              <div>
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Analytics</p>
+                {analyticsItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+                      activeTab === item.id
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                    }`}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <Separator className="bg-stone-100" />
+
               {/* Quick Stats */}
               <div className="px-3 py-2">
                 <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Quick Stats</p>
@@ -320,6 +393,10 @@ export default function KenyaGovernancePage() {
                     <span className="text-stone-500">Term</span>
                     <span className="font-bold text-stone-700">2022–2027</span>
                   </div>
+                </div>
+                {/* Data Freshness */}
+                <div className="mt-3 pt-2 border-t border-stone-100">
+                  <DataFreshnessIndicator compact />
                 </div>
               </div>
 
@@ -433,7 +510,7 @@ export default function KenyaGovernancePage() {
           )}
 
           {/* ══════════ MAIN CONTENT ══════════ */}
-          <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+          <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full">
             {activeTab === 'summary' && <NationalSummaryDashboard />}
             {activeTab === 'tree' && (
               <GovernorsTreeView
@@ -481,7 +558,43 @@ export default function KenyaGovernancePage() {
             {activeTab === 'datafetcher' && <DataFetcherPage />}
             {activeTab === 'alerts' && <AlertsSubscriptionPage />}
             {activeTab === 'procurement' && <ProcurementMonitorPage />}
+            {activeTab === 'reportcard' && <GovernorReportCardPage />}
+            {activeTab === 'audittrends' && <AuditTrendsPage />}
+            {activeTab === 'budgetscatter' && <BudgetScatterPage />}
+            {activeTab === 'coalition' && <CoalitionComparisonPage />}
+            {activeTab === 'quiz' && <DevolutionQuizPage />}
+            {activeTab === 'servicedelivery' && <ServiceDeliveryPage />}
+            {activeTab === 'stories' && <CitizenStoriesPage />}
+            {activeTab === 'cbef' && <CBEFMeetingPage />}
+            {activeTab === 'redflags' && <ProcurementRedFlagsPage />}
+            {activeTab === 'embed' && <EmbedWidgetPage />}
           </main>
+
+          {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 z-50 px-2 py-1.5">
+            <div className="flex items-center justify-around">
+              {[
+                { id: 'summary' as TabId, icon: BarChart3, label: 'Home' },
+                { id: 'countymap' as TabId, icon: Map, label: 'Map' },
+                { id: 'tree' as TabId, icon: TreePine, label: 'Counties' },
+                { id: 'whistleblower' as TabId, icon: Eye, label: 'Report' },
+                { id: 'alerts' as TabId, icon: Bell, label: 'Alerts' },
+              ].map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => { setActiveTab(item.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors ${
+                    activeTab === item.id
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-stone-400 dark:text-stone-500'
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="text-[9px] font-medium">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
         </div>
 
         {/* ══════════ FOOTER ══════════ */}

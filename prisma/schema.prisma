@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,6 +7,166 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── County Governance Domain Models ────────────────────────────
+
+model County {
+  id              String   @id @default(cuid())
+  code            String   @unique // IEBC county code e.g. "001"
+  name            String
+  region          String
+  capital         String
+  population      Int
+  areaSqKm        Float
+  constituencies  Int
+  wards           Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  governor       Governor?
+  auditReports   AuditReport[]
+  budgetEntries  BudgetEntry[]
+  scorecards     Scorecard[]
+  tips           CitizenTip[]
+  stories        CitizenStory[]
+}
+
+model Governor {
+  id              String  @id @default(cuid())
+  countyId        String  @unique
+  countyCode      String
+  fullName        String
+  officialTitle   String
+  politicalParty  String
+  coalition       String?
+  termStart       String
+  termEnd         String
+  xHandle         String?
+  website         String?
+  biography       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  county          County  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+  manifestoItems  ManifestoItem[]
+}
+
+model AuditReport {
+  id              String  @id @default(cuid())
+  countyId        String
+  countyCode      String
+  financialYear   String
+  countyExecutive String // unmodified | qualified | adverse | disclaimer
+  countyAssembly   String
+  source          String
+  reportTitle     String
+  url             String?
+  section         String?
+  accessedDate    String
+  createdAt       DateTime @default(now())
+
+  county          County  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+
+  @@index([countyCode])
+  @@index([financialYear])
+}
+
+model BudgetEntry {
+  id                      String  @id @default(cuid())
+  countyId                String
+  countyCode              String
+  financialYear           String
+  totalBudget             Float
+  developmentBudget       Float?
+  recurrentBudget        Float?
+  devAbsorptionRate       Float?
+  recurrentAbsorptionRate Float?
+  ownSourceRevenue        Float?
+  pendingBills            Float?
+  unspentAmount           Float?
+  source                  String
+  reportTitle             String
+  accessedDate            String
+  createdAt               DateTime @default(now())
+
+  county  County  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+
+  @@index([countyCode])
+  @@index([financialYear])
+}
+
+model Scorecard {
+  id                              String   @id @default(cuid())
+  countyId                        String
+  countyCode                      String
+  overallAccountabilityScore      Float?
+  transparencyAssetDeclaration     Float?
+  projectDeliveryAbsorptionRate   Float?
+  manifestoPromiseFulfillment     Float?
+  legislativeOversightPerformance Float?
+  ethicsIntegrity                  Float?
+  publicSentimentCitizenAwareness  Float?
+  dataGapsNote                    String?
+  lastUpdated                     String
+  createdAt                       DateTime @default(now())
+  updatedAt                       DateTime @updatedAt
+
+  county  County  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+
+  @@index([countyCode])
+}
+
+model ManifestoItem {
+  id          String  @id @default(cuid())
+  governorId  String
+  category    String
+  description String
+  status      String  // completed | in_progress | not_started | blocked
+  evidence    String?
+  source      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  governor Governor @relation(fields: [governorId], references: [id], onDelete: Cascade)
+}
+
+model CitizenTip {
+  id          String   @id @default(cuid())
+  countyId    String?
+  countyName  String
+  category    String
+  description String
+  anonymous   Boolean  @default(true)
+  status      String   @default("pending") // pending | reviewed | actioned | dismissed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  county County? @relation(fields: [countyId], references: [id], onDelete: SetNull)
+}
+
+model CitizenStory {
+  id          String   @id @default(cuid())
+  countyId    String?
+  countyName  String
+  sector      String   // health | education | roads | water | agriculture
+  title       String
+  experience  String
+  rating      Int       // 1-5
+  anonymous   Boolean   @default(true)
+  status      String    @default("published")
+  createdAt   DateTime  @default(now())
+
+  county County? @relation(fields: [countyId], references: [id], onDelete: SetNull)
+}
+
+model EmbedWidget {
+  id          String   @id @default(cuid())
+  countyCode  String
+  widgetType  String   // scorecard | budget | audit
+  embedCode   String
+  createdAt   DateTime @default(now())
+}
+
+// Legacy models kept for compatibility
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
