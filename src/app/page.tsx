@@ -9,6 +9,9 @@ import {
   governorCoalitionDistribution, governorPartyDistribution,
 } from '@/data/national-summary';
 import { kajiadoCounty } from '@/data/kajiado-county';
+import { countyAuditData, getCountyAuditRecords } from '@/data/county-audit-data';
+import { countyBudgetData, getCountyBudget, getTopPerformers, getBottomPerformers } from '@/data/county-budget-data';
+import { countyContextData, getCountyContext } from '@/data/county-context-data';
 import { sourceCategories, allSources, SourceEntry, SourceCategoryGroup } from '@/data/sources';
 import {
   County, Representative, ScorecardMetrics, FilterState, ComparisonItem,
@@ -163,9 +166,30 @@ export default function KenyaGovernancePage() {
   const [filters, setFilters] = useState<FilterState>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const allCounties = useMemo(() => {
+  const allCounties = useMemo((): County[] => {
     const placeholders = getPlaceholderCounties();
-    return placeholders.map((c) => c.code === '034' ? kajiadoCounty : c);
+    return placeholders.map((c) => {
+      if (c.code === '034') return kajiadoCounty;
+      // Inject real audit opinion from county-audit-data
+      const auditRecords = getCountyAuditRecords(c.code);
+      const latestAudit = auditRecords.find(a => a.financialYear === 'FY 2024/25');
+      const latestBudget = getCountyBudget(c.code, 'FY 2024/25');
+      return {
+        ...c,
+        executiveAuditOpinion: latestAudit?.executiveOpinion || undefined,
+        executiveAuditSource: latestAudit?.source,
+        developmentAbsorptionRate: latestBudget?.devAbsorptionRate || undefined,
+        developmentAbsorptionSource: latestBudget ? {
+          source: latestBudget.source.source,
+          reportTitle: latestBudget.source.reportTitle,
+          financialYear: latestBudget.source.financialYear,
+          url: latestBudget.source.url,
+          accessedDate: latestBudget.source.accessedDate,
+        } : undefined,
+        dataAvailability: 'partial' as const,
+        dataAvailabilityNote: `Audit opinion: ${latestAudit?.executiveOpinion || 'pending'} (FY 2024/25). Budget absorption: ${latestBudget?.devAbsorptionRate ?? 'pending'}%. Full official data from oagkenya.go.ke and cob.go.ke.`,
+      };
+    });
   }, []);
 
   const toggleCounty = (code: string) => {
@@ -680,7 +704,7 @@ export default function KenyaGovernancePage() {
             <Separator className="my-6 bg-stone-700" />
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500">
               <p>Kenya County Governance Explorer · Strictly Non-Partisan · Evidence-Based</p>
-              <p>Last updated: 2026-07-25 · {allSources.length} data sources indexed</p>
+              <p>Last updated: 2026-07-28 · {allSources.length} data sources indexed · 47 counties with OAG audit data</p>
             </div>
           </div>
         </footer>
@@ -989,6 +1013,11 @@ function GovernorsTreeView({ governors, expandedCounties, toggleCounty, allCount
                               <span className="text-sm font-medium">{g.name}</span>
                               <Badge className={`text-[10px] px-1.5 py-0 ${g.coalition === 'Kenya Kwanza Alliance' ? 'bg-yellow-100 text-yellow-800' : g.coalition === 'Azimio la Umoja One Kenya Coalition' ? 'bg-blue-100 text-blue-800' : 'bg-stone-100 text-stone-600'}`}>{g.party}</Badge>
                               {county?.executiveAuditOpinion && <Badge className={`text-[10px] px-1.5 py-0 border ${getAuditColor(county.executiveAuditOpinion)}`}>{county.executiveAuditOpinion}</Badge>}
+                              {county?.developmentAbsorptionRate != null && (
+                                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${county.developmentAbsorptionRate >= 50 ? 'text-green-700 border-green-200' : county.developmentAbsorptionRate >= 30 ? 'text-yellow-700 border-yellow-200' : 'text-red-700 border-red-200'}`}>
+                                  Dev: {county.developmentAbsorptionRate}%
+                                </Badge>
+                              )}
                             </div>
                             <p className="text-[11px] text-stone-400 mt-0.5">{g.county} · Pop. {g.population.toLocaleString()} · {g.constituenciesCount} const. · {g.wardsCount} wards</p>
                           </div>
@@ -1025,13 +1054,13 @@ function CountyQuickView({ county, onAddComparison, isInComparison }: {
         {county.deputyGovernor && <MiniRow rep={county.deputyGovernor} onCompare={() => onAddComparison(county.deputyGovernor!, county.name)} />}
         {county.senator && <MiniRow rep={county.senator} onCompare={() => onAddComparison(county.senator!, county.name)} />}
         {county.womanRep && <MiniRow rep={county.womanRep} onCompare={() => onAddComparison(county.womanRep!, county.name)} />}
-        {county.countyAssembly?.speaker && <MiniRow rep={county.countyAssembly.speaker} onCompare={() => onAddComparison(county.countyAssembly.speaker!, county.name)} />}
+        {county.countyAssembly?.speaker && <MiniRow rep={county.countyAssembly!.speaker!} onCompare={() => onAddComparison(county.countyAssembly!.speaker!, county.name)} />}
       </div>
       <div className="space-y-1.5">
         {county.constituencies.length > 0 ? county.constituencies.map(con => (
           <div key={con.id} className="flex items-center justify-between px-2.5 py-2 bg-white rounded-lg border border-stone-100 text-xs">
             <div><span className="font-medium">{con.name}</span>{con.mp && <span className="text-stone-400 ml-1.5">{con.mp.fullName} ({con.mp.politicalParty})</span>}</div>
-            {con.mp && <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => onAddComparison(con.mp, county.name)}><GitCompare className="h-3 w-3" /></Button>}
+            {con.mp && <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => onAddComparison(con.mp!, county.name)}><GitCompare className="h-3 w-3" /></Button>}
           </div>
         )) : <p className="text-xs text-stone-400 px-2.5 py-2 bg-white rounded-lg border border-stone-100 italic">Constituency data requires expansion from IEBC records.</p>}
       </div>
@@ -1110,8 +1139,8 @@ function CountyExplorer({ countyCode, allCounties, onSelectCounty, addToComparis
           {county.countyAssembly?.auditOpinion && (
             <Card className="border-stone-200 bg-white">
               <CardContent className="py-3 px-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs"><Scale className="h-4 w-4 text-emerald-600" /><span className="font-semibold">Assembly Audit:</span><Badge className={`border ${getAuditColor(county.countyAssembly.auditOpinion)}`}>{county.countyAssembly.auditOpinion}</Badge></div>
-                {county.countyAssembly.auditSource?.url && <a href={county.countyAssembly.auditSource.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:underline flex items-center gap-1"><ExternalLink className="h-3 w-3" /> Report</a>}
+                <div className="flex items-center gap-2 text-xs"><Scale className="h-4 w-4 text-emerald-600" /><span className="font-semibold">Assembly Audit:</span><Badge className={`border ${getAuditColor(county.countyAssembly!.auditOpinion)}`}>{county.countyAssembly!.auditOpinion}</Badge></div>
+                {county.countyAssembly!.auditSource?.url && <a href={county.countyAssembly!.auditSource!.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:underline flex items-center gap-1"><ExternalLink className="h-3 w-3" /> Report</a>}
               </CardContent>
             </Card>
           )}
@@ -1127,7 +1156,7 @@ function CountyExplorer({ countyCode, allCounties, onSelectCounty, addToComparis
                         <span className="font-medium">{con.name}</span>{con.mp && <Badge variant="secondary" className="text-[10px] ml-2">{con.mp.fullName} ({con.mp.politicalParty})</Badge>}
                       </AccordionTrigger>
                       <AccordionContent className="pb-2">
-                        {con.mp && <div className="mb-2 p-2 bg-emerald-50 rounded-lg text-xs"><span className="font-medium text-emerald-800">{con.mp.fullName}</span> · {con.mp.politicalParty} <Button variant="ghost" size="sm" className="h-5 text-[10px] ml-2" onClick={() => addToComparison(con.mp, county.name)}><GitCompare className="h-3 w-3 mr-0.5" />Compare</Button></div>}
+                        {con.mp && <div className="mb-2 p-2 bg-emerald-50 rounded-lg text-xs"><span className="font-medium text-emerald-800">{con.mp.fullName}</span> · {con.mp.politicalParty} <Button variant="ghost" size="sm" className="h-5 text-[10px] ml-2" onClick={() => addToComparison(con.mp!, county.name)}><GitCompare className="h-3 w-3 mr-0.5" />Compare</Button></div>}
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">{con.wards.map(w => (
                           <div key={w.id} className="p-1.5 bg-stone-50 rounded text-[11px]"><p className="font-medium">{w.name}</p>{w.mca ? <p className="text-stone-400">MCA: {w.mca.fullName}</p> : <p className="text-stone-400 italic">MCA: pending verification</p>}</div>
                         ))}</div>
@@ -1143,7 +1172,7 @@ function CountyExplorer({ countyCode, allCounties, onSelectCounty, addToComparis
             <Card className="border-stone-200 bg-white">
               <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">County Executive Committee</CardTitle><CardDescription className="text-xs">Appointed by the Governor — Article 179</CardDescription></CardHeader>
               <CardContent><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{county.countyExecutive.map(cecm => (
-                <div key={cecm.id} className="p-2.5 bg-stone-50 rounded-lg border border-stone-100"><p className="text-xs font-semibold text-emerald-800">{cecm.portfolio}</p><p className="text-[11px] text-stone-500 mt-0.5">{cecm.fullName.includes('not publicly') ? <span className="italic text-amber-600"><AlertTriangle className="h-3 w-3 inline mr-0.5" />Name pending verification</span> : cem.fullName}</p></div>
+                <div key={cecm.id} className="p-2.5 bg-stone-50 rounded-lg border border-stone-100"><p className="text-xs font-semibold text-emerald-800">{cecm.portfolio}</p><p className="text-[11px] text-stone-500 mt-0.5">{cecm.fullName.includes('not publicly') ? <span className="italic text-amber-600"><AlertTriangle className="h-3 w-3 inline mr-0.5" />Name pending verification</span> : cecm.fullName}</p></div>
               ))}</div></CardContent>
             </Card>
           )}

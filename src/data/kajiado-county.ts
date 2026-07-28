@@ -460,9 +460,16 @@ export const kajiadoCounty: County = {
   // AUDIT & PERFORMANCE DATA
   // ═══════════════════════════════════════════════════════════
 
-  executiveAuditOpinion: AUDIT_OPINIONS.UNMODIFIED,
-  executiveAuditSource: OAG_SOURCE,
-  developmentAbsorptionRate: null,
+  executiveAuditOpinion: AUDIT_OPINIONS.QUALIFIED,
+  executiveAuditSource: {
+    source: 'Office of the Auditor-General (OAG)',
+    reportTitle: 'County Executive of Kajiado Audit Report FY 2024/25',
+    financialYear: 'FY 2024/25',
+    url: 'https://www.oagkenya.go.ke/reports/county-government-audit-reports/',
+    section: 'County Executive Audit Opinion — Qualified: unsupported voided transactions & incomplete projects. CPAIC grilled Kajiado over FY 2024/25 OAG findings.',
+    accessedDate: '2026-07-28',
+  },
+  developmentAbsorptionRate: undefined,
   developmentAbsorptionSource: COB_SOURCE,
 
   dataAvailability: 'partial',

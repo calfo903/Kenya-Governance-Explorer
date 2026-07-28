@@ -17,11 +17,9 @@ export async function GET(request: Request) {
     summary: target ? {
       financialYear: target.financialYear,
       period: target.period,
-      totalCountyBudget: target.totalCountyBudget,
       avgDevelopmentAbsorption: target.avgDevelopmentAbsorption,
       avgRecurrentAbsorption: target.avgRecurrentAbsorption,
       totalUnspentAmount: target.totalUnspentAmount,
-      devRecurrentRatio: target.devRecurrentRatio,
       topPerformers: target.topPerformers,
       bottomPerformers: target.bottomPerformers,
       source: target.source,
@@ -29,7 +27,6 @@ export async function GET(request: Request) {
     allSummaries: summaries.map(s => ({
       financialYear: s.financialYear,
       period: s.period,
-      totalCountyBudget: s.totalCountyBudget,
       avgDevelopmentAbsorption: s.avgDevelopmentAbsorption,
       avgRecurrentAbsorption: s.avgRecurrentAbsorption,
       totalUnspentAmount: s.totalUnspentAmount,

@@ -168,6 +168,11 @@ export interface NationalSummary {
 }
 
 // ─── Filter / Comparison ──────────────────────────────────────────
+export interface ComparisonItem {
+  representative: Representative;
+  countyName: string;
+}
+
 export interface FilterState {
   region?: Region;
   county?: string;
