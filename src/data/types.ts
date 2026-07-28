@@ -206,3 +206,97 @@ export function getAuditColor(opinion: AuditOpinion | undefined): string {
     default: return 'bg-gray-200 text-gray-500 border-gray-300';
   }
 }
+
+// ─── Audit Timeline Types ─────────────────────────────────────────
+export interface AuditTimelineEvent {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  type: 'milestone' | 'audit' | 'budget' | 'finding' | 'action' | 'lifecycle_start' | 'lifecycle_end';
+  severity?: 'info' | 'warning' | 'critical' | 'success';
+  source?: SourceCitation;
+  verificationStatus: 'pending' | 'verified';
+  projectRef?: string;
+}
+
+export interface ProjectRecord {
+  id: string;
+  name: string;
+  countyCode: string;
+  category: string;
+  status: 'planning' | 'active' | 'stalled' | 'completed' | 'suspended';
+  budgetAllocated: number;
+  budgetSpent: number;
+  startDate: string;
+  endDate?: string;
+  location: { lat: number; lng: number; name: string };
+  implementingAgency: string;
+  auditOpinion?: AuditOpinion;
+  timeline: AuditTimelineEvent[];
+  riskScore?: number;
+  riskFactors?: string[];
+  citizenPhotos?: number;
+}
+
+// ─── Weather Widget Types ─────────────────────────────────────────
+export interface WeatherData {
+  temperature: number;
+  condition: string;
+  humidity: number;
+  windSpeed: number;
+  location: string;
+  icon: string;
+  fetchedAt: string;
+}
+
+// ─── Citizen Auditor Stats ────────────────────────────────────────
+export interface CitizenAuditorStats {
+  userId: string;
+  photosVerified: number;
+  rank: number;
+  totalParticipants: number;
+  badges: string[];
+  recentActivity: { date: string; action: string; county: string }[];
+}
+
+// ─── AI News Insights ─────────────────────────────────────────────
+export interface NewsInsight {
+  id: string;
+  headline: string;
+  source: string;
+  url: string;
+  publishedAt: string;
+  summary: string;
+  relevanceScore: number;
+}
+
+// ─── Risk Forecasting ─────────────────────────────────────────────
+export interface RiskForecast {
+  projectId: string;
+  stallingProbability: number;
+  factors: { name: string; weight: number; status: 'normal' | 'concerning' | 'critical' }[];
+  predictedCompletionDate?: string;
+  budgetVelocity: number;
+  milestoneCompletionRate: number;
+  recommendation: string;
+}
+
+// ─── Mzalendo Member Types ────────────────────────────────────────
+export interface MzalendoMember {
+  id: string;
+  name: string;
+  position: string;
+  county: string;
+  gender: 'male' | 'female';
+  age?: number;
+  party: string;
+  coalition?: Coalition;
+  socialMedia?: { x?: string; facebook?: string; instagram?: string; website?: string };
+  voteRecord?: {
+    totalVotes: number;
+    attendanceRate: number;
+    recentBills: { billTitle: string; vote: 'aye' | 'nay' | 'absent'; date: string }[];
+  };
+  profileUrl?: string;
+}

@@ -42,6 +42,10 @@ import CitizenStoriesPage from '@/components/citizen-stories-page';
 import CBEFMeetingPage from '@/components/cbef-meeting-page';
 import ProcurementRedFlagsPage from '@/components/procurement-redflags-page';
 import EmbedWidgetPage from '@/components/embed-widget-page';
+import MzalendoPage from '@/components/mzalendo-page';
+import CountyLeadershipTreePage from '@/components/county-leadership-tree';
+import ProjectsBrowserPage from '@/components/projects-browser-page';
+import SecureWhistleblowerModal from '@/components/secure-whistleblower-modal';
 import { DataFreshnessIndicator } from '@/components/data-freshness';
 import { useTheme } from 'next-themes';
 
@@ -64,6 +68,7 @@ import {
   PieChart, Clock, FileCheck, Target, Sun, Moon,
   Keyboard, GraduationCap,
   AlertOctagon, Calendar, Code2, Zap,
+  Network, FolderOpen, Vote, ShieldCheck, Lock,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -88,7 +93,8 @@ type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema'
   | 'alerts' | 'procurement'
   | 'reportcard' | 'audittrends' | 'budgetscatter'
   | 'coalition' | 'quiz' | 'servicedelivery'
-  | 'stories' | 'cbef' | 'redflags' | 'embed';
+  | 'stories' | 'cbef' | 'redflags' | 'embed'
+  | 'leadership' | 'projects' | 'mzalendo' | 'securetip';
 
 interface NavItem {
   id: TabId;
@@ -134,6 +140,11 @@ const navItems: NavItem[] = [
   { id: 'servicedelivery', label: 'Service Delivery', icon: Building2, section: 'Analytics' },
   { id: 'redflags', label: 'Red Flags', icon: AlertOctagon, section: 'Analytics' },
   { id: 'embed', label: 'Embed Widgets', icon: Code2, section: 'Analytics' },
+  // ── Leadership & Projects ──
+  { id: 'leadership', label: 'Leadership Tree', icon: Network, section: 'Leadership & Projects' },
+  { id: 'projects', label: 'Projects & Audits', icon: FolderOpen, section: 'Leadership & Projects' },
+  { id: 'mzalendo', label: 'Mzalendo Profiles', icon: Vote, section: 'Leadership & Projects' },
+  { id: 'securetip', label: 'Secure Whistleblower', icon: ShieldCheck, section: 'Leadership & Projects' },
 ];
 
 // ─── ICON MAP FOR SOURCES ────────────────────────────────────────
@@ -227,6 +238,7 @@ export default function KenyaGovernancePage() {
   const citizenItems = navItems.filter(n => n.section === 'Citizen Action');
   const dataItems = navItems.filter(n => n.section === 'Data & Alerts');
   const analyticsItems = navItems.filter(n => n.section === 'Analytics');
+  const leadershipItems = navItems.filter(n => n.section === 'Leadership & Projects');
 
   const { theme, setTheme } = useTheme();
 
@@ -390,6 +402,27 @@ export default function KenyaGovernancePage() {
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
                       activeTab === item.id
                         ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                    }`}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <Separator className="bg-stone-100" />
+
+              {/* Leadership & Projects Section */}
+              <div>
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Leadership & Projects</p>
+                {leadershipItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+                      activeTab === item.id
+                        ? 'bg-rose-600 text-white shadow-sm'
                         : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
                     }`}
                   >
@@ -592,6 +625,10 @@ export default function KenyaGovernancePage() {
             {activeTab === 'cbef' && <CBEFMeetingPage />}
             {activeTab === 'redflags' && <ProcurementRedFlagsPage />}
             {activeTab === 'embed' && <EmbedWidgetPage />}
+            {activeTab === 'leadership' && <CountyLeadershipTreePage />}
+            {activeTab === 'projects' && <ProjectsBrowserPage />}
+            {activeTab === 'mzalendo' && <MzalendoPage />}
+            {activeTab === 'securetip' && <SecureWhistleblowerModal />}
           </main>
 
           {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
