@@ -47,6 +47,7 @@ import CountyLeadershipTreePage from '@/components/county-leadership-tree';
 import ProjectsBrowserPage from '@/components/projects-browser-page';
 import SecureWhistleblowerModal from '@/components/secure-whistleblower-modal';
 import { DataFreshnessIndicator } from '@/components/data-freshness';
+import { WeatherWidget, CitizenAuditorDashboard, AIInsightsWidget, ProjectVelocityChart, RiskForecastWidget } from '@/components/sidebar-widgets';
 import { useTheme } from 'next-themes';
 
 // ─── ICONS ────────────────────────────────────────────────────────
@@ -455,6 +456,14 @@ export default function KenyaGovernancePage() {
                 <div className="mt-3 pt-2 border-t border-stone-100">
                   <DataFreshnessIndicator compact />
                 </div>
+              </div>
+
+              {/* Sidebar Widgets */}
+              <div className="px-3 py-2 space-y-3">
+                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Live Widgets</p>
+                <WeatherWidget lat={-1.2921} lng={36.8219} location="Nairobi" />
+                <CitizenAuditorDashboard />
+                <AIInsightsWidget />
               </div>
 
               {/* Primary Sources Links */}
