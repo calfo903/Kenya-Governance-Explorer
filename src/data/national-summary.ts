@@ -2,7 +2,7 @@ import { NationalSummary, AUDIT_OPINIONS } from './types';
 
 /**
  * National Summary Statistics
- * Compiled from OAG and CoB reports
+ * Compiled from OAG, CoB, CRA, and National Treasury reports
  *
  * DISCLAIMER: These figures are derived from publicly available reports.
  * Where exact figures differ between sources, the most recent official
@@ -13,9 +13,9 @@ export const nationalSummary: NationalSummary = {
     {
       financialYear: 'FY 2024/25',
       countyExecutive: {
-        unmodified: 1,
+        unmodified: 1,   // Makueni
         qualified: 44,
-        adverse: 2,
+        adverse: 2,      // Meru, Embu
         disclaimer: 0,
       },
       countyAssembly: {
@@ -107,7 +107,7 @@ export const nationalSummary: NationalSummary = {
     {
       financialYear: 'FY 2024/25',
       period: 'Full Year',
-      avgDevelopmentAbsorption: 48,
+      avgDevelopmentAbsorption: 45,
       avgRecurrentAbsorption: 89,
       topPerformers: [
         { county: 'Mandera', rate: 78 },
@@ -149,12 +149,55 @@ export function getTotalCounties() {
 }
 
 /**
+ * Total counties audited by OAG (all 47 counties are audited each FY)
+ */
+export const totalCountiesAudited = 47;
+
+/**
+ * National Fiscal Data
+ * Source: Commission on Revenue Allocation (CRA) & National Treasury
+ */
+export const nationalFiscalData = {
+  equitableShare: {
+    'FY 2024/25': {
+      amount: 387.4, // KSh billion — actual disbursement
+      source: 'National Treasury / Division of Revenue Act 2024',
+    },
+    'FY 2025/26': {
+      amount: 415, // KSh billion — after Division of Revenue Amendment Act
+      source: 'National Treasury / Division of Revenue Amendment Act 2025',
+    },
+    'FY 2025/26 (CRA Recommended)': {
+      amount: 417.4, // KSh billion — CRA recommendation
+      source: 'Commission on Revenue Allocation (CRA) Policy Recommendations',
+    },
+  },
+  ownSourceRevenue: {
+    'FY 2024/25': {
+      collectionTarget: 45, // KSh billion — total county own-source revenue target
+      note: 'Aggregate target across all 47 counties; actual collection typically falls short',
+      source: 'Commission on Revenue Allocation / County Budget Estimates',
+    },
+  },
+  avgDevelopmentAbsorptionRate: 45, // % — varies widely by county (some <10%, others >70%)
+} as const;
+
+/**
  * Coalition Distribution among 47 Governors
  * Source: IEBC Official Results, August 2022 General Election
+ *
+ * Note: Post-election defections have shifted the balance.
+ * Kenya Kwanza Alliance gained several governors through defections
+ * from Azimio la Umoja since the 2022 election.
+ *
+ * Current distribution (as of 2025):
+ * - Kenya Kwanza Alliance: ~32 governors
+ * - Azimio la Umoja: ~12 governors
+ * - Independent: ~3 governors
  */
 export const governorCoalitionDistribution = {
-  'Kenya Kwanza Alliance': 26,
-  'Azimio la Umoja One Kenya Coalition': 18,
+  'Kenya Kwanza Alliance': 32,
+  'Azimio la Umoja One Kenya Coalition': 12,
   'Independent': 3,
 };
 

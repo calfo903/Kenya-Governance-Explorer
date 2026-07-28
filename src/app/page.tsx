@@ -43,6 +43,7 @@ import CBEFMeetingPage from '@/components/cbef-meeting-page';
 import ProcurementRedFlagsPage from '@/components/procurement-redflags-page';
 import EmbedWidgetPage from '@/components/embed-widget-page';
 import MzalendoPage from '@/components/mzalendo-page';
+
 import CountyLeadershipTreePage from '@/components/county-leadership-tree';
 import ProjectsBrowserPage from '@/components/projects-browser-page';
 import SecureWhistleblowerModal from '@/components/secure-whistleblower-modal';
@@ -635,7 +636,15 @@ export default function KenyaGovernancePage() {
             {activeTab === 'redflags' && <ProcurementRedFlagsPage />}
             {activeTab === 'embed' && <EmbedWidgetPage />}
             {activeTab === 'leadership' && <CountyLeadershipTreePage />}
-            {activeTab === 'projects' && <ProjectsBrowserPage />}
+            {activeTab === 'projects' && (
+            <div className="space-y-4">
+              <ProjectsBrowserPage />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ProjectVelocityChart projectRef="PRJ-034-001" />
+                <RiskForecastWidget projectId="PRJ-034-001" />
+              </div>
+            </div>
+            )}
             {activeTab === 'mzalendo' && <MzalendoPage />}
             {activeTab === 'securetip' && <SecureWhistleblowerModal />}
           </main>
@@ -1478,3 +1487,4 @@ function JsonSchemaView() {
     </div>
   );
 }
+// force recompile

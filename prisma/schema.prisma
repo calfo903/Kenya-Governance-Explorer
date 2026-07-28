@@ -7,180 +7,145 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── County Governance Domain Models ────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// County Governance Database Schema
+// Kenya Governance Explorer — 2022-2027 Term
+// ═══════════════════════════════════════════════════════════════════
 
 model County {
-  id              String   @id @default(cuid())
-  code            String   @unique // IEBC county code e.g. "001"
-  name            String
-  region          String
-  capital         String
-  population      Int
-  areaSqKm        Float
-  constituencies  Int
-  wards           Int
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @unique // e.g. "001"
+  name           String   // e.g. "Mombasa"
+  code           String   @unique
+  region         String
+  capital        String
+  population     Int
+  areaSqKm       Float
+  constituencies Int
+  wards          Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  governor       Governor?
-  auditReports   AuditReport[]
-  budgetEntries  BudgetEntry[]
-  scorecards     Scorecard[]
-  tips           CitizenTip[]
-  stories        CitizenStory[]
+  // Relations
+  governor      Governor?
+  leadership    CountyLeadership?
+  auditRecords  CountyAuditRecord[]
+  budgetRecords CountyBudgetRecord[]
+  projects      ProjectRecord[]
 }
 
 model Governor {
-  id              String  @id @default(cuid())
-  countyId        String  @unique
-  countyCode      String
-  fullName        String
-  officialTitle   String
-  politicalParty  String
-  coalition       String?
-  termStart       String
-  termEnd         String
-  xHandle         String?
-  website         String?
-  biography       String?
+  id         String   @id @default(uuid())
+  fullName   String
+  party      String
+  coalition  String?
+  termStart  DateTime
+  termEnd    DateTime
+  countyCode String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  county County @relation(fields: [countyCode], references: [id])
+}
+
+model CountyLeadership {
+  id              String  @id @default(uuid())
+  countyCode      String  @unique
+
+  deputyGovernor  String?
+  senator         String?
+  womanRep        String?
+  assemblySpeaker String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  county          County  @relation(fields: [countyId], references: [id], onDelete: Cascade)
-  manifestoItems  ManifestoItem[]
+  county County @relation(fields: [countyCode], references: [id])
+  cecms  CountyCECM[]
+  mcas   CountyMCA[]
 }
 
-model AuditReport {
-  id              String  @id @default(cuid())
-  countyId        String
-  countyCode      String
-  financialYear   String
-  countyExecutive String // unmodified | qualified | adverse | disclaimer
-  countyAssembly   String
-  source          String
-  reportTitle     String
-  url             String?
-  section         String?
-  accessedDate    String
-  createdAt       DateTime @default(now())
+model CountyCECM {
+  id           String  @id @default(uuid())
+  leadershipId String
+  portfolio    String
+  fullName     String
+  qualification String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  county          County  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+  leadership CountyLeadership @relation(fields: [leadershipId], references: [id])
+}
+
+model CountyMCA {
+  id           String  @id @default(uuid())
+  leadershipId String
+  constituency String
+  ward         String
+  fullName     String
+  party        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  leadership CountyLeadership @relation(fields: [leadershipId], references: [id])
+}
+
+model CountyAuditRecord {
+  id               String  @id @default(uuid())
+  countyCode       String
+  financialYear    String
+  executiveOpinion String?
+  assemblyOpinion  String?
+  keyFindings      String // JSON array stored as text for SQLite compatibility
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  county County @relation(fields: [countyCode], references: [id])
 
   @@index([countyCode])
   @@index([financialYear])
 }
 
-model BudgetEntry {
-  id                      String  @id @default(cuid())
-  countyId                String
-  countyCode              String
-  financialYear           String
-  totalBudget             Float
-  developmentBudget       Float?
-  recurrentBudget        Float?
-  devAbsorptionRate       Float?
-  recurrentAbsorptionRate Float?
-  ownSourceRevenue        Float?
-  pendingBills            Float?
-  unspentAmount           Float?
-  source                  String
-  reportTitle             String
-  accessedDate            String
-  createdAt               DateTime @default(now())
+model CountyBudgetRecord {
+  id                    String  @id @default(uuid())
+  countyCode            String
+  financialYear         String
+  totalBudget           Float
+  developmentBudget     Float
+  recurrentBudget       Float
+  devAbsorptionRate     Float
+  recurrentAbsorptionRate Float
+  ownSourceRevenue      Float
+  pendingBills          Float
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  county  County  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+  county County @relation(fields: [countyCode], references: [id])
 
   @@index([countyCode])
   @@index([financialYear])
 }
 
-model Scorecard {
-  id                              String   @id @default(cuid())
-  countyId                        String
-  countyCode                      String
-  overallAccountabilityScore      Float?
-  transparencyAssetDeclaration     Float?
-  projectDeliveryAbsorptionRate   Float?
-  manifestoPromiseFulfillment     Float?
-  legislativeOversightPerformance Float?
-  ethicsIntegrity                  Float?
-  publicSentimentCitizenAwareness  Float?
-  dataGapsNote                    String?
-  lastUpdated                     String
-  createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
+model ProjectRecord {
+  id               String  @id
+  name             String
+  countyCode       String
+  category         String
+  status           String  @default("planning")
+  budgetAllocated   Float
+  budgetSpent       Float   @default(0)
+  auditOpinion     String?
+  riskScore        Int     @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  county  County  @relation(fields: [countyId], references: [id], onDelete: Cascade)
-
-  @@index([countyCode])
+  county County @relation(fields: [countyCode], references: [id])
 }
 
-model ManifestoItem {
-  id          String  @id @default(cuid())
-  governorId  String
-  category    String
-  description String
-  status      String  // completed | in_progress | not_started | blocked
-  evidence    String?
-  source      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  governor Governor @relation(fields: [governorId], references: [id], onDelete: Cascade)
-}
-
-model CitizenTip {
-  id          String   @id @default(cuid())
-  countyId    String?
-  countyName  String
-  category    String
-  description String
-  anonymous   Boolean  @default(true)
-  status      String   @default("pending") // pending | reviewed | actioned | dismissed
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  county County? @relation(fields: [countyId], references: [id], onDelete: SetNull)
-}
-
-model CitizenStory {
-  id          String   @id @default(cuid())
-  countyId    String?
-  countyName  String
-  sector      String   // health | education | roads | water | agriculture
-  title       String
-  experience  String
-  rating      Int       // 1-5
-  anonymous   Boolean   @default(true)
-  status      String    @default("published")
-  createdAt   DateTime  @default(now())
-
-  county County? @relation(fields: [countyId], references: [id], onDelete: SetNull)
-}
-
-model EmbedWidget {
-  id          String   @id @default(cuid())
-  countyCode  String
-  widgetType  String   // scorecard | budget | audit
-  embedCode   String
-  createdAt   DateTime @default(now())
-}
-
-// Legacy models kept for compatibility
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model WhistleblowerReport {
+  id             String   @id @default(uuid())
+  category       String
+  countyCode     String?
+  description    String
+  encrypted      Boolean  @default(false)
+  status         String   @default("pending")
+  createdAt      DateTime @default(now())
 }

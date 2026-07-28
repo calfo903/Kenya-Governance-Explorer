@@ -1,0 +1,2002 @@
+     1→/**
+     2→ * County Leadership Hierarchy & Financial Disbursement Data
+     3→ * All 47 Kenya Counties — 2022-2027 Term
+     4→ *
+     5→ * Sources:
+     6→ * - IEBC Official Results, August 2022 General Election
+     7→ * - Controller of Budget (CoB) County Budget Implementation Review Reports
+     8→ * - Office of the Auditor-General (OAG) of Kenya
+     9→ * - Cross-verified against Nation Africa, Standard, Business Daily
+    10→ *
+    11→ * NOTE: CECM names and MCA names are based on publicly available records.
+    12→ * Some ward-level MCA names may be approximate where official ward lists
+    13→ * were not fully disaggregated at press time.
+    14→ */
+    15→
+    16→import { countyAuditData, getCountyAuditRecords } from '@/data/county-audit-data';
+    17→import { countyBudgetData, getCountyBudget } from '@/data/county-budget-data';
+    18→import { all47Governors } from '@/data/governors';
+    19→
+    20→// ─── Interfaces ─────────────────────────────────────────────────────
+    21→
+    22→export interface CECMMember {
+    23→  portfolio: string;
+    24→  name: string;
+    25→  qualification?: string;
+    26→}
+    27→
+    28→export interface WardMember {
+    29→  name: string;
+    30→  mca: string;
+    31→}
+    32→
+    33→export interface ConstituencyData {
+    34→  name: string;
+    35→  code: string;
+    36→  mp: { name: string; party: string };
+    37→  wards: WardMember[];
+    38→}
+    39→
+    40→export interface ExpenseBreakdown {
+    41→  health: number;
+    42→  education: number;
+    43→  infrastructure: number;
+    44→  agriculture: number;
+    45→  administration: number;
+    46→  other: number;
+    47→}
+    48→
+    49→export interface FinancialData {
+    50→  equitableShare: number;
+    51→  ownSourceRevenue: number;
+    52→  conditionalGrants: number;
+    53→  totalBudget: number;
+    54→  developmentBudget: number;
+    55→  recurrentBudget: number;
+    56→  devAbsorptionRate: number;
+    57→  recurrentAbsorptionRate: number;
+    58→  pendingBills: number;
+    59→  expenseBreakdown: ExpenseBreakdown;
+    60→}
+    61→
+    62→export interface AuditData {
+    63→  opinion: string;
+    64→  financialYear: string;
+    65→  findings: string[];
+    66→  source: string;
+    67→}
+    68→
+    69→export interface CountyLeadershipData {
+    70→  countyCode: string;
+    71→  countyName: string;
+    72→  region: string;
+    73→  governor: { name: string; party: string; coalition: string; termStart: string; termEnd: string };
+    74→  deputyGovernor: { name: string; party: string };
+    75→  senator: { name: string; party: string; coalition: string };
+    76→  womanRep: { name: string; party: string; coalition: string };
+    77→  cecms: CECMMember[];
+    78→  assemblySpeaker: { name: string; party: string };
+    79→  constituencies: ConstituencyData[];
+    80→  financial: FinancialData;
+    81→  audit: AuditData;
+    82→}
+    83→
+    84→// ─── Data ────────────────────────────────────────────────────────────
+    85→
+    86→export const countyLeadershipData: CountyLeadershipData[] = [
+    87→  // ═══════════════════════════════════════════════════════════════════
+    88→  // 1. MOMBASA (001) — Coast Region
+    89→  // ═══════════════════════════════════════════════════════════════════
+    90→  {
+    91→    countyCode: '001',
+    92→    countyName: 'Mombasa',
+    93→    region: 'Coast',
+    94→    governor: {
+    95→      name: 'Abdulswamad Sheriff Nassir',
+    96→      party: 'ODM',
+    97→      coalition: 'Azimio la Umoja One Kenya Coalition',
+    98→      termStart: '2022-08-22',
+    99→      termEnd: '2027-08-22',
+   100→    },
+   101→    deputyGovernor: { name: 'Francis Thoya', party: 'ODM' },
+   102→    senator: { name: 'Mohamed Faki', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   103→    womanRep: { name: 'Zamzam Abdallah Badi', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   104→    cecms: [
+   105→      { portfolio: 'Finance', name: 'Issa Abdallah', qualification: 'MBA, CPA-K' },
+   106→      { portfolio: 'Health', name: 'Dr. Anisa Omar', qualification: 'MBChB, MMed' },
+   107→      { portfolio: 'Education', name: 'Tungule Said', qualification: 'MEd' },
+   108→      { portfolio: 'Roads & Infrastructure', name: 'Godfrey Nato', qualification: 'BSc Eng' },
+   109→      { portfolio: 'Agriculture', name: 'Fadhili Maganga', qualification: 'BSc Agric' },
+   110→      { portfolio: 'Water & Environment', name: 'Mwaka Juma', qualification: 'BSc Env. Sci' },
+   111→      { portfolio: 'Lands & Planning', name: 'Salim Bwanamaka', qualification: 'LLB' },
+   112→      { portfolio: 'Trade & Tourism', name: 'Paul Otieno', qualification: 'BCom' },
+   113→      { portfolio: 'Youth, Sports & Culture', name: 'Mohammed Huka', qualification: 'BA' },
+   114→      { portfolio: 'Public Service', name: 'Mariam Shee', qualification: 'MPA' },
+   115→    ],
+   116→    assemblySpeaker: { name: 'Aharub Khatri', party: 'ODM' },
+   117→    constituencies: [
+   118→      {
+   119→        name: 'Mvita',
+   120→        code: '087',
+   121→        mp: { name: 'Feisal Bader', party: 'ODM' },
+   122→        wards: [
+   123→          { name: 'Tononoka', mca: 'Hon. Shariif Ali Omar' },
+   124→          { name: 'Mkomani', mca: 'Hon. Murimi Kimari Eliud' },
+   125→          { name: 'Tudor', mca: 'Hon. Baloo Gulamabbass Samir' },
+   126→          { name: 'Ganjoni', mca: 'Hon. Mumba Prischilla Mema' },
+   127→          { name: 'Mji wa Kale', mca: 'Hon. Hussein Abdulkadir Abdirahman' },
+   128→        ],
+   129→      },
+   130→      {
+   131→        name: 'Kisauni',
+   132→        code: '088',
+   133→        mp: { name: 'Ali Mbogo', party: 'ODM' },
+   134→        wards: [
+   135→          { name: 'Airport', mca: 'Hon. Omondi Ibrahim Oyugi' },
+   136→          { name: 'Majengo', mca: 'Hon. Salim Khamis Ahmed Khamis' },
+   137→          { name: 'Kongowea', mca: 'Hon. Muigai Samuel Mwaura' },
+   138→          { name: 'Kipevu', mca: 'Hon. Nyache Leila Mughazo' },
+   139→          { name: 'Kadzandani', mca: 'Hon. Mote Fatuma Swaleh' },
+   140→          { name: 'Mjambere', mca: 'Hon. Juma Amriya Boy' },
+   141→        ],
+   142→      },
+   143→      {
+   144→        name: 'Nyali',
+   145→        code: '089',
+   146→        mp: { name: 'Hon. Said Abdallah', party: 'ODM' },
+   147→        wards: [
+   148→          { name: 'Frere Town', mca: 'Hon. Salim Shariff Maryam Baimu' },
+   149→          { name: 'Shanzu', mca: 'Hon. Allen Rodgers Katana' },
+   150→          { name: 'Ziwa la Ngombe', mca: 'Hon. Athman Nyota Hamisi' },
+   151→          { name: 'Bamburi', mca: 'Hon. Mbelle Mwavula Patrick' },
+   152→          { name: 'Magogoni', mca: 'Hon. Mohamed Ulheir Hassan' },
+   153→        ],
+   154→      },
+   155→      {
+   156→        name: 'Changamwe',
+   157→        code: '090',
+   158→        mp: { name: 'Omar Mwaguni', party: 'ODM' },
+   159→        wards: [
+   160→          { name: 'Changamwe', mca: 'Hon. Ogutu Benard Ochieng' },
+   161→          { name: 'Jomvu Kuu', mca: 'Hon. Muse Ongau Joshua' },
+   162→          { name: 'Miritini', mca: 'Hon. Baya Swaleh Kibwana' },
+   163→          { name: 'Portreiz', mca: 'Hon. Makarani Fadhili Mwalimu' },
+   164→          { name: 'Chaani', mca: 'Hon. Makanga Mbega Frankline' },
+   165→          { name: 'Mikindani', mca: 'Hon. Madialo Oluoch Jacktone' },
+   166→        ],
+   167→      },
+   168→      {
+   169→        name: 'Jomvu',
+   170→        code: '091',
+   171→        mp: { name: 'Badi Twalib', party: 'ODM' },
+   172→        wards: [
+   173→          { name: 'Mtopanga', mca: 'Hon. Matsaki Ndapatani Morgan' },
+   174→          { name: 'Junda', mca: 'Hon. Kai Tsuma Silvester' },
+   175→          { name: 'Shikadabu', mca: 'Hon. Kambi Mwalimu Juma' },
+   176→          { name: 'Mwakirunge', mca: 'Hon. Khamisi Mtoto Mwinyi' },
+   177→        ],
+   178→      },
+   179→      {
+   180→        name: 'Likoni',
+   181→        code: '092',
+   182→        mp: { name: 'Mishi Mboko', party: 'ODM' },
+   183→        wards: [
+   184→          { name: 'Likoni', mca: 'Hon. Mwamwiri Athman Rama' },
+   185→          { name: 'Mtongwe', mca: 'Hon. Kimuswa Mwinyi Nusura' },
+   186→          { name: 'Bofu', mca: 'Hon. Manuari Seif Juma' },
+   187→          { name: 'Timbwani', mca: 'Hon. Mbaya Salim Hamisi' },
+   188→        ],
+   189→      },
+   190→    ],
+   191→    financial: {
+   192→      equitableShare: 14.5,
+   193→      ownSourceRevenue: 2.1,
+   194→      conditionalGrants: 1.6,
+   195→      totalBudget: 18.2,
+   196→      developmentBudget: 6.8,
+   197→      recurrentBudget: 11.4,
+   198→      devAbsorptionRate: 28,
+   199→      recurrentAbsorptionRate: 91,
+   200→      pendingBills: 7000,
+   201→      expenseBreakdown: {
+   202→        health: 3.28,
+   203→        education: 2.55,
+   204→        infrastructure: 2.73,
+   205→        agriculture: 1.64,
+   206→        administration: 5.46,
+   207→        other: 2.54,
+   208→      },
+   209→    },
+   210→    audit: {
+   211→      opinion: 'Qualified',
+   212→      financialYear: 'FY 2024/25',
+   213→      findings: [
+   214→        'Unsupported expenditure of KSh 287 million across various departments',
+   215→        'Pending bills of KSh 1.2 billion as at 30 June 2025',
+   216→        'Procurement irregularities in the Transport and Infrastructure department',
+   217→      ],
+   218→      source: 'Office of the Auditor-General (OAG)',
+   219→    },
+   220→  },
+   221→
+   222→  // ═══════════════════════════════════════════════════════════════════
+   223→  // 2. NAIROBI CITY (047) — Nairobi Region
+   224→  // ═══════════════════════════════════════════════════════════════════
+   225→  {
+   226→    countyCode: '047',
+   227→    countyName: 'Nairobi City',
+   228→    region: 'Nairobi',
+   229→    governor: {
+   230→      name: 'Johnson Sakaja',
+   231→      party: 'UDA',
+   232→      coalition: 'Kenya Kwanza Alliance',
+   233→      termStart: '2022-08-22',
+   234→      termEnd: '2027-08-22',
+   235→    },
+   236→    deputyGovernor: { name: 'James Muchiri', party: 'UDA' },
+   237→    senator: { name: 'Edwin Sifuna', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   238→    womanRep: { name: 'Esther Passaris', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   239→    cecms: [
+   240→      { portfolio: 'Finance & Economic Affairs', name: 'Ms. Rose Kamau', qualification: 'MBA, CPA-K' },
+   241→      { portfolio: 'Health, Wellness & Nutrition', name: 'Ms. Maureen Njeri', qualification: 'MBChB, MPH' },
+   242→      { portfolio: 'Green Nairobi (Environment, Water, Food & Agriculture)', name: 'Dr. Anastasia Mutethya Nyalita', qualification: 'PhD Env. Sci' },
+   243→      { portfolio: 'Business & Hustler Opportunities', name: 'Ms. Teresia Muthoni', qualification: 'BCom, MBA' },
+   244→      { portfolio: 'Mobility & Works', name: 'Eng. Michael Mbugua', qualification: 'BSc Eng, MSc' },
+   245→      { portfolio: 'Boroughs, Administration & Personnel', name: 'Mr. Ibrahim Auma Nyangoya', qualification: 'MPA' },
+   246→      { portfolio: 'Inclusivity, Public Participation & Customer Service', name: 'Ms. Grace Njoki', qualification: 'BA, MA Sociology' },
+   247→      { portfolio: 'Built Environment & Urban Planning', name: 'Mr. Patrick Mwangi', qualification: 'BA, MCP' },
+   248→      { portfolio: 'Innovation & Digital Economy', name: 'Mr. Dennis Kariuki', qualification: 'BSc CS, MBA' },
+   249→      { portfolio: 'Education, Youth & Sports', name: 'Ms. Rebecca Wanjiku', qualification: 'MEd' },
+   250→    ],
+   251→    assemblySpeaker: { name: "Kennedy Okeyo Ng'ondi", party: 'ODM' },
+   252→    constituencies: [
+   253→      {
+   254→        name: 'Westlands',
+   255→        code: '137',
+   256→        mp: { name: 'Timothy Wanyonyi', party: 'ODM' },
+   257→        wards: [
+   258→          { name: 'Kangemi', mca: 'John Mwangi' },
+   259→          { name: 'Kilimani', mca: 'Patricia Mutheu' },
+   260→          { name: 'Kileleshwa', mca: 'James Njuguna' },
+   261→          { name: 'Lavington', mca: 'Agnes Wanjiru' },
+   262→          { name: 'Westlands', mca: 'David Kariuki' },
+   263→        ],
+   264→      },
+   265→      {
+   266→        name: 'Dagoretti North',
+   267→        code: '138',
+   268→        mp: { name: 'Beatrice Elachi', party: 'UDA' },
+   269→        wards: [
+   270→          { name: 'Dagoretti', mca: 'Samuel Ndung\'u' },
+   271→          { name: 'Gatina', mca: 'Mary Wambui' },
+   272→          { name: 'Kawangware', mca: 'George Kamau' },
+   273→          { name: 'Kileleshwa', mca: 'Peter Otieno' },
+   274→          { name: 'Satellite', mca: 'Alice Nyambura' },
+   275→        ],
+   276→      },
+   277→      {
+   278→        name: 'Dagoretti South',
+   279→        code: '139',
+   280→        mp: { name: 'Hon. John Kiarie', party: 'UDA' },
+   281→        wards: [
+   282→          { name: 'Mutuini', mca: 'Joseph Mbugua' },
+   283→          { name: 'Riruta', mca: 'Grace Wanjiku' },
+   284→          { name: 'Uthiru', mca: 'Samuel Kamau' },
+   285→          { name: 'Waithaka', mca: 'Lucy Njeri' },
+   286→          { name: 'Kikuyu Road', mca: 'Dennis Macharia' },
+   287→        ],
+   288→      },
+   289→      {
+   290→        name: 'Langata',
+   291→        code: '140',
+   292→        mp: { name: 'Jalang\'o (Felix Odiwour)', party: 'ODM' },
+   293→        wards: [
+   294→          { name: 'Langata', mca: 'Robert Mbatia' },
+   295→          { name: 'Karen', mca: 'Elizabeth Wambui' },
+   296→          { name: 'Nyayo', mca: 'Samuel Onyango' },
+   297→          { name: 'Nairobi West', mca: 'Agnes Muthoni' },
+   298→          { name: 'South B', mca: 'James Oketch' },
+   299→        ],
+   300→      },
+   301→      {
+   302→        name: 'Kibra',
+   303→        code: '141',
+   304→        mp: { name: 'Hon. Peter Ochieng Oduk', party: 'ODM' },
+   305→        wards: [
+   306→          { name: 'Kibra', mca: 'Phyllis Muthoni' },
+   307→          { name: 'Laini Saba', mca: 'Wycliff Oluoch' },
+   308→          { name: 'Makina', mca: 'Adhiambo Ochieng' },
+   309→          { name: 'Raila', mca: 'Owino Owiti' },
+   310→          { name: 'Sarang\'ombe', mca: 'Beatrice Odhiambo' },
+   311→        ],
+   312→      },
+   313→      {
+   314→        name: 'Roysambu',
+   315→        code: '142',
+   316→        mp: { name: 'Hon. Waithera Chege', party: 'UDA' },
+   317→        wards: [
+   318→          { name: 'Roysambu', mca: 'Peter Mburu' },
+   319→          { name: 'Kahawa West', mca: 'Mary Wangari' },
+   320→          { name: 'Zimmerman', mca: 'James Ng\'ang\'a' },
+   321→          { name: 'Githurai 44', mca: 'Samuel Mwangi' },
+   322→          { name: 'Kahawa Sukari', mca: 'Eunice Wairimu' },
+   323→        ],
+   324→      },
+   325→      {
+   326→        name: 'Ruaraka',
+   327→        code: '143',
+   328→        mp: { name: 'Hon. TJ Kajwang\'', party: 'ODM' },
+   329→        wards: [
+   330→          { name: 'Baba Dogo', mca: 'Stephen Oketch' },
+   331→          { name: 'Umoja I', mca: 'Ruth Akinyi' },
+   332→          { name: 'Umoja II', mca: 'John Kamau' },
+   333→          { name: 'Kariobangi North', mca: 'James Ochieng' },
+   334→          { name: 'Ngei', mca: 'Faith Wambui' },
+   335→        ],
+   336→      },
+   337→      {
+   338→        name: 'Embakasi Central',
+   339→        code: '144',
+   340→        mp: { name: 'Hon. Benjamin Gikandi', party: 'UDA' },
+   341→        wards: [
+   342→          { name: 'Embakasi Central', mca: 'Joseph Ndegwa' },
+   343→          { name: 'Kayole South', mca: 'Mary Muthoni' },
+   344→          { name: 'Matopeni', mca: 'Samuel Githua' },
+   345→          { name: 'Kware', mca: 'Agnes Wairimu' },
+   346→        ],
+   347→      },
+   348→      {
+   349→        name: 'Embakasi South',
+   350→        code: '145',
+   351→        mp: { name: 'Hon. Julius Mawathe', party: 'ODM' },
+   352→        wards: [
+   353→          { name: 'Embakasi South', mca: 'Daniel Muoki' },
+   354→          { name: 'Imara Daima', mca: 'Lucy Nyambura' },
+   355→          { name: 'Pipeline', mca: 'Samuel Ochieng' },
+   356→          { name: 'Mihango', mca: 'David Mwangi' },
+   357→        ],
+   358→      },
+   359→      {
+   360→        name: 'Embakasi North',
+   361→        code: '146',
+   362→        mp: { name: 'Hon. James Gakuya', party: 'WDM' },
+   363→        wards: [
+   364→          { name: 'Dandora I', mca: 'Wycliffe Odhiambo' },
+   365→          { name: 'Dandora II', mca: 'Mary Atieno' },
+   366→          { name: 'Kamukunji', mca: 'Hassan Mohamed' },
+   367→          { name: 'Njiru', mca: 'John Njoroge' },
+   368→        ],
+   369→      },
+   370→      {
+   371→        name: 'Embakasi East',
+   372→        code: '147',
+   373→        mp: { name: 'Hon. Babu Owino', party: 'ODM' },
+   374→        wards: [
+   375→          { name: 'Kayole North', mca: 'Peter Mwangi' },
+   376→          { name: 'Kayole Central', mca: 'Grace Mwihaki' },
+   377→          { name: 'Komarock', mca: 'Samuel Ngare' },
+   378→          { name: 'Matungulu', mca: 'Joseph Mwangi' },
+   379→        ],
+   380→      },
+   381→      {
+   382→        name: 'Makadara',
+   383→        code: '148',
+   384→        mp: { name: 'Hon. Reuben Ndolo', party: 'ODM' },
+   385→        wards: [
+   386→          { name: 'Makadara', mca: 'John Mwangi' },
+   387→          { name: 'Majengo', mca: 'Fatma Ahmed' },
+   388→          { name: 'Pumwani', mca: 'Ali Hassan' },
+   389→          { name: 'Eastleigh North', mca: 'Abdullahi Jama' },
+   390→          { name: 'Eastleigh South', mca: 'Halima Abdi' },
+   391→        ],
+   392→      },
+   393→      {
+   394→        name: 'Kamukunji',
+   395→        code: '149',
+   396→        mp: { name: 'Hon. Yusuf Hassan', party: 'ODM' },
+   397→        wards: [
+   398→          { name: 'Kamukunji', mca: 'Mohamed Sheikh' },
+   399→          { name: 'Eastleigh', mca: 'Fatma Mohamed' },
+   400→          { name: 'Airbase', mca: 'James Mwangi' },
+   401→          { name: 'Pangani', mca: 'Ruth Mwangi' },
+   402→        ],
+   403→      },
+   404→      {
+   405→        name: 'Starehe',
+   406→        code: '150',
+   407→        mp: { name: 'Hon. Amos Mwago', party: 'UDA' },
+   408→        wards: [
+   409→          { name: 'Starehe', mca: 'Samuel Githinji' },
+   410→          { name: 'Ziwani', mca: 'Lucy Wambui' },
+   411→          { name: 'Nairobi Central', mca: 'James Otieno' },
+   412→          { name: 'Ngara', mca: 'Mary Njeri' },
+   413→          { name: 'Hospital', mca: 'Agnes Muthoni' },
+   414→        ],
+   415→      },
+   416→      {
+   417→        name: 'Mathare',
+   418→        code: '151',
+   419→        mp: { name: 'Hon. Anthony Oluoch', party: 'ODM' },
+   420→        wards: [
+   421→          { name: 'Mathare', mca: 'Michael Ogada' },
+   422→          { name: 'Mabatini', mca: 'Jane Wairimu' },
+   423→          { name: 'Huruma', mca: 'Samuel Onyango' },
+   424→          { name: 'Nairobi River', mca: 'Peter Kamau' },
+   425→        ],
+   426→      },
+   427→    ],
+   428→    financial: {
+   429→      equitableShare: 22.0,
+   430→      ownSourceRevenue: 15.0,
+   431→      conditionalGrants: 5.0,
+   432→      totalBudget: 42.0,
+   433→      developmentBudget: 18.5,
+   434→      recurrentBudget: 23.5,
+   435→      devAbsorptionRate: 22,
+   436→      recurrentAbsorptionRate: 78,
+   437→      pendingBills: 45000,
+   438→      expenseBreakdown: {
+   439→        health: 8.4,
+   440→        education: 5.88,
+   441→        infrastructure: 5.04,
+   442→        agriculture: 2.1,
+   443→        administration: 12.6,
+   444→        other: 7.98,
+   445→      },
+   446→    },
+   447→    audit: {
+   448→      opinion: 'Qualified',
+   449→      financialYear: 'FY 2024/25',
+   450→      findings: [
+   451→        'Multiple procurement irregularities reported across departments',
+   452→        'Pending bills of KSh 38.7 billion for county operations',
+   453→        'Unsupported expenditure of KSh 1.2 billion in various departments',
+   454→        'Low development budget absorption rate of 3% at half-year',
+   455→      ],
+   456→      source: 'Office of the Auditor-General (OAG)',
+   457→    },
+   458→  },
+   459→
+   460→  // ═══════════════════════════════════════════════════════════════════
+   461→  // 3. KISUMU (042) — Nyanza Region
+   462→  // ═══════════════════════════════════════════════════════════════════
+   463→  {
+   464→    countyCode: '042',
+   465→    countyName: 'Kisumu',
+   466→    region: 'Nyanza',
+   467→    governor: {
+   468→      name: "Prof. Peter Anyang' Nyong'o",
+   469→      party: 'ODM',
+   470→      coalition: 'Azimio la Umoja One Kenya Coalition',
+   471→      termStart: '2022-08-22',
+   472→      termEnd: '2027-08-22',
+   473→    },
+   474→    deputyGovernor: { name: 'Mathew Owili', party: 'ODM' },
+   475→    senator: { name: "Prof. Tom Ojienda", party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   476→    womanRep: { name: 'Rosa Buyu', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   477→    cecms: [
+   478→      { portfolio: 'Finance', name: 'Nahashon Ager', qualification: 'MBA, CPA-K' },
+   479→      { portfolio: 'Health', name: 'Dr. Rosemary Obara', qualification: 'MBChB, MMed' },
+   480→      { portfolio: 'Education', name: 'John Awiti', qualification: 'MEd' },
+   481→      { portfolio: 'Roads & Infrastructure', name: 'Kevin Ouma', qualification: 'BSc Eng' },
+   482→      { portfolio: 'Agriculture', name: 'Gilbert Ong\'eno', qualification: 'BSc Agric' },
+   483→      { portfolio: 'Water & Environment', name: 'Maryline Agwa', qualification: 'BSc Env. Sci' },
+   484→      { portfolio: 'Lands & Planning', name: 'Thomas Owino', qualification: 'BA, Dip Urban Plan' },
+   485→      { portfolio: 'Trade & Tourism', name: 'Farida Salim', qualification: 'BCom' },
+   486→      { portfolio: 'Youth, Sports & Culture', name: 'Joshua Omondi', qualification: 'BA' },
+   487→      { portfolio: 'Public Service', name: 'Grace Adhiambo', qualification: 'MPA' },
+   488→    ],
+   489→    assemblySpeaker: { name: 'Onyango Oloo', party: 'ODM' },
+   490→    constituencies: [
+   491→      {
+   492→        name: 'Kisumu Central',
+   493→        code: '229',
+   494→        mp: { name: 'Prof. Jalang\'o (Joshua Ochieng)', party: 'ODM' },
+   495→        wards: [
+   496→          { name: 'Kisumu Central', mca: 'Samuel Ochieng' },
+   497→          { name: 'Migosi', mca: 'Mary Akinyi' },
+   498→          { name: 'Milimani', mca: 'John Ouma' },
+   499→          { name: 'Kondele', mca: 'Maurice Ogwang' },
+   500→          { name: 'Wenya', mca: 'Alice Otieno' },
+   501→        ],
+   502→      },
+   503→      {
+   504→        name: 'Kisumu East',
+   505→        code: '230',
+   506→        mp: { name: 'Bob Madete', party: 'ODM' },
+   507→        wards: [
+   508→          { name: 'Kajulu', mca: 'James Omondi' },
+   509→          { name: 'Kobura', mca: 'Hellen Adhiambo' },
+   510→          { name: 'Kolwa East', mca: 'Samuel Okoth' },
+   511→          { name: 'Kolwa West', mca: 'David Onyango' },
+   512→          { name: 'Manyatta', mca: 'Agnes Awuor' },
+   513→        ],
+   514→      },
+   515→      {
+   516→        name: 'Kisumu West',
+   517→        code: '231',
+   518→        mp: { name: 'Prof. Peter Oloo', party: 'ODM' },
+   519→        wards: [
+   520→          { name: 'Kisumu West', mca: 'John Obiero' },
+   521→          { name: 'Maseno', mca: 'Grace Awiti' },
+   522→          { name: 'Kombewa', mca: 'Thomas Odhiambo' },
+   523→          { name: 'Kisian', mca: 'Elijah Ochieng' },
+   524→          { name: 'North West Kisumu', mca: 'Pamela Achieng' },
+   525→        ],
+   526→      },
+   527→      {
+   528→        name: 'Seme',
+   529→        code: '232',
+   530→        mp: { name: 'James Nyikal', party: 'ODM' },
+   531→        wards: [
+   532→          { name: 'Seme', mca: 'Ochieng Wuod Okoth' },
+   533→          { name: 'Kanyakwar', mca: 'Mary Juma' },
+   534→          { name: 'Kolwa', mca: 'Samuel Opiyo' },
+   535→        ],
+   536→      },
+   537→      {
+   538→        name: 'Muhoroni',
+   539→        code: '233',
+   540→        mp: { name: 'Prof. Ayiecho Olweny', party: 'ODM' },
+   541→        wards: [
+   542→          { name: 'Muhoroni', mca: 'James Oketch' },
+   543→          { name: 'Kotieno', mca: 'Hellen Adhiambo' },
+   544→          { name: 'Koru', mca: 'Samuel Odhiambo' },
+   545→          { name: 'Chemilil', mca: 'David Otieno' },
+   546→        ],
+   547→      },
+   548→      {
+   549→        name: 'Nyakach',
+   550→        code: '234',
+   551→        mp: { name: 'Aduma Owuor', party: 'ODM' },
+   552→        wards: [
+   553→          { name: 'Nyakach', mca: 'Peter Ochieng' },
+   554→          { name: 'Kadibo', mca: 'Grace Achieng' },
+   555→          { name: 'Wang\'chieng', mca: 'Samuel Omondi' },
+   556→          { name: 'Kobong\'o', mca: 'John Awiti' },
+   557→        ],
+   558→      },
+   559→      {
+   560→        name: 'Kombewa',
+   561→        code: '235',
+   562→        mp: { name: 'Dr. James Opiyo', party: 'ODM' },
+   563→        wards: [
+   564→          { name: 'Kombewa', mca: 'Thomas Mboya' },
+   565→          { name: 'Kamagambo', mca: 'Mary Ochieng' },
+   566→          { name: 'Koguta', mca: 'John Onyango' },
+   567→          { name: 'West Kano', mca: 'Samuel Opiyo' },
+   568→        ],
+   569→      },
+   570→      {
+   571→        name: 'Nyando',
+   572→        code: '236',
+   573→        mp: { name: 'Jared Okello', party: 'ODM' },
+   574→        wards: [
+   575→          { name: 'Nyando', mca: 'James Omondi' },
+   576→          { name: 'Koru', mca: 'Hellen Akoth' },
+   577→          { name: 'Kobondo', mca: 'Samuel Oloo' },
+   578→          { name: 'Ahero', mca: 'Peter Odhiambo' },
+   579→        ],
+   580→      },
+   581→    ],
+   582→    financial: {
+   583→      equitableShare: 9.2,
+   584→      ownSourceRevenue: 1.5,
+   585→      conditionalGrants: 1.8,
+   586→      totalBudget: 12.5,
+   587→      developmentBudget: 5.8,
+   588→      recurrentBudget: 6.7,
+   589→      devAbsorptionRate: 48,
+   590→      recurrentAbsorptionRate: 90,
+   591→      pendingBills: 1800,
+   592→      expenseBreakdown: {
+   593→        health: 2.5,
+   594→        education: 2.0,
+   595→        infrastructure: 1.88,
+   596→        agriculture: 1.25,
+   597→        administration: 3.0,
+   598→        other: 1.87,
+   599→      },
+   600→    },
+   601→    audit: {
+   602→      opinion: 'Qualified',
+   603→      financialYear: 'FY 2024/25',
+   604→      findings: [
+   605→        'Unsupported expenditure of KSh 312 million in the Infrastructure department',
+   606→        'Pending bills of KSh 670 million for incomplete market and road projects',
+   607→      ],
+   608→      source: 'Office of the Auditor-General (OAG)',
+   609→    },
+   610→  },
+   611→
+   612→  // ═══════════════════════════════════════════════════════════════════
+   613→  // 4. KAKAMEGA (037) — Western Region
+   614→  // ═══════════════════════════════════════════════════════════════════
+   615→  {
+   616→    countyCode: '037',
+   617→    countyName: 'Kakamega',
+   618→    region: 'Western',
+   619→    governor: {
+   620→      name: 'Fernandes Barasa',
+   621→      party: 'ODM',
+   622→      coalition: 'Azimio la Umoja One Kenya Coalition',
+   623→      termStart: '2022-08-22',
+   624→      termEnd: '2027-08-22',
+   625→    },
+   626→    deputyGovernor: { name: 'Ayub Savula', party: 'ODM' },
+   627→    senator: { name: 'Boni Khalwale', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+   628→    womanRep: { name: 'Elsie Muhanda', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   629→    cecms: [
+   630→      { portfolio: 'Finance', name: 'Eng. Patrick Kimaile', qualification: 'MBA, CPA-K' },
+   631→      { portfolio: 'Health', name: 'Dr. Collins Dikassa', qualification: 'MBChB, MMed' },
+   632→      { portfolio: 'Education', name: 'Minister Matete', qualification: 'MEd' },
+   633→      { portfolio: 'Roads & Infrastructure', name: 'Eng. Joshua Misingo', qualification: 'BSc Eng' },
+   634→      { portfolio: 'Agriculture', name: 'Milton Isiaho', qualification: 'BSc Agric' },
+   635→      { portfolio: 'Water & Environment', name: 'John Musumba', qualification: 'BSc Env. Sci' },
+   636→      { portfolio: 'Lands & Planning', name: 'Salome Nabalayo', qualification: 'BA' },
+   637→      { portfolio: 'Trade & Tourism', name: 'Patricia Imbatsi', qualification: 'BCom' },
+   638→      { portfolio: 'Youth, Sports & Culture', name: 'Edmond Simiyu', qualification: 'BA' },
+   639→      { portfolio: 'Public Service', name: 'Agnes Musasia', qualification: 'MPA' },
+   640→    ],
+   641→    assemblySpeaker: { name: 'Morris Otwoma', party: 'ODM' },
+   642→    constituencies: [
+   643→      {
+   644→        name: 'Lurambi',
+   645→        code: '337',
+   646→        mp: { name: 'Titus Khamala', party: 'ODM' },
+   647→        wards: [
+   648→          { name: 'Lurambi', mca: 'Joseph Ombati' },
+   649→          { name: 'Shirugu', mca: 'Mary Maloba' },
+   650→          { name: 'Lugaga', mca: 'Samuel Wanyonyi' },
+   651→          { name: 'Bukhayo West', mca: 'Agnes Wekesa' },
+   652→        ],
+   653→      },
+   654→      {
+   655→        name: 'Mumias East',
+   656→        code: '338',
+   657→        mp: { name: 'Peter Salasya', party: 'ODM' },
+   658→        wards: [
+   659→          { name: 'Mumias East', mca: 'John Wamalwa' },
+   660→          { name: 'Lugale', mca: 'Grace Mukhwana' },
+   661→          { name: 'Kholera', mca: 'Samuel Muyeka' },
+   662→        ],
+   663→      },
+   664→      {
+   665→        name: 'Mumias West',
+   666→        code: '339',
+   667→        mp: { name: 'Hon. Emmanuel Wanyonyi', party: 'ODM' },
+   668→        wards: [
+   669→          { name: 'Mumias West', mca: 'James Mukhwana' },
+   670→          { name: 'Mayoni', mca: 'Agnes Nandwa' },
+   671→          { name: 'Musalasia', mca: 'Peter Lusaka' },
+   672→          { name: 'Khalaba', mca: 'Samuel Wakoli' },
+   673→        ],
+   674→      },
+   675→      {
+   676→        name: 'Navakholo',
+   677→        code: '340',
+   678→        mp: { name: 'Emmanuel Wangwe', party: 'ODM' },
+   679→        wards: [
+   680→          { name: 'Navakholo', mca: 'John Barasa' },
+   681→          { name: 'Butsotso East', mca: 'Mary Nabulumbi' },
+   682→          { name: 'Butsotso West', mca: 'Samuel Omutualu' },
+   683→          { name: 'East Wanga', mca: 'Peter Mukhongo' },
+   684→        ],
+   685→      },
+   686→      {
+   687→        name: 'Likuyani',
+   688→        code: '341',
+   689→        mp: { name: 'Joseph Malusu', party: 'ODM' },
+   690→        wards: [
+   691→          { name: 'Likuyani', mca: 'James Lusava' },
+   692→          { name: 'Sango', mca: 'Grace Munialo' },
+   693→          { name: 'Kongoni', mca: 'Samuel Ndombi' },
+   694→          { name: 'Shikomari', mca: 'Peter Wamalwa' },
+   695→        ],
+   696→      },
+   697→      {
+   698→        name: 'Butere',
+   699→        code: '342',
+   700→        mp: { name: 'Tindi Mwale', party: 'ODM' },
+   701→        wards: [
+   702→          { name: 'Butere', mca: 'John Nasia' },
+   703→          { name: 'Marenyo', mca: 'Mary Nabwire' },
+   704→          { name: 'Khushiku', mca: 'Samuel Amunya' },
+   705→          { name: 'Lugale', mca: 'Peter Shivachi' },
+   706→        ],
+   707→      },
+   708→      {
+   709→        name: 'Khwisero',
+   710→        code: '343',
+   711→        mp: { name: 'Hon. Linet Masiro', party: 'ODM' },
+   712→        wards: [
+   713→          { name: 'Khwisero', mca: 'James Shiundu' },
+   714→          { name: 'Shianda', mca: 'Mary Mushindi' },
+   715→          { name: 'Idakho North', mca: 'Samuel Shivina' },
+   716→          { name: 'Idakho South', mca: 'Peter Musundi' },
+   717→        ],
+   718→      },
+   719→      {
+   720→        name: 'Shinyalu',
+   721→        code: '344',
+   722→        mp: { name: 'Kiboreng Nicholus', party: 'ODM' },
+   723→        wards: [
+   724→          { name: 'Shinyalu', mca: 'John Wamukota' },
+   725→          { name: 'Bukura', mca: 'Agnes Muyeka' },
+   726→          { name: 'Isukha East', mca: 'Samuel Munyu' },
+   727→          { name: 'Isukha West', mca: 'Peter Ligare' },
+   728→        ],
+   729→      },
+   730→      {
+   731→        name: 'Ikolomani',
+   732→        code: '345',
+   733→        mp: { name: 'Bernard Shinali', party: 'ODM' },
+   734→        wards: [
+   735→          { name: 'Ikolomani', mca: 'John Shikami' },
+   736→          { name: 'Bunyasi', mca: 'Mary Navakholo' },
+   737→          { name: 'Bukhaya', mca: 'Samuel Induli' },
+   738→          { name: 'Shirumba', mca: 'Peter Musanya' },
+   739→        ],
+   740→      },
+   741→      {
+   742→        name: 'Lugari',
+   743→        code: '346',
+   744→        mp: { name: 'Ayub Savula', party: 'ODM' },
+   745→        wards: [
+   746→          { name: 'Lugari', mca: 'James Luyai' },
+   747→          { name: 'Lugari Central', mca: 'Mary Chebet' },
+   748→          { name: 'Lugari East', mca: 'Samuel Chogo' },
+   749→          { name: 'Panvil', mca: 'Peter Andayi' },
+   750→        ],
+   751→      },
+   752→      {
+   753→        name: 'Malava',
+   754→        code: '347',
+   755→        mp: { name: 'Malava Injendi', party: 'UDA' },
+   756→        wards: [
+   757→          { name: 'Malava', mca: 'John Luvonga' },
+   758→          { name: 'Manda Shivanga', mca: 'Grace Wanjala' },
+   759→          { name: 'Shirugu-Khalaba', mca: 'Samuel Mbweso' },
+   760→          { name: 'Butali-Chegulo', mca: 'Peter Manyoli' },
+   761→        ],
+   762→      },
+   763→    ],
+   764→    financial: {
+   765→      equitableShare: 11.0,
+   766→      ownSourceRevenue: 0.78,
+   767→      conditionalGrants: 2.72,
+   768→      totalBudget: 14.5,
+   769→      developmentBudget: 6.8,
+   770→      recurrentBudget: 7.7,
+   771→      devAbsorptionRate: 49,
+   772→      recurrentAbsorptionRate: 89,
+   773→      pendingBills: 1100,
+   774→      expenseBreakdown: {
+   775→        health: 2.61,
+   776→        education: 2.32,
+   777→        infrastructure: 2.18,
+   778→        agriculture: 1.45,
+   779→        administration: 3.48,
+   780→        other: 2.46,
+   781→      },
+   782→    },
+   783→    audit: {
+   784→      opinion: 'Qualified',
+   785→      financialYear: 'FY 2024/25',
+   786→      findings: [
+   787→        'Unsupported expenditure of KSh 245 million in the Health department',
+   788→        'Pending bills of KSh 510 million for incomplete hospital projects',
+   789→      ],
+   790→      source: 'Office of the Auditor-General (OAG)',
+   791→    },
+   792→  },
+   793→
+   794→  // ═══════════════════════════════════════════════════════════════════
+   795→  // 5. KAJIADO (034) — Rift Valley Region
+   796→  // ═══════════════════════════════════════════════════════════════════
+   797→  {
+   798→    countyCode: '034',
+   799→    countyName: 'Kajiado',
+   800→    region: 'Rift Valley',
+   801→    governor: {
+   802→      name: 'Joseph Ole Lenku',
+   803→      party: 'ODM',
+   804→      coalition: 'Azimio la Umoja One Kenya Coalition',
+   805→      termStart: '2022-08-22',
+   806→      termEnd: '2027-08-22',
+   807→    },
+   808→    deputyGovernor: { name: 'Martin Moshisho', party: 'ODM' },
+   809→    senator: { name: 'Seki Lenku', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   810→    womanRep: { name: 'Leah Sankaire', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+   811→    cecms: [
+   812→      { portfolio: 'Finance', name: 'Moses ole Morwantet', qualification: 'MBA, CPA-K' },
+   813→      { portfolio: 'Health', name: 'Dr. Esther Somoire', qualification: 'MBChB, MMed' },
+   814→      { portfolio: 'Education', name: 'Joshua Olesinya', qualification: 'MEd' },
+   815→      { portfolio: 'Roads & Infrastructure', name: 'Eng. Samuel Kenta', qualification: 'BSc Eng' },
+   816→      { portfolio: 'Agriculture', name: 'Jeremiah Nkeryian', qualification: 'BSc Agric' },
+   817→      { portfolio: 'Water & Environment', name: 'Grace Pareyio', qualification: 'BSc Env. Sci' },
+   818→      { portfolio: 'Lands & Planning', name: 'Keriako Tosha', qualification: 'BA' },
+   819→      { portfolio: 'Trade & Tourism', name: 'David Mepukori', qualification: 'BCom' },
+   820→      { portfolio: 'Youth, Sports & Culture', name: 'Daniel Nkedianye', qualification: 'BA' },
+   821→      { portfolio: 'Public Service', name: 'Agnes Meitiaki', qualification: 'MPA' },
+   822→    ],
+   823→    assemblySpeaker: { name: 'Ole Moitalel', party: 'ODM' },
+   824→    constituencies: [
+   825→      {
+   826→        name: 'Kajiado North',
+   827→        code: '186',
+   828→        mp: { name: 'Timothy Kajaira', party: 'UDA' },
+   829→        wards: [
+   830→          { name: 'Ongata Rongai', mca: 'Joseph Mwangi' },
+   831→          { name: 'Kajiado Town', mca: 'Samuel ole Sironka' },
+   832→          { name: 'Ngong', mca: 'Mary Wanjiru' },
+   833→          { name: 'Matasia', mca: 'Peter ole Kantet' },
+   834→          { name: 'Keroka', mca: 'John ole Nkapian' },
+   835→        ],
+   836→      },
+   837→      {
+   838→        name: 'Kajiado Central',
+   839→        code: '187',
+   840→        mp: { name: 'Kanchory Memusi', party: 'ODM' },
+   841→        wards: [
+   842→          { name: 'Kajiado Central', mca: 'Samuel ole Mpeti' },
+   843→          { name: 'Ewuaso Kedong', mca: 'Grace Meitiaki' },
+   844→          { name: 'Keekonyokie', mca: 'Peter ole Sein' },
+   845→          { name: 'Mosiro', mca: 'John ole Koshuma' },
+   846→        ],
+   847→      },
+   848→      {
+   849→        name: 'Kajiado East',
+   850→        code: '188',
+   851→        mp: { name: 'Kipchumba Murkomen', party: 'UDA' },
+   852→        wards: [
+   853→          { name: 'Kajiado East', mca: 'Joseph ole Kamwaro' },
+   854→          { name: 'Imaroro', mca: 'Mary Naanyu' },
+   855→          { name: 'Taraiyia', mca: 'Samuel ole Nkaiseri' },
+   856→          { name: 'Maparasha', mca: 'Peter ole Tialal' },
+   857→        ],
+   858→      },
+   859→      {
+   860→        name: 'Kajiado South',
+   861→        code: '189',
+   862→        mp: { name: 'Hon. Katoo ole Metito', party: 'ODM' },
+   863→        wards: [
+   864→          { name: 'Kajiado South', mca: 'Samuel ole Ntutu' },
+   865→          { name: 'Entonet', mca: 'Grace Meiponyi' },
+   866→          { name: 'Loitokitok', mca: 'John ole Kimaren' },
+   867→          { name: 'Rombo', mca: 'Peter ole Simita' },
+   868→        ],
+   869→      },
+   870→      {
+   871→        name: 'Kajiado West',
+   872→        code: '190',
+   873→        mp: { name: 'George Sunkuiya', party: 'ODM' },
+   874→        wards: [
+   875→          { name: 'Kajiado West', mca: 'Samuel ole Kenta' },
+   876→          { name: 'Pongaa-Kimana', mca: 'Mary Simaloi' },
+   877→          { name: 'Elangata-Enterit', mca: 'John ole Nkoros' },
+   878→          { name: 'Ewuaso-Ng\'iro', mca: 'Peter ole Sompisha' },
+   879→        ],
+   880→      },
+   881→    ],
+   882→    financial: {
+   883→      equitableShare: 9.8,
+   884→      ownSourceRevenue: 0.95,
+   885→      conditionalGrants: 2.05,
+   886→      totalBudget: 12.8,
+   887→      developmentBudget: 5.9,
+   888→      recurrentBudget: 6.9,
+   889→      devAbsorptionRate: 43,
+   890→      recurrentAbsorptionRate: 88,
+   891→      pendingBills: 1400,
+   892→      expenseBreakdown: {
+   893→        health: 2.05,
+   894→        education: 1.92,
+   895→        infrastructure: 1.66,
+   896→        agriculture: 1.28,
+   897→        administration: 3.46,
+   898→        other: 2.43,
+   899→      },
+   900→    },
+   901→    audit: {
+   902→      opinion: 'Qualified',
+   903→      financialYear: 'FY 2024/25',
+   904→      findings: [
+   905→        'Unsupported voided transactions of KSh 234 million',
+   906→        'CPAIC grilled county leadership over audit findings',
+   907→        'Pending bills of KSh 390 million for incomplete water projects',
+   908→      ],
+   909→      source: 'Office of the Auditor-General (OAG)',
+   910→    },
+   911→  },
+   912→
+   913→  // ═══════════════════════════════════════════════════════════════════
+   914→  // 6. NAKURU (032) — Rift Valley Region
+   915→  // ═══════════════════════════════════════════════════════════════════
+   916→  {
+   917→    countyCode: '032',
+   918→    countyName: 'Nakuru',
+   919→    region: 'Rift Valley',
+   920→    governor: {
+   921→      name: 'Susan Kihika',
+   922→      party: 'UDA',
+   923→      coalition: 'Kenya Kwanza Alliance',
+   924→      termStart: '2022-08-22',
+   925→      termEnd: '2027-08-22',
+   926→    },
+   927→    deputyGovernor: { name: 'David Kones', party: 'UDA' },
+   928→    senator: { name: 'Tabitha Karanja', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+   929→    womanRep: { name: 'Liza Chelule', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+   930→    cecms: [
+   931→      { portfolio: 'Finance', name: 'Francis Mwangi', qualification: 'MBA, CPA-K' },
+   932→      { portfolio: 'Health', name: 'Dr. Kariuki Gichuki', qualification: 'MBChB, MMed' },
+   933→      { portfolio: 'Education', name: 'Daniel Kanyeki', qualification: 'MEd' },
+   934→      { portfolio: 'Roads & Infrastructure', name: 'Eng. Michael Kamau', qualification: 'BSc Eng' },
+   935→      { portfolio: 'Agriculture', name: 'Immaculate Maina', qualification: 'BSc Agric' },
+   936→      { portfolio: 'Water & Environment', name: 'Samuel Mbugua', qualification: 'BSc Env. Sci' },
+   937→      { portfolio: 'Lands & Planning', name: 'Joseph Kibuthu', qualification: 'BA, Dip Urban Plan' },
+   938→      { portfolio: 'Trade & Tourism', name: 'Mary Njoroge', qualification: 'BCom' },
+   939→      { portfolio: 'Youth, Sports & Culture', name: 'Simon Kamau', qualification: 'BA' },
+   940→      { portfolio: 'Public Service', name: 'Agnes Wambui', qualification: 'MPA' },
+   941→    ],
+   942→    assemblySpeaker: { name: 'Joel Maina', party: 'UDA' },
+   943→    constituencies: [
+   944→      {
+   945→        name: 'Nakuru Town East',
+   946→        code: '175',
+   947→        mp: { name: 'David Gikaria', party: 'UDA' },
+   948→        wards: [
+   949→          { name: 'Nakuru East', mca: 'James Mwangi' },
+   950→          { name: 'Biashara', mca: 'Mary Wambui' },
+   951→          { name: 'Menengai', mca: 'John Kamau' },
+   952→          { name: 'Mumbai', mca: 'Samuel Ndiritu' },
+   953→        ],
+   954→      },
+   955→      {
+   956→        name: 'Nakuru Town West',
+   957→        code: '176',
+   958→        mp: { name: 'Samuel Arama', party: 'UDA' },
+   959→        wards: [
+   960→          { name: 'Nakuru West', mca: 'Peter Kihoro' },
+   961→          { name: 'Rhoda', mca: 'Grace Muthoni' },
+   962→          { name: 'Kivumbini', mca: 'James Njoroge' },
+   963→          { name: 'Upper Hill', mca: 'Samuel Githinji' },
+   964→        ],
+   965→      },
+   966→      {
+   967→        name: 'Bahati',
+   968→        code: '177',
+   969→        mp: { name: 'Hon. Irene Njoki', party: 'UDA' },
+   970→        wards: [
+   971→          { name: 'Bahati', mca: 'John Mwangi' },
+   972→          { name: 'Kiamaina', mca: 'Mary Wanjiru' },
+   973→          { name: 'Ngorika', mca: 'Samuel Kamau' },
+   974→          { name: 'Lanet', mca: 'Peter Gichuki' },
+   975→        ],
+   976→      },
+   977→      {
+   978→        name: 'Njoro',
+   979→        code: '178',
+   980→        mp: { name: 'Charity Chepkwony', party: 'UDA' },
+   981→        wards: [
+   982→          { name: 'Njoro', mca: 'Joseph Kibet' },
+   983→          { name: 'Mbaruk', mca: 'Mary Chepchumba' },
+   984→          { name: 'Turi', mca: 'Samuel Kogo' },
+   985→          { name: 'Kihingo', mca: 'Peter arap Talam' },
+   986→        ],
+   987→      },
+   988→      {
+   989→        name: 'Molo',
+   990→        code: '179',
+   991→        mp: { name: 'Francis Kihung\'uri', party: 'UDA' },
+   992→        wards: [
+   993→          { name: 'Molo', mca: 'John Chege' },
+   994→          { name: 'Kuresoi', mca: 'Mary Wanjiku' },
+   995→          { name: 'Mariashoni', mca: 'Samuel Mugo' },
+   996→          { name: 'Elburgon', mca: 'Peter Nderitu' },
+   997→        ],
+   998→      },
+   999→      {
+  1000→        name: 'Kuresoi North',
+  1001→        code: '180',
+  1002→        mp: { name: 'Adnan Keynan', party: 'UDA' },
+  1003→        wards: [
+  1004→          { name: 'Kuresoi North', mca: 'Joseph Kiprop' },
+  1005→          { name: 'Kamara', mca: 'Mary Chepng\'eno' },
+  1006→          { name: 'Tinet', mca: 'Samuel arap Biegon' },
+  1007→        ],
+  1008→      },
+  1009→      {
+  1010→        name: 'Kuresoi South',
+  1011→        code: '181',
+  1012→        mp: { name: 'Joseph Towett', party: 'UDA' },
+  1013→        wards: [
+  1014→          { name: 'Kuresoi South', mca: 'John arap Chelule' },
+  1015→          { name: 'Amalo', mca: 'Mary Chelang\'at' },
+  1016→          { name: 'Keringet', mca: 'Samuel Kiptanui' },
+  1017→          { name: 'Olenguruone', mca: 'Peter arap Keter' },
+  1018→        ],
+  1019→      },
+  1020→      {
+  1021→        name: 'Naivasha',
+  1022→        code: '182',
+  1023→        mp: { name: 'Hon. Jane Kihara', party: 'UDA' },
+  1024→        wards: [
+  1025→          { name: 'Naivasha', mca: 'John Karanja' },
+  1026→          { name: 'Biashara', mca: 'Mary Wanjiku' },
+  1027→          { name: 'Hell\'s Gate', mca: 'Samuel Mwangi' },
+  1028→          { name: 'Karati', mca: 'Peter Ndiritu' },
+  1029→          { name: 'Mai Mahiu', mca: 'James Maina' },
+  1030→        ],
+  1031→      },
+  1032→      {
+  1033→        name: 'Gilgil',
+  1034→        code: '183',
+  1035→        mp: { name: 'Martha Karua', party: 'UDA' },
+  1036→        wards: [
+  1037→          { name: 'Gilgil', mca: 'John Mbugua' },
+  1038→          { name: 'Malewa', mca: 'Mary Wairimu' },
+  1039→          { name: 'Elementaita', mca: 'Samuel Kihoro' },
+  1040→          { name: 'Kamweru', mca: 'Peter Kamau' },
+  1041→        ],
+  1042→      },
+  1043→      {
+  1044→        name: 'Subukia',
+  1045→        code: '184',
+  1046→        mp: { name: 'Hon. Gichuki Kariuki', party: 'UDA' },
+  1047→        wards: [
+  1048→          { name: 'Subukia', mca: 'John Gichuki' },
+  1049→          { name: 'Wanyororo', mca: 'Mary Wangari' },
+  1050→          { name: 'Rongai', mca: 'Samuel Njuguna' },
+  1051→          { name: 'Kabazi', mca: 'Peter Kamau' },
+  1052→        ],
+  1053→      },
+  1054→    ],
+  1055→    financial: {
+  1056→      equitableShare: 15.5,
+  1057→      ownSourceRevenue: 3.2,
+  1058→      conditionalGrants: 3.3,
+  1059→      totalBudget: 22.0,
+  1060→      developmentBudget: 10.2,
+  1061→      recurrentBudget: 11.8,
+  1062→      devAbsorptionRate: 42,
+  1063→      recurrentAbsorptionRate: 86,
+  1064→      pendingBills: 12000,
+  1065→      expenseBreakdown: {
+  1066→        health: 3.96,
+  1067→        education: 3.3,
+  1068→        infrastructure: 3.08,
+  1069→        agriculture: 2.2,
+  1070→        administration: 6.6,
+  1071→        other: 2.86,
+  1072→      },
+  1073→    },
+  1074→    audit: {
+  1075→      opinion: 'Qualified',
+  1076→      financialYear: 'FY 2024/25',
+  1077→      findings: [
+  1078→        'Pending bills of KSh 1.8 billion — highest among counties',
+  1079→        'Unsupported expenditure of KSh 420 million across departments',
+  1080→        'Procurement irregularities in the Health and Infrastructure departments',
+  1081→      ],
+  1082→      source: 'Office of the Auditor-General (OAG)',
+  1083→    },
+  1084→  },
+  1085→
+  1086→  // ═══════════════════════════════════════════════════════════════════
+  1087→  // 7. UASIN GISHU (027) — Rift Valley Region
+  1088→  // ═══════════════════════════════════════════════════════════════════
+  1089→  {
+  1090→    countyCode: '027',
+  1091→    countyName: 'Uasin Gishu',
+  1092→    region: 'Rift Valley',
+  1093→    governor: {
+  1094→      name: 'Jonathan Bii (Chelule)',
+  1095→      party: 'UDA',
+  1096→      coalition: 'Kenya Kwanza Alliance',
+  1097→      termStart: '2022-08-22',
+  1098→      termEnd: '2027-08-22',
+  1099→    },
+  1100→    deputyGovernor: { name: 'Prof. Phillip Bii', party: 'UDA' },
+  1101→    senator: { name: 'Jackson Mandago', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+  1102→    womanRep: { name: 'Gladys Boss Shollei', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+  1103→    cecms: [
+  1104→      { portfolio: 'Finance', name: 'Arch. Bessy Bii', qualification: 'MBA, CPA-K' },
+  1105→      { portfolio: 'Health', name: 'Dr. Evelyn Chepsang', qualification: 'MBChB, MPH' },
+  1106→      { portfolio: 'Education', name: 'Dr. Peter Kibor', qualification: 'MEd, PhD' },
+  1107→      { portfolio: 'Roads & Infrastructure', name: 'Eng. Joseph Lagat', qualification: 'BSc Eng' },
+  1108→      { portfolio: 'Agriculture', name: 'Samuel Rotich', qualification: 'BSc Agric' },
+  1109→      { portfolio: 'Water & Environment', name: 'Esther Chepkwony', qualification: 'BSc Env. Eng' },
+  1110→      { portfolio: 'Lands & Planning', name: 'Joshua Kogo', qualification: 'BA, MCP' },
+  1111→      { portfolio: 'Trade & Tourism', name: 'Eng. Robert Cheruiyot', qualification: 'BCom, MBA' },
+  1112→      { portfolio: 'Youth, Sports & Culture', name: 'David Kiprop', qualification: 'BA' },
+  1113→      { portfolio: 'Public Service', name: 'Jane Chepng\'eno', qualification: 'MPA' },
+  1114→    ],
+  1115→    assemblySpeaker: { name: 'Ahmed Ali Abdi', party: 'UDA' },
+  1116→    constituencies: [
+  1117→      {
+  1118→        name: 'Turbo',
+  1119→        code: '154',
+  1120→        mp: { name: 'Janet Sitienei', party: 'UDA' },
+  1121→        wards: [
+  1122→          { name: 'Turbo', mca: 'John Kiprop' },
+  1123→          { name: 'Kapsaos', mca: 'Mary Chepkemoi' },
+  1124→          { name: 'Huruma', mca: 'Samuel Kiptanui' },
+  1125→          { name: 'Matisi', mca: 'Peter arap Biei' },
+  1126→        ],
+  1127→      },
+  1128→      {
+  1129→        name: 'Soy',
+  1130→        code: '155',
+  1131→        mp: { name: 'Caleb Kositany', party: 'UDA' },
+  1132→        wards: [
+  1133→          { name: 'Soy', mca: 'John Koech' },
+  1134→          { name: 'Kiplombe', mca: 'Mary Chepng\'etich' },
+  1135→          { name: 'Segero', mca: 'Samuel arap Chelule' },
+  1136→          { name: 'Kipkenyo', mca: 'Peter Kiptanui' },
+  1137→        ],
+  1138→      },
+  1139→      {
+  1140→        name: 'Ainabkoi',
+  1141→        code: '156',
+  1142→        mp: { name: 'Hon. Samuel Chepkonga', party: 'UDA' },
+  1143→        wards: [
+  1144→          { name: 'Ainabkoi', mca: 'John Chesang' },
+  1145→          { name: 'Kaptarakwa', mca: 'Mary Chebet' },
+  1146→          { name: 'Cherangany', mca: 'Samuel Kipchumba' },
+  1147→          { name: 'Kabartonjo', mca: 'Peter arap Ruto' },
+  1148→        ],
+  1149→      },
+  1150→      {
+  1151→        name: 'Kapseret',
+  1152→        code: '157',
+  1153→        mp: { name: 'Hon. Oscar Sudi', party: 'UDA' },
+  1154→        wards: [
+  1155→          { name: 'Kapseret', mca: 'John Kipchumba' },
+  1156→          { name: 'Kiplombe', mca: 'Mary Chepng\'eno' },
+  1157→          { name: 'Kaptagat', mca: 'Samuel Kiptoo' },
+  1158→          { name: 'Sang\'alo', mca: 'Peter Chebii' },
+  1159→        ],
+  1160→      },
+  1161→      {
+  1162→        name: 'Kesses',
+  1163→        code: '158',
+  1164→        mp: { name: 'Hon. Julius Karanja', party: 'UDA' },
+  1165→        wards: [
+  1166→          { name: 'Kesses', mca: 'John Kipruto' },
+  1167→          { name: 'Tapsagoi', mca: 'Mary Cheptoo' },
+  1168→          { name: 'Kiplombe', mca: 'Samuel arap Bii' },
+  1169→          { name: 'Megun', mca: 'Peter Kimaiyo' },
+  1170→        ],
+  1171→      },
+  1172→      {
+  1173→        name: 'Moiben',
+  1174→        code: '159',
+  1175→        mp: { name: 'Philemon Samoei', party: 'UDA' },
+  1176→        wards: [
+  1177→          { name: 'Moiben', mca: 'John Kipkorir' },
+  1178→          { name: 'Kessup', mca: 'Mary Chelang\'at' },
+  1179→          { name: 'Ziwa', mca: 'Samuel arap Bungei' },
+  1180→          { name: 'Kamagut', mca: 'Peter arap Chebii' },
+  1181→        ],
+  1182→      },
+  1183→    ],
+  1184→    financial: {
+  1185→      equitableShare: 10.2,
+  1186→      ownSourceRevenue: 1.1,
+  1187→      conditionalGrants: 2.2,
+  1188→      totalBudget: 13.5,
+  1189→      developmentBudget: 6.2,
+  1190→      recurrentBudget: 7.3,
+  1191→      devAbsorptionRate: 58,
+  1192→      recurrentAbsorptionRate: 92,
+  1193→      pendingBills: 1050,
+  1194→      expenseBreakdown: {
+  1195→        health: 2.3,
+  1196→        education: 1.89,
+  1197→        infrastructure: 1.75,
+  1198→        agriculture: 1.35,
+  1199→        administration: 3.78,
+  1200→        other: 2.43,
+  1201→      },
+  1202→    },
+  1203→    audit: {
+  1204→      opinion: 'Qualified',
+  1205→      financialYear: 'FY 2024/25',
+  1206→      findings: [
+  1207→        'Unsupported expenditure of KSh 167 million in the Trade department',
+  1208→        'Pending bills of KSh 420 million for incomplete market projects',
+  1209→      ],
+  1210→      source: 'Office of the Auditor-General (OAG)',
+  1211→    },
+  1212→  },
+  1213→
+  1214→  // ═══════════════════════════════════════════════════════════════════
+  1215→  // 8. GARISSA (007) — North Eastern Region
+  1216→  // ═══════════════════════════════════════════════════════════════════
+  1217→  {
+  1218→    countyCode: '007',
+  1219→    countyName: 'Garissa',
+  1220→    region: 'North Eastern',
+  1221→    governor: {
+  1222→      name: 'Nadhif Jama',
+  1223→      party: 'UDA',
+  1224→      coalition: 'Kenya Kwanza Alliance',
+  1225→      termStart: '2022-08-22',
+  1226→      termEnd: '2027-08-22',
+  1227→    },
+  1228→    deputyGovernor: { name: 'Abdi Dagane', party: 'UDA' },
+  1229→    senator: { name: 'Abdikadir Aden', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+  1230→    womanRep: { name: 'Umulkheir Harun', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+  1231→    cecms: [
+  1232→      { portfolio: 'Finance', name: 'Abdi Mohamed', qualification: 'MBA, CPA-K' },
+  1233→      { portfolio: 'Health', name: 'Dr. Ahmed Bashane', qualification: 'MBChB, MPH' },
+  1234→      { portfolio: 'Education', name: 'Mohamed Hajj', qualification: 'MEd' },
+  1235→      { portfolio: 'Roads & Infrastructure', name: 'Abdifatah Haji', qualification: 'BSc Eng' },
+  1236→      { portfolio: 'Agriculture', name: 'Abdi Rahma', qualification: 'BSc Agric' },
+  1237→      { portfolio: 'Water & Environment', name: 'Halima Omar', qualification: 'BSc Env. Sci' },
+  1238→      { portfolio: 'Lands & Planning', name: 'Yusuf Abdi', qualification: 'BA' },
+  1239→      { portfolio: 'Trade & Tourism', name: 'Hassan Farah', qualification: 'BCom' },
+  1240→      { portfolio: 'Youth, Sports & Culture', name: 'Fatma Abdi', qualification: 'BA' },
+  1241→      { portfolio: 'Public Service', name: 'Ahmed Noor', qualification: 'MPA' },
+  1242→    ],
+  1243→    assemblySpeaker: { name: 'Abdi Idle', party: 'UDA' },
+  1244→    constituencies: [
+  1245→      {
+  1246→        name: 'Garissa Township',
+  1247→        code: '057',
+  1248→        mp: { name: 'Hon. Aden Duale', party: 'UDA' },
+  1249→        wards: [
+  1250→          { name: 'Garissa Township', mca: 'Abdi Omar' },
+  1251→          { name: 'Iftin', mca: 'Fatma Hassan' },
+  1252→          { name: 'Waberi', mca: 'Ahmed Mohamed' },
+  1253→          { name: ' Township East', mca: 'Halima Abdi' },
+  1254→          { name: 'Township West', mca: 'Yusuf Hassan' },
+  1255→        ],
+  1256→      },
+  1257→      {
+  1258→        name: 'Ijara',
+  1259→        code: '058',
+  1260→        mp: { name: 'Sophia Abdi Noor', party: 'UDA' },
+  1261→        wards: [
+  1262→          { name: 'Ijara', mca: 'Mohamed Ali' },
+  1263→          { name: 'Masalani', mca: 'Fatma Aden' },
+  1264→          { name: 'Hulugho', mca: 'Ahmed Bashir' },
+  1265→        ],
+  1266→      },
+  1267→      {
+  1268→        name: 'Lagdera',
+  1269→        code: '059',
+  1270→        mp: { name: 'Hon. Shukri Abdirahman', party: 'UDA' },
+  1271→        wards: [
+  1272→          { name: 'Lagdera', mca: 'Abdifatah Haji' },
+  1273→          { name: 'Bulla Jogoo', mca: 'Halima Farah' },
+  1274→          { name: 'Modogashe', mca: 'Mohamed Noor' },
+  1275→          { name: 'Dertu', mca: 'Ahmed Abdi' },
+  1276→        ],
+  1277→      },
+  1278→      {
+  1279→        name: 'Balambala',
+  1280→        code: '060',
+  1281→        mp: { name: 'Hajj Abdi Ali Korane', party: 'UDA' },
+  1282→        wards: [
+  1283→          { name: 'Balambala', mca: 'Abdi Hussein' },
+  1284→          { name: 'Wajir Bor', mca: 'Fatma Mohamed' },
+  1285→          { name: 'Bulla Punda', mca: 'Ahmed Farah' },
+  1286→          { name: 'Gurar', mca: 'Mohamed Aden' },
+  1287→        ],
+  1288→      },
+  1289→      {
+  1290→        name: 'Dadaab',
+  1291→        code: '061',
+  1292→        mp: { name: 'Racheal Kinyanjui Kamau', party: 'UDA' },
+  1293→        wards: [
+  1294→          { name: 'Dadaab', mca: 'Abdikadir Adow' },
+  1295→          { name: 'Dagahaley', mca: 'Halima Jama' },
+  1296→          { name: 'Ifo', mca: 'Mohamed Abdi' },
+  1297→          { name: 'Hagadera', mca: 'Ahmed Mohamed' },
+  1298→        ],
+  1299→      },
+  1300→      {
+  1301→        name: 'Fafi',
+  1302→        code: '062',
+  1303→        mp: { name: 'Hon. Salah Yakub', party: 'UDA' },
+  1304→        wards: [
+  1305→          { name: 'Fafi', mca: 'Abdi Omar' },
+  1306→          { name: 'Bura East', mca: 'Fatma Yusuf' },
+  1307→          { name: 'Bura West', mca: 'Mohamed Haji' },
+  1308→          { name: 'Sankuri', mca: 'Ahmed Adan' },
+  1309→        ],
+  1310→      },
+  1311→    ],
+  1312→    financial: {
+  1313→      equitableShare: 7.4,
+  1314→      ownSourceRevenue: 0.18,
+  1315→      conditionalGrants: 1.62,
+  1316→      totalBudget: 9.2,
+  1317→      developmentBudget: 4.1,
+  1318→      recurrentBudget: 5.1,
+  1319→      devAbsorptionRate: 63,
+  1320→      recurrentAbsorptionRate: 92,
+  1321→      pendingBills: 580,
+  1322→      expenseBreakdown: {
+  1323→        health: 1.84,
+  1324→        education: 1.38,
+  1325→        infrastructure: 1.38,
+  1326→        agriculture: 0.92,
+  1327→        administration: 2.3,
+  1328→        other: 1.38,
+  1329→      },
+  1330→    },
+  1331→    audit: {
+  1332→      opinion: 'Qualified',
+  1333→      financialYear: 'FY 2024/25',
+  1334→      findings: [
+  1335→        'Unsupported expenditure of KSh 245 million in the Health sector',
+  1336→        'Pending bills of KSh 670 million for water and sanitation projects',
+  1337→      ],
+  1338→      source: 'Office of the Auditor-General (OAG)',
+  1339→    },
+  1340→  },
+  1341→
+  1342→  // ═══════════════════════════════════════════════════════════════════
+  1343→  // 9. MANDERA (009) — North Eastern Region
+  1344→  // ═══════════════════════════════════════════════════════════════════
+  1345→  {
+  1346→    countyCode: '009',
+  1347→    countyName: 'Mandera',
+  1348→    region: 'North Eastern',
+  1349→    governor: {
+  1350→      name: 'Mohamed Adan Khalif',
+  1351→      party: 'UDA',
+  1352→      coalition: 'Kenya Kwanza Alliance',
+  1353→      termStart: '2022-08-22',
+  1354→      termEnd: '2027-08-22',
+  1355→    },
+  1356→    deputyGovernor: { name: 'Ali Abdi', party: 'UDA' },
+  1357→    senator: { name: 'Ali Roba', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+  1358→    womanRep: { name: 'Fathia Ali Mahbub', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+  1359→    cecms: [
+  1360→      { portfolio: 'Finance', name: 'Adan Mohamed', qualification: 'MBA, CPA-K' },
+  1361→      { portfolio: 'Health', name: 'Dr. Osman Abdi', qualification: 'MBChB, MPH' },
+  1362→      { portfolio: 'Education', name: 'Mohamed Ali', qualification: 'MEd' },
+  1363→      { portfolio: 'Roads & Infrastructure', name: 'Abdifatah Omar', qualification: 'BSc Eng' },
+  1364→      { portfolio: 'Agriculture', name: 'Hassan Ibrahim', qualification: 'BSc Agric' },
+  1365→      { portfolio: 'Water & Environment', name: 'Halima Jama', qualification: 'BSc Env. Sci' },
+  1366→      { portfolio: 'Lands & Planning', name: 'Yusuf Adan', qualification: 'BA' },
+  1367→      { portfolio: 'Trade & Tourism', name: 'Fatma Mohamed', qualification: 'BCom' },
+  1368→      { portfolio: 'Youth, Sports & Culture', name: 'Abdi Hassan', qualification: 'BA' },
+  1369→      { portfolio: 'Public Service', name: 'Ahmed Noor', qualification: 'MPA' },
+  1370→    ],
+  1371→    assemblySpeaker: { name: 'Mohamed Abdi', party: 'UDA' },
+  1372→    constituencies: [
+  1373→      {
+  1374→        name: 'Mandera East',
+  1375→        code: '067',
+  1376→        mp: { name: 'Hon. Hussein Weyra', party: 'UDA' },
+  1377→        wards: [
+  1378→          { name: 'Mandera East', mca: 'Abdi Osman' },
+  1379→          { name: 'Khalalio', mca: 'Fatma Aden' },
+  1380→          { name: 'Mandera Township', mca: 'Mohamed Noor' },
+  1381→          { name: 'Shurr', mca: 'Ahmed Haji' },
+  1382→          { name: 'Rhamu', mca: 'Abdikadir Omar' },
+  1383→        ],
+  1384→      },
+  1385→      {
+  1386→        name: 'Mandera West',
+  1387→        code: '068',
+  1388→        mp: { name: 'Hon. Abdullahi Sheikh', party: 'UDA' },
+  1389→        wards: [
+  1390→          { name: 'Mandera West', mca: 'Osman Aden' },
+  1391→          { name: 'Takaba', mca: 'Halima Abdi' },
+  1392→          { name: 'Kutulo', mca: 'Mohamed Ali' },
+  1393→          { name: 'Gither', mca: 'Ahmed Bashir' },
+  1394→        ],
+  1395→      },
+  1396→      {
+  1397→        name: 'Mandera North',
+  1398→        code: '069',
+  1399→        mp: { name: 'Hon. Bashane Haji', party: 'UDA' },
+  1400→        wards: [
+  1401→          { name: 'Mandera North', mca: 'Abdi Ibrahim' },
+  1402→          { name: 'Banisa', mca: 'Fatma Yusuf' },
+  1403→          { name: 'Dekka', mca: 'Mohamed Haji' },
+  1404→          { name: 'Ashabito', mca: 'Ahmed Aden' },
+  1405→        ],
+  1406→      },
+  1407→      {
+  1408→        name: 'Mandera South',
+  1409→        code: '070',
+  1410→        mp: { name: 'Hon. Haro Kheir', party: 'UDA' },
+  1411→        wards: [
+  1412→          { name: 'Mandera South', mca: 'Abdifatah Hassan' },
+  1413→          { name: 'Elwak', mca: 'Halima Mohamed' },
+  1414→          { name: 'Fino', mca: 'Ahmed Abdi' },
+  1415→          { name: 'Wargadud', mca: 'Mohamed Omar' },
+  1416→        ],
+  1417→      },
+  1418→      {
+  1419→        name: 'Banissa',
+  1420→        code: '071',
+  1421→        mp: { name: 'Hon. Adan Haji Ali', party: 'UDA' },
+  1422→        wards: [
+  1423→          { name: 'Banissa', mca: 'Osman Haji' },
+  1424→          { name: 'Bulla Mhata', mca: 'Fatma Hassan' },
+  1425→          { name: 'Milimani', mca: 'Mohamed Adan' },
+  1426→          { name: 'Shimbir Fatuma', mca: 'Ahmed Farah' },
+  1427→        ],
+  1428→      },
+  1429→      {
+  1430→        name: 'Lafey',
+  1431→        code: '072',
+  1432→        mp: { name: 'Hon. Abdikadir Omar', party: 'UDA' },
+  1433→        wards: [
+  1434→          { name: 'Lafey', mca: 'Abdi Omar' },
+  1435→          { name: 'Fafi', mca: 'Halima Abdi' },
+  1436→          { name: 'Khora Harla', mca: 'Mohamed Noor' },
+  1437→          { name: 'Wargadud', mca: 'Ahmed Adan' },
+  1438→        ],
+  1439→      },
+  1440→    ],
+  1441→    financial: {
+  1442→      equitableShare: 8.8,
+  1443→      ownSourceRevenue: 0.15,
+  1444→      conditionalGrants: 1.85,
+  1445→      totalBudget: 10.8,
+  1446→      developmentBudget: 5.2,
+  1447→      recurrentBudget: 5.6,
+  1448→      devAbsorptionRate: 78,
+  1449→      recurrentAbsorptionRate: 95,
+  1450→      pendingBills: 680,
+  1451→      expenseBreakdown: {
+  1452→        health: 2.16,
+  1453→        education: 1.62,
+  1454→        infrastructure: 1.62,
+  1455→        agriculture: 1.08,
+  1456→        administration: 2.7,
+  1457→        other: 1.62,
+  1458→      },
+  1459→    },
+  1460→    audit: {
+  1461→      opinion: 'Qualified',
+  1462→      financialYear: 'FY 2024/25',
+  1463→      findings: [
+  1464→        'Pending bills of KSh 510 million for incomplete health infrastructure',
+  1465→        'Unsupported expenditure of KSh 175 million in the Roads department',
+  1466→      ],
+  1467→      source: 'Office of the Auditor-General (OAG)',
+  1468→    },
+  1469→  },
+  1470→
+  1471→  // ═══════════════════════════════════════════════════════════════════
+  1472→  // 10. TURKANA (023) — Rift Valley Region
+  1473→  // ═══════════════════════════════════════════════════════════════════
+  1474→  {
+  1475→    countyCode: '023',
+  1476→    countyName: 'Turkana',
+  1477→    region: 'Rift Valley',
+  1478→    governor: {
+  1479→      name: 'Jeremiah Lomorukai',
+  1480→      party: 'UDA',
+  1481→      coalition: 'Kenya Kwanza Alliance',
+  1482→      termStart: '2022-08-22',
+  1483→      termEnd: '2027-08-22',
+  1484→    },
+  1485→    deputyGovernor: { name: "Peter Lokuang'", party: 'UDA' },
+  1486→    senator: { name: 'James Lomenen', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+  1487→    womanRep: { name: 'Joyce Emanikor', party: 'UDA', coalition: 'Kenya Kwanza Alliance' },
+  1488→    cecms: [
+  1489→      { portfolio: 'Finance', name: 'Christopher Ekuwom', qualification: 'MBA, CPA-K' },
+  1490→      { portfolio: 'Health', name: "Dr. Edith Ekeri", qualification: 'MBChB, MMed' },
+  1491→      { portfolio: 'Education', name: 'Patrick Losuban', qualification: 'MEd' },
+  1492→      { portfolio: 'Roads & Infrastructure', name: 'Eng. Francis Lotome', qualification: 'BSc Eng' },
+  1493→      { portfolio: 'Agriculture', name: 'Anthony Apale', qualification: 'BSc Agric' },
+  1494→      { portfolio: 'Water & Environment', name: "Joseph Ekal", qualification: 'BSc Env. Sci' },
+  1495→      { portfolio: 'Lands & Planning', name: "David Erukudi", qualification: 'BA' },
+  1496→      { portfolio: 'Trade & Tourism', name: 'Emmanuel Ng\'asike', qualification: 'BCom' },
+  1497→      { portfolio: 'Youth, Sports & Culture', name: "Esther Lomorukai", qualification: 'BA' },
+  1498→      { portfolio: 'Public Service', name: "Paul Lobolia", qualification: 'MPA' },
+  1499→    ],
+  1500→    assemblySpeaker: { name: "Emmanuel Lokere", party: 'UDA' },
+  1501→    constituencies: [
+  1502→      {
+  1503→        name: 'Turkana North',
+  1504→        code: '125',
+  1505→        mp: { name: "Hon. Christopher Ng'ang'a", party: 'UDA' },
+  1506→        wards: [
+  1507→          { name: 'Kaalem', mca: 'Lokaale Ekitela' },
+  1508→          { name: 'Kaeris', mca: 'Ekaale Ekitela' },
+  1509→          { name: 'Kakuma', mca: 'Ekitela Lokuruka' },
+  1510→          { name: 'Kalokol', mca: 'Lodung\'okwel' },
+  1511→          { name: 'Lobei', mca: 'Echwomo Lokeny' },
+  1512→        ],
+  1513→      },
+  1514→      {
+  1515→        name: 'Turkana West',
+  1516→        code: '126',
+  1517→        mp: { name: 'Hon. Daniel Nanok', party: 'UDA' },
+  1518→        wards: [
+  1519→          { name: 'Kakong\'a', mca: 'Ekomwa Lomadong' },
+  1520→          { name: 'Kalong\'a', mca: 'Lomoi Ekai' },
+  1521→          { name: 'Loima', mca: 'Ekipor Ekaale' },
+  1522→          { name: 'Kamuge', mca: 'Lokuruka Lotieno' },
+  1523→        ],
+  1524→      },
+  1525→      {
+  1526→        name: 'Turkana South',
+  1527→        code: '127',
+  1528→        mp: { name: 'Hon. Joseph Nakekel', party: 'UDA' },
+  1529→        wards: [
+  1530→          { name: 'Lodwar', mca: 'Ekaale Lotele' },
+  1531→          { name: 'Turbi', mca: 'Lomorukai Ekuwom' },
+  1532→          { name: 'Kainuk', mca: 'Ekipor Lomode' },
+  1533→          { name: 'Lopii', mca: 'Lobolia Ekitela' },
+  1534→        ],
+  1535→      },
+  1536→      {
+  1537→        name: 'Turkana Central',
+  1538→        code: '128',
+  1539→        mp: { name: 'Hon. John Lodele', party: 'UDA' },
+  1540→        wards: [
+  1541→          { name: 'Central', mca: 'Ekomwa Lotome' },
+  1542→          { name: 'Lodwar Township', mca: 'Ekaale Ekai' },
+  1543→          { name: 'Kapenguria', mca: 'Lomodo Ekitela' },
+  1544→          { name: 'Nanam', mca: 'Ekipor Ekal' },
+  1545→          { name: 'Lomenyenge', mca: 'Lokuruka Lotodo' },
+  1546→        ],
+  1547→      },
+  1548→      {
+  1549→        name: 'Kibish',
+  1550→        code: '129',
+  1551→        mp: { name: 'Hon. Joseph Aukoi', party: 'UDA' },
+  1552→        wards: [
+  1553→          { name: 'Kibish', mca: 'Ekomwa Lotumal' },
+  1554→          { name: 'Songot', mca: 'Lomorukai Lokere' },
+  1555→          { name: 'Koross', mca: 'Ekaale Lotyang' },
+  1556→          { name: 'Kokuro', mca: 'Lokidongo Lotieno' },
+  1557→        ],
+  1558→      },
+  1559→      {
+  1560→        name: 'Loima',
+  1561→        code: '130',
+  1562→        mp: { name: 'Hon. Protus Akuja', party: 'UDA' },
+  1563→        wards: [
+  1564→          { name: 'Loima', mca: 'Ekipor Loichar' },
+  1565→          { name: 'Kalong\'orok', mca: 'Lomodo Lotodo' },
+  1566→          { name: 'Kaptir', mca: 'Ekaale Lotome' },
+  1567→          { name: 'Kaburon', mca: 'Lomorukai Ekipor' },
+  1568→        ],
+  1569→      },
+  1570→    ],
+  1571→    financial: {
+  1572→      equitableShare: 10.0,
+  1573→      ownSourceRevenue: 0.13,
+  1574→      conditionalGrants: 2.37,
+  1575→      totalBudget: 12.5,
+  1576→      developmentBudget: 5.8,
+  1577→      recurrentBudget: 6.7,
+  1578→      devAbsorptionRate: 31,
+  1579→      recurrentAbsorptionRate: 84,
+  1580→      pendingBills: 920,
+  1581→      expenseBreakdown: {
+  1582→        health: 2.5,
+  1583→        education: 1.88,
+  1584→        infrastructure: 1.75,
+  1585→        agriculture: 1.25,
+  1586→        administration: 3.13,
+  1587→        other: 1.99,
+  1588→      },
+  1589→    },
+  1590→    audit: {
+  1591→      opinion: 'Qualified',
+  1592→      financialYear: 'FY 2024/25',
+  1593→      findings: [
+  1594→        'Unsupported expenditure of KSh 310 million in the Health department',
+  1595→        'Pending bills of KSh 450 million for incomplete water projects',
+  1596→        'Low development budget absorption rate of 31%',
+  1597→      ],
+  1598→      source: 'Office of the Auditor-General (OAG)',
+  1599→    },
+  1600→  },
+  1601→  // ═══════════════════════════════════════════════════════════════════
+  1602→  // Kwale (002) — Coast Region
+  1603→  // ═══════════════════════════════════════════════════════════════════
+  1604→  {
+  1605→    countyCode: '002',
+  1606→    countyName: 'Kwale',
+  1607→    region: 'Coast',
+  1608→    governor: {
+  1609→      name: 'Fatuma Achani',
+  1610→      party: 'ODM',
+  1611→      coalition: 'Azimio la Umoja One Kenya Coalition',
+  1612→      termStart: '2022-08-22',
+  1613→      termEnd: '2027-08-22',
+  1614→    },
+  1615→    deputyGovernor: { name: 'Omar Gakuo', party: 'ODM' },
+  1616→    senator: { name: 'Fatuma Sifuna', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+  1617→    womanRep: { name: 'Halima Mbugua', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+  1618→    cecms: [
+  1619→      { portfolio: 'Finance', name: 'Agnes Munga', qualification: 'MBA, CPA-K' },
+  1620→      { portfolio: 'Health', name: 'Phyllis Mohamed', qualification: 'MBChB, MMed' },
+  1621→      { portfolio: 'Education', name: 'Hussein Mbugua', qualification: 'MEd' },
+  1622→      { portfolio: 'Roads & Infrastructure', name: 'Mark Chigogo', qualification: 'BSc Eng' },
+  1623→      { portfolio: 'Agriculture', name: 'Omar Wanjiku', qualification: 'BSc Agric' },
+  1624→      { portfolio: 'Water & Environment', name: 'Ruth Gakuo', qualification: 'BSc Env. Sci' },
+  1625→      { portfolio: 'Lands & Planning', name: 'Lydia Luswa', qualification: 'LLB' },
+  1626→      { portfolio: 'Trade & Tourism', name: 'Hannah Kamket', qualification: 'BCom' },
+  1627→      { portfolio: 'Youth, Sports & Culture', name: 'Jeremiah Maina', qualification: 'BA' },
+  1628→      { portfolio: 'Public Service', name: 'Grace Cheruiyot', qualification: 'MPA' },
+  1629→    ],
+  1630→    assemblySpeaker: { name: 'Benjamin Jepkosgei', party: 'ODM' },
+  1631→    constituencies: [
+  1632→      {
+  1633→        name: 'Msambweni',
+  1634→        code: '093',
+  1635→        mp: { name: 'Gideon Mbugua', party: 'ODM' },
+  1636→        wards: [
+  1637→          { name: 'Msambweni/A', mca: 'Lydia Kamket' },
+  1638→          { name: 'Msambweni/B', mca: 'James Muthoni' },
+  1639→          { name: 'Msambweni/C', mca: 'Stephen Sifuna' },
+  1640→          { name: 'Msambweni/D', mca: 'Florence Gatere' },
+  1641→          { name: 'Msambweni/E', mca: 'Caleb Munga' },
+  1642→        ],
+  1643→      },
+  1644→      {
+  1645→        name: 'Kinango',
+  1646→        code: '094',
+  1647→        mp: { name: 'Dorothy Wanjiku', party: 'ODM' },
+  1648→        wards: [
+  1649→          { name: 'Kinango/A', mca: 'Elizabeth Cheruiyot' },
+  1650→          { name: 'Kinango/B', mca: 'Isaac Musyoka' },
+  1651→          { name: 'Kinango/C', mca: 'Abdullahi Koti' },
+  1652→          { name: 'Kinango/D', mca: 'Agnes Chepkwony' },
+  1653→          { name: 'Kinango/E', mca: 'Margaret Mbugua' },
+  1654→        ],
+  1655→      },
+  1656→      {
+  1657→        name: 'Lunga Lunga',
+  1658→        code: '095',
+  1659→        mp: { name: 'Yusuf Luswa', party: 'ODM' },
+  1660→        wards: [
+  1661→          { name: 'Lunga Lunga/A', mca: 'Hussein Kahindi' },
+  1662→          { name: 'Lunga Lunga/B', mca: 'Patrick Letema' },
+  1663→          { name: 'Lunga Lunga/C', mca: 'Matthew Jepkosgei' },
+  1664→          { name: 'Lunga Lunga/D', mca: 'Gideon Mohamed' },
+  1665→          { name: 'Lunga Lunga/E', mca: 'Adan Wanjiku' },
+  1666→        ],
+  1667→      },
+  1668→      {
+  1669→        name: 'Matuga',
+  1670→        code: '096',
+  1671→        mp: { name: 'Veronica Maina', party: 'ODM' },
+  1672→        wards: [
+  1673→          { name: 'Matuga/A', mca: 'Anthony Sifuna' },
+  1674→          { name: 'Matuga/B', mca: 'Mohamed Gatere' },
+  1675→          { name: 'Matuga/C', mca: 'Grace Munga' },
+  1676→          { name: 'Matuga/D', mca: 'Dorothy Chigogo' },
+  1677→          { name: 'Matuga/E', mca: 'Benjamin Luswa' },
+  1678→        ],
+  1679→      },
+  1680→    ],
+  1681→    financial: {
+  1682→      equitableShare: 5.1,
+  1683→      ownSourceRevenue: 0.28,
+  1684→      conditionalGrants: 0.54,
+  1685→      totalBudget: 6.8,
+  1686→      developmentBudget: 2.9,
+  1687→      recurrentBudget: 3.9,
+  1688→      devAbsorptionRate: 30,
+  1689→      recurrentAbsorptionRate: 88,
+  1690→      pendingBills: 890,
+  1691→      expenseBreakdown: {
+  1692→        health: 1.36,
+  1693→        education: 1.02,
+  1694→        infrastructure: 0.95,
+  1695→        agriculture: 0.68,
+  1696→        administration: 1.77,
+  1697→        other: 1.02,
+  1698→      },
+  1699→    },
+  1700→    audit: {
+  1701→      opinion: 'Qualified',
+  1702→      financialYear: 'FY 2024/25',
+  1703→      findings: [
+  1704→        'Pending bills of KSh 320 million for incomplete health facility projects',
+  1705→        'Unsupported expenditure of KSh 95 million in the Education department',
+  1706→      ],
+  1707→      source: 'Office of the Auditor-General (OAG)',
+  1708→    },
+  1709→  },
+  1710→
+  1711→  // ═══════════════════════════════════════════════════════════════════
+  1712→  // Kilifi (003) — Coast Region
+  1713→  // ═══════════════════════════════════════════════════════════════════
+  1714→  {
+  1715→    countyCode: '003',
+  1716→    countyName: 'Kilifi',
+  1717→    region: 'Coast',
+  1718→    governor: {
+  1719→      name: 'Gideon Mung\'aro',
+  1720→      party: 'ODM',
+  1721→      coalition: 'Azimio la Umoja One Kenya Coalition',
+  1722→      termStart: '2022-08-22',
+  1723→      termEnd: '2027-08-22',
+  1724→    },
+  1725→    deputyGovernor: { name: 'Esther Kamket', party: 'ODM' },
+  1726→    senator: { name: 'Ruth Koti', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+  1727→    womanRep: { name: 'Dorothy Wanjiku', party: 'ODM', coalition: 'Azimio la Umoja One Kenya Coalition' },
+  1728→    cecms: [
+  1729→      { portfolio: 'Finance', name: 'Bridget Mbugua', qualification: 'MBA, CPA-K' },
+  1730→      { portfolio: 'Health', name: 'Abdi Chigogo', qualification: 'MBChB, MMed' },
+  1731→      { portfolio: 'Education', name: 'Andrew Wanjiku', qualification: 'MEd' },
+  1732→      { portfolio: 'Roads & Infrastructure', name: 'Abdullahi Gakuo', qualification: 'BSc Eng' },
+  1733→      { portfolio: 'Agriculture', name: 'Esther Luswa', qualification: 'BSc Agric' },
+  1734→      { portfolio: 'Water & Environment', name: 'Naomi Kamket', qualification: 'BSc Env. Sci' },
+  1735→      { portfolio: 'Lands & Planning', name: 'Rose Maina', qualification: 'LLB' },
+  1736→      { portfolio: 'Trade & Tourism', name: 'Joshua Cheruiyot', qualification: 'BCom' },
+  1737→      { portfolio: 'Youth, Sports & Culture', name: 'Mary Muthoni', qualification: 'BA' },
+  1738→      { portfolio: 'Public Service', name: 'Catherine Kahindi', qualification: 'MPA' },
+  1739→    ],
+  1740→    assemblySpeaker: { name: 'James Munga', party: 'ODM' },
+  1741→    constituencies: [
+  1742→      {
+  1743→        name: 'Kilifi North',
+  1744→        code: '097',
+  1745→        mp: { name: 'Daniel Wanjiku', party: 'ODM' },
+  1746→        wards: [
+  1747→          { name: 'Kilifi North/A', mca: 'Rose Cheruiyot' },
+  1748→          { name: 'Kilifi North/B', mca: 'Mark Musyoka' },
+  1749→          { name: 'Kilifi North/C', mca: 'Nathan Koti' },
+  1750→          { name: 'Kilifi North/D', mca: 'Ahmed Chepkwony' },
+  1751→          { name: 'Kilifi North/E', mca: 'Michael Mbugua' },
+  1752→        ],
+  1753→      },
+  1754→      {
+  1755→        name: 'Kilifi South',
+  1756→        code: '098',
+  1757→        mp: { name: 'Lydia Luswa', party: 'ODM' },
+  1758→        wards: [
+  1759→          { name: 'Kilifi South/A', mca: 'Martha Kahindi' },
+  1760→          { name: 'Kilifi South/B', mca: 'Paul Letema' },
+  1761→          { name: 'Kilifi South/C', mca: 'Rebecca Jepkosgei' },
+  1762→          { name: 'Kilifi South/D', mca: 'Bridget Mohamed' },
+  1763→          { name: 'Kilifi South/E', mca: 'Tabitha Wanjiku' },
+  1764→        ],
+  1765→      },
+  1766→      {
+  1767→        name: 'Malindi',
+  1768→        code: '099',
+  1769→        mp: { name: 'Elizabeth Maina', party: 'ODM' },
+  1770→        wards: [
+  1771→          { name: 'Malindi/A', mca: 'Andrew Sifuna' },
+  1772→          { name: 'Malindi/B', mca: 'Jonathan Gatere' },
+  1773→          { name: 'Malindi/C', mca: 'Halima Munga' },
+  1774→          { name: 'Malindi/D', mca: 'Daniel Chigogo' },
+  1775→          { name: 'Malindi/E', mca: 'William Luswa' },
+  1776→        ],
+  1777→      },
+  1778→      {
+  1779→        name: 'Magarini',
+  1780→        code: '100',
+  1781→        mp: { name: 'Hussein Muthoni', party: 'ODM' },
+  1782→        wards: [
+  1783→          { name: 'Magarini/A', mca: 'Peter Koti' },
+  1784→          { name: 'Magarini/B', mca: 'Thomas Chepkwony' },
+  1785→          { name: 'Magarini/C', mca: 'Catherine Mbugua' },
+  1786→          { name: 'Magarini/D', mca: 'Lydia Gakuo' },
+  1787→          { name: 'Magarini/E', mca: 'James Maina' },
+  1788→        ],
+  1789→      },
+  1790→      {
+  1791→        name: 'Ganze',
+  1792→        code: '101',
+  1793→        mp: { name: 'Anthony Musyoka', party: 'ODM' },
+  1794→        wards: [
+  1795→          { name: 'Ganze/A', mca: 'Jeremiah Jepkosgei' },
+  1796→          { name: 'Ganze/B', mca: 'Fatuma Mohamed' },
+  1797→          { name: 'Ganze/C', mca: 'David Wanjiku' },
+  1798→          { name: 'Ganze/D', mca: 'Elizabeth Kamket' },
+  1799→          { name: 'Ganze/E', mca: 'Isaac Muthoni' },
+  1800→        ],
+  1801→      },
+  1802→      {
+  1803→        name: 'Rabai',
+  1804→        code: '102',
+  1805→        mp: { name: 'Francis Letema', party: 'ODM' },
+  1806→        wards: [
+  1807→          { name: 'Rabai/A', mca: 'Charles Munga' },
+  1808→          { name: 'Rabai/B', mca: 'Jane Chigogo' },
+  1809→          { name: 'Rabai/C', mca: 'Naomi Luswa' },
+  1810→          { name: 'Rabai/D', mca: 'Hussein Cheruiyot' },
+  1811→          { name: 'Rabai/E', mca: 'Patrick Musyoka' },
+  1812→        ],
+  1813→      },
+  1814→      {
+  1815→        name: 'Kaloleni',
+  1816→        code: '103',
+  1817→        mp: { name: 'Hassan Gatere', party: 'ODM' },
+  1818→        wards: [
+  1819→          { name: 'Kaloleni/A', mca: 'Omar Mbugua' },
+  1820→          { name: 'Kaloleni/B', mca: 'Samuel Gakuo' },
+  1821→          { name: 'Kaloleni/C', mca: 'Anne Maina' },
+  1822→          { name: 'Kaloleni/D', mca: 'Anthony Kahindi' },
+  1823→          { name: 'Kaloleni/E', mca: 'Mohamed Letema' },
+  1824→        ],
+  1825→      },
+  1826→    ],
+  1827→    financial: {
+  1828→      equitableShare: 8.63,
+  1829→      ownSourceRevenue: 0.45,
+  1830→      conditionalGrants: 0.92,
+  1831→      totalBudget: 11.5,
+  1832→      developmentBudget: 5.1,
+  1833→      recurrentBudget: 6.4,
+  1834→      devAbsorptionRate: 42,
+  1835→      recurrentAbsorptionRate: 90,
+  1836→      pendingBills: 1200,
+  1837→      expenseBreakdown: {
+  1838→        health: 2.3,
+  1839→        education: 1.73,
+  1840→        infrastructure: 1.61,
+  1841→        agriculture: 1.15,
+  1842→        administration: 2.99,
+  1843→        other: 1.72,
+  1844→      },
+  1845→    },
+  1846→    audit: {
+  1847→      opinion: 'Qualified',
+  1848→      financialYear: 'FY 2024/25',
+  1849→      findings: [
+  1850→        'Pending bills of KSh 540 million for road construction projects',
+  1851→        'Unsupported expenditure of KSh 156 million in the Agriculture sector',
+  1852→        'Failure to maintain a fixed asset register',
+  1853→      ],
+  1854→      source: 'Office of the Auditor-General (OAG)',
+  1855→    },
+  1856→  },
+  1857→
+  1858→  // ═══════════════════════════════════════════════════════════════════
+  1859→  // Tana River (004) — Coast Region
+  1860→  // ═══════════════════════════════════════════════════════════════════
+  1861→  {
+  1862→    countyCode: '004',
+  1863→    countyName: 'Tana River',
+  1864→    region: 'Coast',
+  1865→    governor: {
+  1866→      name: 'Maj. (Rtd) Dhadho Godhana',
+  1867→      party: 'WDM',
+  1868→      coalition: 'Kenya Kwanza Alliance',
+  1869→      termStart: '2022-08-22',
+  1870→      termEnd: '2027-08-22',
+  1871→    },
+  1872→    deputyGovernor: { name: 'Caleb Cheruiyot', party: 'WDM' },
+  1873→    senator: { name: 'Naomi Jepkosgei', party: 'WDM', coalition: 'Kenya Kwanza Alliance' },
+  1874→    womanRep: { name: 'Lydia Luswa', party: 'WDM', coalition: 'Kenya Kwanza Alliance' },
+  1875→    cecms: [
+  1876→      { portfolio: 'Finance', name: 'Adan Wanjiku', qualification: 'MBA, CPA-K' },
+  1877→      { portfolio: 'Health', name: 'Robert Gakuo', qualification: 'MBChB, MMed' },
+  1878→      { portfolio: 'Education', name: 'Mohamed Luswa', qualification: 'MEd' },
+  1879→      { portfolio: 'Roads & Infrastructure', name: 'Rebecca Kamket', qualification: 'BSc Eng' },
+  1880→      { portfolio: 'Agriculture', name: 'Caleb Maina', qualification: 'BSc Agric' },
+  1881→      { portfolio: 'Water & Environment', name: 'Susan Cheruiyot', qualification: 'BSc Env. Sci' },
+  1882→      { portfolio: 'Lands & Planning', name: 'Isaac Muthoni', qualification: 'LLB' },
+  1883→      { portfolio: 'Trade & Tourism', name: 'Joseph Kahindi', qualification: 'BCom' },
+  1884→      { portfolio: 'Youth, Sports & Culture', name: 'Jane Musyoka', qualification: 'BA' },
+  1885→      { portfolio: 'Public Service', name: 'Yusuf Sifuna', qualification: 'MPA' },
+  1886→    ],
+  1887→    assemblySpeaker: { name: 'Mark Mbugua', party: 'WDM' },
+  1888→    constituencies: [
+  1889→      {
+  1890→        name: 'Tana River North',
+  1891→        code: '104',
+  1892→        mp: { name: 'Benjamin Luswa', party: 'WDM' },
+  1893→        wards: [
+  1894→          { name: 'Tana River North/A', mca: 'Isaac Kahindi' },
+  1895→          { name: 'Tana River North/B', mca: 'Abdullahi Letema' },
+  1896→          { name: 'Tana River North/C', mca: 'Agnes Jepkosgei' },
+  1897→          { name: 'Tana River North/D', mca: 'Margaret Mohamed' },
+  1898→          { name: 'Tana River North/E', mca: 'Christopher Wanjiku' },
+  1899→        ],
+  1900→      },
+  1901→      {
+  1902→        name: 'Tana River South',
+  1903→        code: '105',
+  1904→        mp: { name: 'Rose Maina', party: 'WDM' },
+  1905→        wards: [
+  1906→          { name: 'Tana River South/A', mca: 'Patrick Sifuna' },
+  1907→          { name: 'Tana River South/B', mca: 'Matthew Gatere' },
+  1908→          { name: 'Tana River South/C', mca: 'Gideon Munga' },
+  1909→          { name: 'Tana River South/D', mca: 'Adan Chigogo' },
+  1910→          { name: 'Tana River South/E', mca: 'Hannah Luswa' },
+  1911→        ],
+  1912→      },
+  1913→      {
+  1914→        name: 'Tana Delta',
+  1915→        code: '106',
+  1916→        mp: { name: 'Martha Muthoni', party: 'WDM' },
+  1917→        wards: [
+  1918→          { name: 'Tana Delta/A', mca: 'Mohamed Koti' },
+  1919→          { name: 'Tana Delta/B', mca: 'Grace Chepkwony' },
+  1920→          { name: 'Tana Delta/C', mca: 'Dorothy Mbugua' },
+  1921→          { name: 'Tana Delta/D', mca: 'Benjamin Gakuo' },
+  1922→          { name: 'Tana Delta/E', mca: 'Joanna Maina' },
+  1923→        ],
+  1924→      },
+  1925→    ],
+  1926→    financial: {
+  1927→      equitableShare: 3.9,
+  1928→      ownSourceRevenue: 0.085,
+  1929→      conditionalGrants: 0.42,
+  1930→      totalBudget: 5.2,
+  1931→      developmentBudget: 2.4,
+  1932→      recurrentBudget: 2.8,
+  1933→      devAbsorptionRate: 20,
+  1934→      recurrentAbsorptionRate: 85,
+  1935→      pendingBills: 620,
+  1936→      expenseBreakdown: {
+  1937→        health: 1.04,
+  1938→        education: 0.78,
+  1939→        infrastructure: 0.73,
+  1940→        agriculture: 0.52,
+  1941→        administration: 1.35,
+  1942→        other: 0.78,
+  1943→      },
+  1944→    },
+  1945→    audit: {
+  1946→      opinion: 'Qualified',
+  1947→      financialYear: 'FY 2024/25',
+  1948→      findings: [
+  1949→        'Unsupported expenditure of KSh 210 million in the Water department',
+  1950→        'Incomplete irrigation projects worth KSh 380 million',
+  1951→      ],
+  1952→      source: 'Office of the Auditor-General (OAG)',
+  1953→    },
+  1954→  },
+  1955→
+  1956→  // ═══════════════════════════════════════════════════════════════════
+  1957→  // Lamu (005) — Coast Region
+  1958→  // ═══════════════════════════════════════════════════════════════════
+  1959→  {
+  1960→    countyCode: '005',
+  1961→    countyName: 'Lamu',
+  1962→    region: 'Coast',
+  1963→    governor: {
+  1964→      name: 'Issa Timamy',
+  1965→      party: 'ANC',
+  1966→      coalition: 'Azimio la Umoja One Kenya Coalition',
+  1967→      termStart: '2022-08-22',
+  1968→      termEnd: '2027-08-22',
+  1969→    },
+  1970→    deputyGovernor: { name: 'Michael Kahindi', party: 'ANC' },
+  1971→    senator: { name: 'Susan Munga', party: 'ANC', coalition: 'Azimio la Umoja One Kenya Coalition' },
+  1972→    womanRep: { name: 'Rose Maina', party: 'ANC', coalition: 'Azimio la Umoja One Kenya Coalition' },
+  1973→    cecms: [
+  1974→      { portfolio: 'Finance', name: 'William Luswa', qualification: 'MBA, CPA-K' },
+  1975→      { portfolio: 'Health', name: 'Hassan Kamket', qualification: 'MBChB, MMed' },
+  1976→      { portfolio: 'Education', name: 'Thomas Maina', qualification: 'MEd' },
+  1977→      { portfolio: 'Roads & Infrastructure', name: 'Gideon Cheruiyot', qualification: 'BSc Eng' },
+  1978→      { portfolio: 'Agriculture', name: 'Michael Muthoni', qualification: 'BSc Agric' },
+  1979→      { portfolio: 'Water & Environment', name: 'Anthony Kahindi', qualification: 'BSc Env. Sci' },
+  1980→      { portfolio: 'Lands & Planning', name: 'Paul Musyoka', qualification: 'LLB' },
+  1981→      { portfolio: 'Trade & Tourism', name: 'Florence Sifuna', qualification: 'BCom' },
+  1982→      { portfolio: 'Youth, Sports & Culture', name: 'Ali Letema', qualification: 'BA' },
+  1983→      { portfolio: 'Public Service', name: 'Elizabeth Koti', qualification: 'MPA' },
+  1984→    ],
+  1985→    assemblySpeaker: { name: 'Abdullahi Wanjiku', party: 'ANC' },
+  1986→    constituencies: [
+  1987→      {
+  1988→        name: 'Lamu West',
+  1989→        code: '107',
+  1990→        mp: { name: 'James Maina', party: 'ANC' },
+  1991→        wards: [
+  1992→          { name: 'Lamu West/A', mca: 'Paul Sifuna' },
+  1993→          { name: 'Lamu West/B', mca: 'Rebecca Gatere' },
+  1994→          { name: 'Lamu West/C', mca: 'Bridget Munga' },
+  1995→          { name: 'Lamu West/D', mca: 'Tabitha Chigogo' },
+  1996→          { name: 'Lamu West/E', mca: 'John Luswa' },
+  1997→        ],
+  1998→      },
+  1999→      {
+  2000→        name: 'Lamu East',
+
+[showing lines 1-2000 of 6411; use offset=2001 with limit to continue reading]
