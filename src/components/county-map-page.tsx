@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { all47Governors, GovernorEntry } from '@/data/governors';
 import { REGIONS } from '@/data/types';
 import {
-  Map, Filter, X,
+  Map as MapIcon, Filter, X,
   Users, MapPin, Building2, TrendingDown, AlertTriangle,
   Layers, Search, ShieldCheck, ArrowRight, GitCompare, BarChart3, CheckCircle2,
 } from 'lucide-react';
@@ -141,7 +141,7 @@ export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) 
       <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 text-white">
         <div className="flex items-start gap-4">
           <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0">
-            <Map className="h-6 w-6 text-blue-300" />
+            <MapIcon className="h-6 w-6 text-blue-300" />
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-bold">{t('map.countyMapExplorer')}</h2>
