@@ -1,0 +1,812 @@
+   140→  [AUDIT_OPINIONS.ADVERSE]: "#ea580c",
+   141→  [AUDIT_OPINIONS.DISCLAIMER]: "#dc2626",
+   142→};
+   143→
+   144→const DEFAULT_FILL = "#94a3b8";
+   145→
+   146→// ─── Helper: interpolate color from red to green ────────────────────
+   147→
+   148→function lerpColor(t: number): string {
+   149→  const clamped = Math.max(0, Math.min(1, t));
+   150→  const r = Math.round(220 * (1 - clamped) + 22 * clamped);
+   151→  const g = Math.round(38 * (1 - clamped) + 163 * clamped);
+   152→  const b = Math.round(38 * (1 - clamped) + 74 * clamped);
+   153→  return `rgb(${r}, ${g}, ${b})`;
+   154→}
+   155→
+   156→// ─── Helper: population density color ───────────────────────────────
+   157→
+   158→function densityColor(pop: number, area: number): string {
+   159→  const density = pop / area;
+   160→  if (density > 2000) return "#7f1d1d";
+   161→  if (density > 1000) return "#991b1b";
+   162→  if (density > 500) return "#b91c1c";
+   163→  if (density > 200) return "#c2410c";
+   164→  if (density > 100) return "#ea580c";
+   165→  if (density > 50) return "#f59e0b";
+   166→  if (density > 20) return "#fbbf24";
+   167→  return "#fef08a";
+   168→}
+   169→
+   170→// ─── Lookup maps built once via useMemo ─────────────────────────────
+   171→
+   172→function buildGovernorMap() {
+   173→  const m: Record<string, (typeof all47Governors)[number]> = {};
+   174→  for (const g of all47Governors) m[g.code] = g;
+   175→  return m;
+   176→}
+   177→
+   178→function buildAuditMap(fy?: string) {
+   179→  const m: Record<string, (typeof countyAuditData)[number]> = {};
+   180→  for (const r of countyAuditData) {
+   181→    if (fy) {
+   182→      // Filter to specific financial year
+   183→      if (r.financialYear === fy) {
+   184→        m[r.countyCode] = r;
+   185→      }
+   186→    } else {
+   187→      // Pick latest
+   188→      if (!m[r.countyCode] || r.financialYear > m[r.countyCode].financialYear) {
+   189→        m[r.countyCode] = r;
+   190→      }
+   191→    }
+   192→  }
+   193→  return m;
+   194→}
+   195→
+   196→function buildBudgetAbsorptionMap(fy?: string) {
+   197→  const m: Record<string, number> = {};
+   198→  if (fy) {
+   199→    // Filter to specific financial year, prefer full year records
+   200→    for (const r of countyBudgetData) {
+   201→      if (r.financialYear === fy && r.period === "Full Year") {
+   202→        m[r.countyCode] = r.devAbsorptionRate;
+   203→      }
+   204→    }
+   205→    // Fall back to any record in that FY if no full year record
+   206→    for (const r of countyBudgetData) {
+   207→      if (r.financialYear === fy && !m[r.countyCode]) {
+   208→        m[r.countyCode] = r.devAbsorptionRate;
+   209→      }
+   210→    }
+   211→  } else {
+   212→    // Default: pick FY 2024/25 full year records
+   213→    for (const r of countyBudgetData) {
+   214→      if (!m[r.countyCode] || r.financialYear > "FY 2024/24") {
+   215→        m[r.countyCode] = r.devAbsorptionRate;
+   216→      }
+   217→    }
+   218→    // Ensure we pick the FY 2024/25 full year records
+   219→    for (const r of countyBudgetData) {
+   220→      if (r.financialYear === "FY 2024/25" && r.period === "Full Year") {
+   221→        m[r.countyCode] = r.devAbsorptionRate;
+   222→      }
+   223→    }
+   224→  }
+   225→  return m;
+   226→}
+   227→
+   228→// ─── Kenya country outline path ─────────────────────────────────────
+   229→
+   230→const KENYA_OUTLINE =
+   231→  "M 275 588 L 278 568 L 288 548 L 318 545 L 338 555 L 358 545 L 362 532 L 348 498 " +
+   232→  "L 355 468 L 388 438 L 448 425 L 520 432 L 578 452 L 605 478 L 598 512 " +
+   233→  "L 612 538 L 618 565 L 618 628 L 640 688 L 678 695 L 712 685 L 735 698 " +
+   234→  "L 742 720 L 742 780 L 780 772 L 818 768 L 865 768 L 892 752 L 918 745 " +
+   235→  "L 935 760 L 928 790 L 905 810 L 878 818 L 850 815 L 828 810 L 795 822 " +
+   236→  "L 760 825 L 738 815 L 660 830 L 618 820 L 598 815 L 570 808 L 545 798 " +
+   237→  "L 520 788 L 518 810 L 495 825 L 468 820 L 455 800 L 462 785 L 448 758 " +
+   238→  "L 440 780 L 432 805 L 418 818 L 420 838 L 432 858 L 448 875 L 468 882 " +
+   239→  "L 488 878 Z";
+   240→
+   241→// ─── Legend Config ───────────────────────────────────────────────────
+   242→
+   243→interface LegendItem {
+   244→  color: string;
+   245→  label: string;
+   246→}
+   247→
+   248→function getLegendItems(mode: ColorMode): LegendItem[] {
+   249→  switch (mode) {
+   250→    case "coalition":
+   251→      return [
+   252→        { color: COALITION_COLORS[COALITIONS.KENYA_KWANZA], label: "Kenya Kwanza" },
+   253→        { color: COALITION_COLORS[COALITIONS.AZIMIO], label: "Azimio" },
+   254→        { color: COALITION_COLORS[COALITIONS.INDEPENDENT], label: "Independent" },
+   255→      ];
+   256→    case "region":
+   257→      return REGIONS.map((r) => ({ color: REGION_COLORS[r], label: r }));
+   258→    case "audit":
+   259→      return [
+   260→        { color: AUDIT_COLORS[AUDIT_OPINIONS.UNMODIFIED], label: "Unmodified" },
+   261→        { color: AUDIT_COLORS[AUDIT_OPINIONS.QUALIFIED], label: "Qualified" },
+   262→        { color: AUDIT_COLORS[AUDIT_OPINIONS.ADVERSE], label: "Adverse" },
+   263→        { color: AUDIT_COLORS[AUDIT_OPINIONS.DISCLAIMER], label: "Disclaimer" },
+   264→      ];
+   265→    case "budget":
+   266→      return [
+   267→        { color: lerpColor(0), label: "Low (<30%)" },
+   268→        { color: lerpColor(0.33), label: "Medium (30-60%)" },
+   269→        { color: lerpColor(0.66), label: "Good (60-80%)" },
+   270→        { color: lerpColor(1), label: "High (>80%)" },
+   271→      ];
+   272→    case "cecm-performance":
+   273→      return [
+   274→        { color: "#047857", label: "High (80-100)" },
+   275→        { color: "#059669", label: "Good (60-79)" },
+   276→        { color: "#d97706", label: "Average (40-59)" },
+   277→        { color: "#ea580c", label: "Below Avg (20-39)" },
+   278→        { color: "#dc2626", label: "Poor (0-19)" },
+   279→      ];
+   280→    case "population":
+   281→      return [
+   282→        { color: "#fef08a", label: "<20/km²" },
+   283→        { color: "#fbbf24", label: "20-100/km²" },
+   284→        { color: "#ea580c", label: "100-500/km²" },
+   285→        { color: "#b91c1c", label: "500-1000/km²" },
+   286→        { color: "#7f1d1d", label: ">1000/km²" },
+   287→      ];
+   288→  }
+   289→}
+   290→
+   291→// ─── Counties with area too small for labels ────────────────────────
+   292→
+   293→const SMALL_COUNTY_CODES = new Set([
+   294→  "001", "005", "028", "041", "046", "047",
+   295→]);
+   296→
+   297→// ─── Tooltip Component ──────────────────────────────────────────────
+   298→
+   299→interface TooltipData {
+   300→  countyName: string;
+   301→  countyCode: string;
+   302→  governor: string;
+   303→  party: string;
+   304→  coalition: string;
+   305→  region: string;
+   306→  population: number;
+   307→  auditOpinion: string | null;
+   308→  budgetAbsorption: number | null;
+   309→  totalBudget: number | null;
+   310→  cecmScore: number | null;
+   311→  cecmLabel: string | null;
+   312→}
+   313→
+   314→function getAuditBadgeColor(opinion: string | null): string {
+   315→  switch (opinion) {
+   316→    case AUDIT_OPINIONS.UNMODIFIED: return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700";
+   317→    case AUDIT_OPINIONS.QUALIFIED: return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700";
+   318→    case AUDIT_OPINIONS.ADVERSE: return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-700";
+   319→    case AUDIT_OPINIONS.DISCLAIMER: return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700";
+   320→    default: return "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600";
+   321→  }
+   322→}
+   323→
+   324→function getBudgetBarColor(rate: number | null): string {
+   325→  if (rate == null) return "bg-gray-300";
+   326→  if (rate >= 70) return "bg-green-500";
+   327→  if (rate >= 50) return "bg-yellow-500";
+   328→  if (rate >= 30) return "bg-orange-500";
+   329→  return "bg-red-500";
+   330→}
+   331→
+   332→function MapTooltip({ data, x, y }: { data: TooltipData; x: number; y: number }) {
+   333→  const popFormatted = data.population.toLocaleString();
+   334→  const auditBadgeClass = getAuditBadgeColor(data.auditOpinion);
+   335→  const barColor = getBudgetBarColor(data.budgetAbsorption);
+   336→  const cecmScoreColor = data.cecmScore != null ? getCECMScoreColor(data.cecmScore) : null;
+   337→
+   338→  return (
+   339→    <div
+   340→      className="pointer-events-none absolute z-50 w-72 rounded-lg border border-border bg-background p-3 shadow-xl"
+   341→      style={{
+   342→        left: `${x}px`,
+   343→        top: `${y}px`,
+   344→      }}
+   345→    >
+   346→      <div className="mb-2 flex items-center justify-between gap-2">
+   347→        <div className="flex items-center gap-2">
+   348→          <MapPin className="h-4 w-4 text-primary" />
+   349→          <span className="font-semibold text-sm">{data.countyName}</span>
+   350→        </div>
+   351→        <span className="inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none">
+   352→          {data.region}
+   353→        </span>
+   354→      </div>
+   355→      <div className="space-y-1.5 text-xs text-muted-foreground">
+   356→        <div className="flex items-center gap-2">
+   357→          <Landmark className="h-3 w-3 shrink-0" />
+   358→          <span className="truncate">
+   359→            <span className="font-medium text-foreground">{data.governor}</span>
+   360→            <span className="ml-1 text-muted-foreground">({data.party})</span>
+   361→          </span>
+   362→        </div>
+   363→        <div className="flex items-center gap-2">
+   364→          <Users className="h-3 w-3 shrink-0" />
+   365→          <span>Pop: {popFormatted}</span>
+   366→        </div>
+   367→        <div className="flex items-center gap-2">
+   368→          <FileWarning className="h-3 w-3 shrink-0" />
+   369→          <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none ${auditBadgeClass}`}>
+   370→            {data.auditOpinion ?? "N/A"}
+   371→          </span>
+   372→        </div>
+   373→        <div className="flex items-center gap-2">
+   374→          <Wallet className="h-3 w-3 shrink-0" />
+   375→          <div className="flex flex-1 flex-col gap-0.5">
+   376→            <div className="flex items-center justify-between">
+   377→              <span>Absorption: {data.budgetAbsorption != null ? `${data.budgetAbsorption}%` : "N/A"}</span>
+   378→              {data.totalBudget != null && (
+   379→                <span className="text-muted-foreground">
+   380→                  Budget: KSh {data.totalBudget.toFixed(1)}B
+   381→                </span>
+   382→              )}
+   383→            </div>
+   384→            <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+   385→              <div
+   386→                className={`h-full rounded-full transition-all duration-300 ${barColor}`}
+   387→                style={{ width: `${data.budgetAbsorption ?? 0}%` }}
+   388→              />
+   389→            </div>
+   390→          </div>
+   391→        </div>
+   392→        {data.cecmScore != null && (
+   393→          <div className="flex items-center gap-2">
+   394→            <Award className="h-3 w-3 shrink-0" />
+   395→            <div className="flex flex-1 flex-col gap-0.5">
+   396→              <div className="flex items-center justify-between">
+   397→                <span>CECM Score: {data.cecmScore}/100</span>
+   398→                {data.cecmLabel && (
+   399→                  <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none`} style={{ borderColor: cecmScoreColor, color: cecmScoreColor, backgroundColor: cecmScoreColor ? `${cecmScoreColor}18` : undefined }}>
+   400→                    {data.cecmLabel}
+   401→                  </span>
+   402→                )}
+   403→              </div>
+   404→              <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+   405→                <div
+   406→                  className="h-full rounded-full transition-all duration-300"
+   407→                  style={{ width: `${data.cecmScore}%`, backgroundColor: cecmScoreColor ?? '#9ca3af' }}
+   408→                />
+   409→              </div>
+   410→            </div>
+   411→          </div>
+   412→        )}
+   413→      </div>
+   414→    </div>
+   415→  );
+   416→}
+   417→
+   418→// ─── County color resolver ──────────────────────────────────────────
+   419→
+   420→function resolveCountyFill(
+   421→  code: string,
+   422→  mode: ColorMode,
+   423→  govMap: Record<string, (typeof all47Governors)[number]>,
+   424→  auditMap: Record<string, (typeof countyAuditData)[number]>,
+   425→  budgetMap: Record<string, number>,
+   426→  cecmScoreMap: Map<string, { overallScore: number }>,
+   427→): string {
+   428→  switch (mode) {
+   429→    case "coalition": {
+   430→      const gov = govMap[code];
+   431→      return gov ? (COALITION_COLORS[gov.coalition] ?? DEFAULT_FILL) : DEFAULT_FILL;
+   432→    }
+   433→    case "region": {
+   434→      const gov = govMap[code];
+   435→      return gov ? (REGION_COLORS[gov.region] ?? DEFAULT_FILL) : DEFAULT_FILL;
+   436→    }
+   437→    case "audit": {
+   438→      const audit = auditMap[code];
+   439→      if (!audit || !audit.executiveOpinion) return DEFAULT_FILL;
+   440→      return AUDIT_COLORS[audit.executiveOpinion] ?? DEFAULT_FILL;
+   441→    }
+   442→    case "budget": {
+   443→      const rate = budgetMap[code];
+   444→      if (rate == null) return DEFAULT_FILL;
+   445→      return lerpColor(rate / 100);
+   446→    }
+   447→    case "cecm-performance": {
+   448→      const scoreEntry = cecmScoreMap.get(code);
+   449→      if (!scoreEntry) return DEFAULT_FILL;
+   450→      return getCECMScoreColor(scoreEntry.overallScore);
+   451→    }
+   452→    case "population": {
+   453→      const gov = govMap[code];
+   454→      if (!gov) return DEFAULT_FILL;
+   455→      return densityColor(gov.population, gov.areaSqKm);
+   456→    }
+   457→    default:
+   458→      return DEFAULT_FILL;
+   459→  }
+   460→}
+   461→
+   462→// ─── Main Map Component ─────────────────────────────────────────────
+   463→
+   464→const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps>(
+   465→  function KenyaCountyMapInner(
+   466→    {
+   467→      colorMode = "region",
+   468→      onCountyClick,
+   469→      onCountyHover,
+   470→      highlightedCounties = [],
+   471→      selectedCounties = [],
+   472→      financialYear = "FY 2024/25",
+   473→      className = "",
+   474→      showLabels = true,
+   475→      animated = true,
+   476→    },
+   477→    ref,
+   478→  ) {
+   479→    const [hoveredCounty, setHoveredCounty] = useState<string | null>(null);
+   480→    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+   481→    const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
+   482→    const transformRef = useRef<React.ComponentRef<typeof TransformWrapper>>(null);
+   483→    const containerRef = useRef<HTMLDivElement>(null);
+   484→    const { resolvedTheme } = useTheme();
+   485→    const isDark = resolvedTheme === "dark";
+   486→
+   487→    // Dark-aware SVG style strings
+   488→    const svgStyle = useMemo(() => {
+   489→      const countyStroke = isDark ? "#292524" : "#ffffff";
+   490→      const hoverStroke = isDark ? "#e7e5e4" : "#0f172a";
+   491→      const labelFill = isDark ? "#e7e5e4" : "#0f172a";
+   492→      const labelSmallFill = isDark ? "#a8a29e" : "#334155";
+   493→      return `
+   494→        .county-path {
+   495→          stroke: ${countyStroke};
+   496→          stroke-width: 1.2;
+   497→          cursor: pointer;
+   498→          transition: fill 0.6s ease, stroke-width 0.2s ease, filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+   499→          transform-origin: center;
+   500→        }
+   501→        .county-path:hover {
+   502→          stroke-width: 2.5;
+   503→          stroke: ${hoverStroke};
+   504→          filter: url(#county-shadow);
+   505→          transform: scale(1.02);
+   506→        }
+   507→        .county-path:focus-visible {
+   508→          stroke-width: 2.5;
+   509→          stroke: #059669;
+   510→          outline: 2px solid #059669;
+   511→          outline-offset: 1px;
+   512→        }
+   513→        .county-path.highlighted {
+   514→          stroke-width: 2.5;
+   515→          stroke: ${hoverStroke};
+   516→        }
+   517→        .county-path.selected {
+   518→          stroke-width: 3;
+   519→          stroke: ${isDark ? "#d6d3d1" : "#1e293b"};
+   520→          filter: url(#selected-glow);
+   521→        }
+   522→        .county-label {
+   523→          font-family: ui-sans-serif, system-ui, sans-serif;
+   524→          font-size: 9px;
+   525→          fill: ${labelFill};
+   526→          pointer-events: none;
+   527→          text-anchor: middle;
+   528→          dominant-baseline: central;
+   529→          font-weight: 500;
+   530→        }
+   531→        .county-label-small {
+   532→          font-family: ui-sans-serif, system-ui, sans-serif;
+   533→          font-size: 7px;
+   534→          fill: ${labelSmallFill};
+   535→          pointer-events: none;
+   536→          text-anchor: middle;
+   537→          dominant-baseline: central;
+   538→          font-weight: 400;
+   539→        }
+   540→        @keyframes pulse-county {
+   541→          0%, 100% { opacity: 1; }
+   542→          50% { opacity: 0.6; }
+   543→        }
+   544→        .county-animated {
+   545→          animation: pulse-county 2s ease-in-out infinite;
+   546→        }
+   547→        @keyframes glow-pulse {
+   548→          0%, 100% { filter: drop-shadow(0 0 2px rgba(${isDark ? "214, 211, 209" : "30, 41, 59"}, 0.4)); }
+   549→          50% { filter: drop-shadow(0 0 6px rgba(${isDark ? "214, 211, 209" : "30, 41, 59"}, 0.7)); }
+   550→        }
+   551→        .county-selected-glow {
+   552→          animation: glow-pulse 2s ease-in-out infinite;
+   553→        }
+   554→      `;
+   555→    }, [isDark]);
+   556→
+   557→    const govMap = useMemo(() => buildGovernorMap(), []);
+   558→    const auditMap = useMemo(() => buildAuditMap(financialYear), [financialYear]);
+   559→    const budgetMap = useMemo(() => buildBudgetAbsorptionMap(financialYear), [financialYear]);
+   560→    const cecmScoreMap = useMemo(() => getCECMPerformanceScores(financialYear), [financialYear]);
+   561→
+   562→    const legendItems = useMemo(() => getLegendItems(colorMode), [colorMode]);
+   563→
+   564→    const zoomToCounty = useCallback(
+   565→      (code: string) => {
+   566→        const county = kenyaCountyPaths.find((c) => c.code === code);
+   567→        if (!county || !transformRef.current) return;
+   568→        const instance = transformRef.current;
+   569→        // We use zoomToElement or manual centering
+   570→        // Center on county cx, cy in the viewBox coordinate system
+   571→        const svgEl = containerRef.current?.querySelector("svg") as SVGSVGElement | null;
+   572→        if (svgEl) {
+   573→          const rect = svgEl.getBoundingClientRect();
+   574→          // Map viewBox coordinates to pixel coordinates
+   575→          const scaleRatio = rect.width / 1000;
+   576→          const px = county.cx * scaleRatio;
+   577→          const py = county.cy * scaleRatio;
+   578→          // centerViewOnPoint expects container-relative pixel position
+   579→          instance.centerView(px, py, 3);
+   580→        }
+   581→      },
+   582→      [],
+   583→    );
+   584→
+   585→    useImperativeHandle(ref, () => ({ zoomToCounty }), [zoomToCounty]);
+   586→
+   587→    const handleMouseEnter = useCallback(
+   588→      (county: CountyShape, e: React.MouseEvent<SVGPathElement>) => {
+   589→        setHoveredCounty(county.code);
+   590→        onCountyHover?.(county.code);
+   591→
+   592→        const gov = govMap[county.code];
+   593→        const audit = auditMap[county.code];
+   594→        const budget = getCountyBudget(county.code, financialYear);
+   595→        const cecmEntry = cecmScoreMap.get(county.code);
+   596→
+   597→        // Position tooltip relative to the outermost container (not affected by zoom)
+   598→        const outerContainer = containerRef.current?.getBoundingClientRect();
+   599→        if (outerContainer) {
+   600→          setTooltipPos({
+   601→            x: e.clientX - outerContainer.left + 15,
+   602→            y: e.clientY - outerContainer.top - 10,
+   603→          });
+   604→        }
+   605→
+   606→        setTooltipData({
+   607→          countyName: county.name,
+   608→          countyCode: county.code,
+   609→          governor: gov?.name ?? "N/A",
+   610→          party: gov?.party ?? "",
+   611→          coalition: gov?.coalition ?? "",
+   612→          region: gov?.region ?? "",
+   613→          population: gov?.population ?? 0,
+   614→          auditOpinion: audit?.executiveOpinion ?? null,
+   615→          budgetAbsorption: budget?.devAbsorptionRate ?? null,
+   616→          totalBudget: budget?.totalBudget ?? null,
+   617→          cecmScore: cecmEntry?.overallScore ?? null,
+   618→          cecmLabel: cecmEntry
+   619→            ? cecmEntry.overallScore >= 80
+   620→              ? 'High Performing'
+   621→              : cecmEntry.overallScore >= 60
+   622→                ? 'Good'
+   623→                : cecmEntry.overallScore >= 40
+   624→                  ? 'Average'
+   625→                  : cecmEntry.overallScore >= 20
+   626→                    ? 'Below Average'
+   627→                    : 'Poor'
+   628→            : null,
+   629→        });
+   630→      },
+   631→      [govMap, auditMap, financialYear, onCountyHover, cecmScoreMap],
+   632→    );
+   633→
+   634→    const handleMouseLeave = useCallback(() => {
+   635→      setHoveredCounty(null);
+   636→      setTooltipData(null);
+   637→      onCountyHover?.(null);
+   638→    }, [onCountyHover]);
+   639→
+   640→    const handleClick = useCallback(
+   641→      (county: CountyShape) => {
+   642→        onCountyClick?.(county.code, county.name);
+   643→      },
+   644→      [onCountyClick],
+   645→    );
+   646→
+   647→    const handleKeyDown = useCallback(
+   648→      (county: CountyShape, e: React.KeyboardEvent<SVGPathElement>) => {
+   649→        if (e.key === 'Enter' || e.key === ' ') {
+   650→          e.preventDefault();
+   651→          handleClick(county);
+   652→        }
+   653→      },
+   654→      [handleClick],
+   655→    );
+   656→
+   657→    const handleMiniKeyDown = useCallback(
+   658→      (county: CountyShape) => {
+   659→        onCountyClick?.(county.code);
+   660→      },
+   661→      [onCountyClick],
+   662→    );
+   663→
+   664→    return (
+   665→      <div ref={containerRef} className={`relative w-full ${className}`}>
+   666→        {/* Tooltip — positioned absolutely within outermost container (not affected by zoom) */}
+   667→        {tooltipData && hoveredCounty && (
+   668→          <MapTooltip data={tooltipData} x={tooltipPos.x} y={tooltipPos.y} />
+   669→        )}
+   670→
+   671→        {/* Zoom/pan wrapper */}
+   672→        <TransformWrapper
+   673→          ref={transformRef}
+   674→          initialScale={0.7}
+   675→          minScale={0.5}
+   676→          maxScale={5}
+   677→          centerOnInit={true}
+   678→        >
+   679→          {({ zoomIn, zoomOut, resetView }) => (
+   680→            <>
+   681→              <TransformComponent
+   682→                wrapperClass="!w-full !overflow-hidden"
+   683→                contentClass="!w-full"
+   684→              >
+   685→                {/* SVG Map */}
+   686→                <svg
+   687→                  viewBox="0 0 1000 1200"
+   688→                  className="w-full h-auto select-none"
+   689→                  style={{ maxHeight: '600px' }}
+   690→                  role="img"
+   691→                  aria-label="Interactive map of Kenya showing 47 counties. Use arrow keys to navigate, Enter or Space to select a county."
+   692→                >
+   693→                  <defs>
+   694→                    <filter id="county-shadow" x="-5%" y="-5%" width="110%" height="110%">
+   695→                      <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.15" />
+   696→                    </filter>
+   697→                    <filter id="selected-glow" x="-10%" y="-10%" width="120%" height="120%">
+   698→                      <feGaussianBlur stdDeviation="3" result="blur" />
+   699→                      <feMerge>
+   700→                        <feMergeNode in="blur" />
+   701→                        <feMergeNode in="SourceGraphic" />
+   702→                      </feMerge>
+   703→                    </filter>
+   704→                    <style>{svgStyle}</style>
+   705→                  </defs>
+   706→
+   707→                  {/* Kenya outline border */}
+   708→                  <path
+   709→                    d={KENYA_OUTLINE}
+   710→                    fill="none"
+   711→                    stroke={isDark ? "#57534e" : "#1e293b"}
+   712→                    strokeWidth="2.5"
+   713→                    strokeLinejoin="round"
+   714→                  />
+   715→
+   716→                  {/* County shapes */}
+   717→                  {kenyaCountyPaths.map((county) => {
+   718→                    const fill = resolveCountyFill(
+   719→                      county.code,
+   720→                      colorMode,
+   721→                      govMap,
+   722→                      auditMap,
+   723→                      budgetMap,
+   724→                      cecmScoreMap,
+   725→                    );
+   726→                    const isHovered = hoveredCounty === county.code;
+   727→                    const isHighlighted = highlightedCounties.includes(county.code);
+   728→                    const isSelected = selectedCounties.includes(county.code);
+   729→                    const isSmall = SMALL_COUNTY_CODES.has(county.code);
+   730→
+   731→                    return (
+   732→                      <g key={county.code}>
+   733→                        <path
+   734→                          d={county.path}
+   735→                          fill={fill}
+   736→                          className={[
+   737→                            "county-path",
+   738→                            isHighlighted ? "highlighted" : "",
+   739→                            isSelected ? "selected county-selected-glow" : "",
+   740→                            animated && isHighlighted ? "county-animated" : "",
+   741→                          ].join(" ")}
+   742→                          style={{
+   743→                            opacity: isHovered ? 0.85 : 1,
+   744→                          }}
+   745→                          onMouseEnter={(e) => handleMouseEnter(county, e)}
+   746→                          onMouseLeave={handleMouseLeave}
+   747→                          onClick={() => handleClick(county)}
+   748→                          onKeyDown={(e) => handleKeyDown(county, e)}
+   749→                          tabIndex={0}
+   750→                          role="button"
+   751→                          aria-label={`${county.name} County`}
+   752→                        />
+   753→                        {showLabels && !isSmall && (
+   754→                          <text
+   755→                            x={county.cx}
+   756→                            y={county.cy}
+   757→                            className={isSmall ? "county-label-small" : "county-label"}
+   758→                          >
+   759→                            {county.name.length > 10
+   760→                              ? county.name.split(" ").map((w, i) => (
+   761→                                  <tspan
+   762→                                    key={i}
+   763→                                    x={county.cx}
+   764→                                    dy={i === 0 ? "-0.4em" : "1.1em"}
+   765→                                  >
+   766→                                    {w}
+   767→                                  </tspan>
+   768→                                ))
+   769→                              : county.name}
+   770→                          </text>
+   771→                        )}
+   772→                      </g>
+   773→                    );
+   774→                  })}
+   775→                </svg>
+   776→              </TransformComponent>
+   777→
+   778→              {/* Zoom controls overlay — bottom-right */}
+   779→              <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1">
+   780→                <button
+   781→                  type="button"
+   782→                  onClick={() => zoomIn()}
+   783→                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background shadow-sm transition-colors hover:bg-accent"
+   784→                  aria-label="Zoom in"
+   785→                >
+   786→                  <ZoomIn className="h-4 w-4" />
+   787→                </button>
+   788→                <button
+   789→                  type="button"
+   790→                  onClick={() => zoomOut()}
+   791→                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background shadow-sm transition-colors hover:bg-accent"
+   792→                  aria-label="Zoom out"
+   793→                >
+   794→                  <ZoomOut className="h-4 w-4" />
+   795→                </button>
+   796→                <button
+   797→                  type="button"
+   798→                  onClick={() => resetView()}
+   799→                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background shadow-sm transition-colors hover:bg-accent"
+   800→                  aria-label="Reset zoom"
+   801→                >
+   802→                  <Maximize2 className="h-4 w-4" />
+   803→                </button>
+   804→              </div>
+   805→            </>
+   806→          )}
+   807→        </TransformWrapper>
+   808→
+   809→        {/* Legend */}
+   810→        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2">
+   811→          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+   812→            <Info className="h-3 w-3" />
+   813→            <span className="font-medium capitalize">
+   814→              {colorMode === "coalition"
+   815→                ? "Coalition"
+   816→                : colorMode === "region"
+   817→                  ? "Region"
+   818→                  : colorMode === "audit"
+   819→                    ? "Audit Opinion"
+   820→                    : colorMode === "budget"
+   821→                      ? "Budget Absorption"
+   822→                      : colorMode === "cecm-performance"
+   823→                        ? "CECM Performance"
+   824→                        : "Population Density"}
+   825→            </span>
+   826→          </div>
+   827→          {legendItems.map((item, i) => (
+   828→            <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+   829→              <span
+   830→                className="inline-block h-3 w-3 rounded-sm border border-white/30 dark:border-stone-600 shadow-sm"
+   831→                style={{ backgroundColor: item.color }}
+   832→              />
+   833→              <span>{item.label}</span>
+   834→            </div>
+   835→          ))}
+   836→        </div>
+   837→      </div>
+   838→    );
+   839→  },
+   840→);
+   841→
+   842→export { KenyaCountyMapInner as KenyaCountyMap };
+   843→
+   844→// ─── Mini Map Component ─────────────────────────────────────────────
+   845→
+   846→export function KenyaMiniMap({
+   847→  colorMode = "region",
+   848→  onCountyClick,
+   849→  highlightedCounties = [],
+   850→  className = "",
+   851→}: KenyaMiniMapProps) {
+   852→  const govMap = useMemo(() => buildGovernorMap(), []);
+   853→  const auditMap = useMemo(() => buildAuditMap(), []);
+   854→  const { resolvedTheme } = useTheme();
+   855→  const isDark = resolvedTheme === "dark";
+   856→
+   857→  const miniSvgStyle = useMemo(() => {
+   858→    const countyStroke = isDark ? "#292524" : "#ffffff";
+   859→    const hoverStroke = isDark ? "#e7e5e4" : "#0f172a";
+   860→    return `
+   861→      .mini-county {
+   862→        stroke: ${countyStroke};
+   863→        stroke-width: 2;
+   864→        cursor: pointer;
+   865→        transition: opacity 0.15s ease, stroke-width 0.15s ease;
+   866→      }
+   867→      .mini-county:hover {
+   868→        opacity: 0.8;
+   869→        stroke-width: 3.5;
+   870→        stroke: ${hoverStroke};
+   871→      }
+   872→      .mini-county:focus-visible {
+   873→        stroke-width: 3.5;
+   874→        stroke: #059669;
+   875→        outline: 2px solid #059669;
+   876→        outline-offset: 1px;
+   877→      }
+   878→      .mini-county.highlighted {
+   879→        stroke-width: 3.5;
+   880→        stroke: ${hoverStroke};
+   881→      }
+   882→    `;
+   883→  }, [isDark]);
+   884→
+   885→  const handleClick = useCallback(
+   886→    (county: CountyShape) => {
+   887→      onCountyClick?.(county.code);
+   888→    },
+   889→    [onCountyClick],
+   890→  );
+   891→
+   892→  return (
+   893→    <div className={`relative ${className}`} style={{ width: 200, height: 240 }}>
+   894→      <svg
+   895→        viewBox="0 0 1000 1200"
+   896→        width="200"
+   897→        height="240"
+   898→        role="img"
+   899→        aria-label="Mini map of Kenya counties"
+   900→      >
+   901→        <defs>
+   902→          <style>{miniSvgStyle}</style>
+   903→        </defs>
+   904→
+   905→        {/* Kenya outline */}
+   906→        <path
+   907→          d={KENYA_OUTLINE}
+   908→          fill="none"
+   909→          stroke={isDark ? "#57534e" : "#334155"}
+   910→          strokeWidth="3"
+   911→          strokeLinejoin="round"
+   912→        />
+   913→
+   914→        {kenyaCountyPaths.map((county) => {
+   915→          const fill = resolveCountyFill(
+   916→            county.code,
+   917→            colorMode as ColorMode,
+   918→            govMap,
+   919→            auditMap,
+   920→            {},
+   921→          );
+   922→          const isHighlighted = highlightedCounties.includes(county.code);
+   923→
+   924→          return (
+   925→            <path
+   926→              key={county.code}
+   927→              d={county.path}
+   928→              fill={fill}
+   929→              className={["mini-county", isHighlighted ? "highlighted" : ""].join(" ")}
+   930→              onClick={() => handleClick(county)}
+   931→              onKeyDown={(e) => {
+   932→                if (e.key === 'Enter' || e.key === ' ') {
+   933→                  e.preventDefault();
+   934→                  handleMiniKeyDown(county);
+   935→                }
+   936→              }}
+   937→              tabIndex={0}
+   938→              role="button"
+   939→              aria-label={`${county.name} County`}
+   940→            />
+   941→          );
+   942→        })}
+   943→      </svg>
+   944→    </div>
+   945→  );
+   946→}
+   947→
+   948→// ─── Re-export types for convenience ────────────────────────────────
+   949→
+   950→export type { KenyaCountyMapProps, KenyaMiniMapProps, ColorMode, MiniColorMode, KenyaCountyMapHandle };
+   951→

@@ -1,0 +1,545 @@
+     1→    28→export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) {
+     2→    29→  const t = useTranslations();
+     3→    30→  const [colorMode, setColorMode] = useState<ColorMode>('coalition');
+     4→    31→  const [regionFilter, setRegionFilter] = useState<string>('all');
+     5→    32→  const [coalitionFilter, setCoalitionFilter] = useState<string>('all');
+     6→    33→  const [auditFilter, setAuditFilter] = useState<string>('all');
+     7→    34→  const [hoveredCounty, setHoveredCounty] = useState<CountyShape | null>(null);
+     8→    35→  const [selectedCounty, setSelectedCounty] = useState<GovernorEntry | null>(null);
+     9→    36→  const [searchQuery, setSearchQuery] = useState('');
+    10→    37→  const [selectedFY, setSelectedFY] = useState('FY 2024/25');
+    11→    38→  const [multiSelectedCounties, setMultiSelectedCounties] = useState<string[]>([]);
+    12→    39→  const [quickFilter, setQuickFilter] = useState<string | null>(null);
+    13→    40→
+    14→    41→  const FINANCIAL_YEARS = ['FY 2022/23', 'FY 2023/24', 'FY 2024/25'];
+    15→    42→
+    16→    43→  // Track shift key for multi-select
+    17→    44→  const shiftHeldRef = useRef(false);
+    18→    45→  useEffect(() => {
+    19→    46→    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Shift') shiftHeldRef.current = true; };
+    20→    47→    const onKeyUp = (e: KeyboardEvent) => { if (e.key === 'Shift') shiftHeldRef.current = false; };
+    21→    48→    window.addEventListener('keydown', onKeyDown);
+    22→    49→    window.addEventListener('keyup', onKeyUp);
+    23→    50→    return () => {
+    24→    51→      window.removeEventListener('keydown', onKeyDown);
+    25→    52→      window.removeEventListener('keyup', onKeyUp);
+    26→    53→    };
+    27→    54→  }, []);
+    28→    55→
+    29→    56→  const governorMap = useMemo(() => {
+    30→    57→    const map = new Map<string, GovernorEntry>();
+    31→    58→    all47Governors.forEach(g => map.set(g.county, g));
+    32→    59→    return map;
+    33→    60→  }, []);
+    34→    61→
+    35→    62→  const filteredShapes = useMemo(() => {
+    36→    63→    let shapes = kenyaCountyPaths;
+    37→    64→    if (searchQuery) {
+    38→    65→      const q = searchQuery.toLowerCase();
+    39→    66→      shapes = shapes.filter(s => s.name.toLowerCase().includes(q));
+    40→    67→    }
+    41→    68→    if (regionFilter !== 'all') {
+    42→    69→      shapes = shapes.filter(s => governorMap.get(s.name)?.region === regionFilter);
+    43→    70→    }
+    44→    71→    if (coalitionFilter !== 'all' && colorMode === 'coalition') {
+    45→    72→      shapes = shapes.filter(s => governorMap.get(s.name)?.coalition === coalitionFilter);
+    46→    73→    }
+    47→    74→    if (auditFilter !== 'all' && colorMode === 'audit') {
+    48→    75→      const capitalizedOpinion = auditFilter.charAt(0).toUpperCase() + auditFilter.slice(1);
+    49→    76→      shapes = shapes.filter(s => {
+    50→    77→        const rec = countyAuditData.find(a => a.countyCode === s.code && a.financialYear === selectedFY);
+    51→    78→        return rec && rec.executiveOpinion === capitalizedOpinion;
+    52→    79→      });
+    53→    80→    }
+    54→    81→    // Apply quick filter
+    55→    82→    if (quickFilter === 'adverse') {
+    56→    83→      shapes = shapes.filter(s => {
+    57→    84→        const rec = countyAuditData.find(a => a.countyCode === s.code && a.financialYear === selectedFY);
+    58→    85→        return rec && rec.executiveOpinion === 'Adverse';
+    59→    86→      });
+    60→    87→    } else if (quickFilter === 'top5-budget') {
+    61→    88→      const budgetForFY = countyBudgetData
+    62→    89→        .filter(b => b.financialYear === selectedFY)
+    63→    90→        .sort((a, b) => b.devAbsorptionRate - a.devAbsorptionRate)
+    64→    91→        .slice(0, 5)
+    65→    92→        .map(b => b.countyCode);
+    66→    93→      shapes = shapes.filter(s => budgetForFY.includes(s.code));
+    67→    94→    } else if (quickFilter === 'largest-pop') {
+    68→    95→      const top10 = [...all47Governors].sort((a, b) => b.population - a.population).slice(0, 10).map(g => g.code);
+    69→    96→      shapes = shapes.filter(s => top10.includes(s.code));
+    70→    97→    }
+    71→    98→    return shapes;
+    72→    99→  }, [regionFilter, coalitionFilter, auditFilter, searchQuery, colorMode, governorMap, quickFilter, selectedFY, countyAuditData, countyBudgetData]);
+    73→   100→
+    74→   101→  // Quick filter counts
+    75→   102→  const quickFilterCounts = useMemo(() => {
+    76→   103→    const adverseCount = countyAuditData.filter(a => a.financialYear === selectedFY && a.executiveOpinion === 'Adverse').length;
+    77→   104→    return {
+    78→   105→      'adverse': adverseCount,
+    79→   106→      'top5-budget': 5,
+    80→   107→      'largest-pop': 10,
+    81→   108→    };
+    82→   109→  }, [selectedFY]);
+    83→   110→
+    84→   111→  const QUICK_FILTERS = [
+    85→   112→    { key: 'adverse', labelKey: 'map.adverseAudit', icon: AlertTriangle },
+    86→   113→    { key: 'top5-budget', labelKey: 'map.top5BudgetAbsorption', icon: BarChart3 },
+    87→   114→    { key: 'largest-pop', labelKey: 'map.largestPopulation', icon: Users },
+    88→   115→  ];
+    89→   116→
+    90→   117→  // Audit coverage for selected FY
+    91→   118→  const auditCoverage = useMemo(() => {
+    92→   119→    const uniqueCounties = new Set(countyAuditData.filter(a => a.financialYear === selectedFY).map(a => a.countyCode));
+    93→   120→    return uniqueCounties.size;
+    94→   121→  }, [selectedFY]);
+    95→   122→
+    96→   123→  const handleMapCountyClick = useCallback((code: string, name: string) => {
+    97→   124→    if (shiftHeldRef.current) {
+    98→   125→      setMultiSelectedCounties(prev =>
+    99→   126→        prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+   100→   127→      );
+   101→   128→    } else {
+   102→   129→      const gov = all47Governors.find(g => g.code === code);
+   103→   130→      if (gov) setSelectedCounty(gov);
+   104→   131→    }
+   105→   132→  }, []);
+   106→   133→
+   107→   134→  const removeMultiSelected = useCallback((code: string) => {
+   108→   135→    setMultiSelectedCounties(prev => prev.filter(c => c !== code));
+   109→   136→  }, []);
+   110→   137→
+   111→   138→  return (
+   112→   139→    <div className="space-y-5">
+   113→   140→      {/* Hero */}
+   114→   141→      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 text-white">
+   115→   142→        <div className="flex items-start gap-4">
+   116→   143→          <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0">
+   117→   144→            <Map className="h-6 w-6 text-blue-300" />
+   118→   145→          </div>
+   119→   146→          <div className="flex-1">
+   120→   147→            <h2 className="text-lg font-bold">{t('map.countyMapExplorer')}</h2>
+   121→   148→            <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+   122→   149→              {t('map.mapSubtitle')}
+   123→   150→            </p>
+   124→   151→            <div className="flex flex-wrap gap-2 mt-3">
+   125→   152→              <span className="px-2.5 py-1 bg-blue-500/20 rounded-lg text-[11px] font-medium text-blue-300 flex items-center gap-1"><Layers className="h-3 w-3" /> {t('map.countiesCount', { count: 47 })}</span>
+   126→   153→              <span className="px-2.5 py-1 bg-emerald-500/20 rounded-lg text-[11px] font-medium text-emerald-300 flex items-center gap-1"><Users className="h-3 w-3" /> {t('map.governorsCount', { count: 47 })}</span>
+   127→   154→              <span className="px-2.5 py-1 bg-amber-500/20 rounded-lg text-[11px] font-medium text-amber-300 flex items-center gap-1"><MapPin className="h-3 w-3" /> {t('map.regionsCount', { count: 8 })}</span>
+   128→   155→            </div>
+   129→   156→          </div>
+   130→   157→        </div>
+   131→   158→      </div>
+   132→   159→
+   133→   160→      {/* Controls */}
+   134→   161→      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
+   135→   162→        <CardContent className="py-4 px-4">
+   136→   163→          <div className="flex flex-col md:flex-row gap-3">
+   137→   164→            <div className="relative flex-1">
+   138→   165→              <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
+   139→   166→              <Input
+   140→   167→                placeholder={t('map.searchCounty')}
+   141→   168→                className="h-9 pl-9 text-xs border-stone-200 dark:border-stone-700"
+   142→   169→                value={searchQuery}
+   143→   170→                onChange={e => setSearchQuery(e.target.value)}
+   144→   171→              />
+   145→   172→            </div>
+   146→   173→            <div className="flex gap-2 flex-wrap">
+   147→   174→              <Select value={colorMode} onValueChange={v => setColorMode(v as ColorMode)}>
+   148→   175→                <SelectTrigger className="h-9 w-36 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
+   149→   176→                <SelectContent>
+   150→   177→                  <SelectItem value="coalition">{t('map.coalition')}</SelectItem>
+   151→   178→                  <SelectItem value="region">{t('map.region')}</SelectItem>
+   152→   179→                  <SelectItem value="audit">{t('map.auditOpinion')}</SelectItem>
+   153→   180→                  <SelectItem value="budget">{t('map.budgetAbsorption')}</SelectItem>
+   154→   181→                  <SelectItem value="population">{t('map.populationMode')}</SelectItem>
+   155→   182→                </SelectContent>
+   156→   183→              </Select>
+   157→   184→              <Select value={regionFilter} onValueChange={setRegionFilter}>
+   158→   185→                <SelectTrigger className="h-9 w-36 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
+   159→   186→                <SelectContent>
+   160→   187→                  <SelectItem value="all">{t('map.allRegions')}</SelectItem>
+   161→   188→                  {REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+   162→   189→                </SelectContent>
+   163→   190→              </Select>
+   164→   191→              {colorMode === 'coalition' && (
+   165→   192→                <Select value={coalitionFilter} onValueChange={setCoalitionFilter}>
+   166→   193→                  <SelectTrigger className="h-9 w-40 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
+   167→   194→                  <SelectContent>
+   168→   195→                    <SelectItem value="all">{t('map.allCoalitions')}</SelectItem>
+   169→   196→                    <SelectItem value="Kenya Kwanza Alliance">Kenya Kwanza</SelectItem>
+   170→   197→                    <SelectItem value="Azimio la Umoja One Kenya Coalition">Azimio</SelectItem>
+   171→   198→                    <SelectItem value="Independent">{t('county.independent')}</SelectItem>
+   172→   199→                  </SelectContent>
+   173→   200→                </Select>
+   174→   201→              )}
+   175→   202→              {colorMode === 'audit' && (
+   176→   203→                <Select value={auditFilter} onValueChange={setAuditFilter}>
+   177→   204→                  <SelectTrigger className="h-9 w-40 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
+   178→   205→                  <SelectContent>
+   179→   206→                    <SelectItem value="all">{t('map.allOpinions')}</SelectItem>
+   180→   207→                    <SelectItem value="unmodified">{t('audit.unmodified')}</SelectItem>
+   181→   208→                    <SelectItem value="qualified">{t('audit.qualified')}</SelectItem>
+   182→   209→                    <SelectItem value="adverse">{t('audit.adverse')}</SelectItem>
+   183→   210→                    <SelectItem value="disclaimer">{t('audit.disclaimer')}</SelectItem>
+   184→   211→                  </SelectContent>
+   185→   212→                </Select>
+   186→   213→              )}
+   187→   214→            </div>
+   188→   215→          </div>
+   189→   216→          {/* Quick Filter Chips */}
+   190→   217→          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-stone-100 dark:border-stone-800">
+   191→   218→            <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider self-center mr-1">
+   192→   219→              <Filter className="h-3 w-3 inline mr-1" />{t('map.quickFilters')}
+   193→   220→            </span>
+   194→   221→            {QUICK_FILTERS.map(qf => (
+   195→   222→              <button
+   196→   223→                key={qf.key}
+   197→   224→                onClick={() => setQuickFilter(prev => prev === qf.key ? null : qf.key)}
+   198→   225→                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+   199→   226→                  quickFilter === qf.key
+   200→   227→                    ? 'bg-stone-800 text-white border-stone-800'
+   201→   228→                    : 'bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:bg-stone-700'
+   202→   229→                }`}
+   203→   230→              >
+   204→   231→                <qf.icon className="h-3 w-3" />
+   205→   232→                {t(qf.labelKey as any)}
+   206→   233→                <span className={`ml-0.5 text-[9px] px-1.5 py-0.5 rounded-full ${
+   207→   234→                  quickFilter === qf.key ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-500 dark:text-stone-400'
+   208→   235→                }`}>
+   209→   236→                  {quickFilterCounts[qf.key as keyof typeof quickFilterCounts]}
+   210→   237→                </span>
+   211→   238→                {quickFilter === qf.key && <X className="h-2.5 w-2.5 ml-0.5" />}
+   212→   239→              </button>
+   213→   240→            ))}
+   214→   241→          </div>
+   215→   242→          {/* Temporal FY Selector - visible in audit mode */}
+   216→   243→          {colorMode === 'audit' && (
+   217→   244→            <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-stone-100 dark:border-stone-800">
+   218→   245→              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider self-center mr-1">
+   219→   246→                Financial Year:
+   220→   247→              </span>
+   221→   248→              {FINANCIAL_YEARS.map(fy => (
+   222→   249→                <button
+   223→   250→                  key={fy}
+   224→   251→                  onClick={() => setSelectedFY(fy)}
+   225→   252→                  className={`px-4 py-1.5 rounded-full text-[11px] font-semibold border transition-all ${
+   226→   253→                    selectedFY === fy
+   227→   254→                      ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+   228→   255→                      : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'
+   229→   256→                  }`}
+   230→   257→                >
+   231→   258→                  {fy}
+   232→   259→                </button>
+   233→   260→              ))}
+   234→   261→            </div>
+   235→   262→          )}
+   236→   263→        </CardContent>
+   237→   264→      </Card>
+   238→   265→
+   239→   266→      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+   240→   267→        {/* Map */}
+   241→   268→        <div className="lg:col-span-3">
+   242→   269→          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 overflow-hidden">
+   243→   270→            <CardContent className="p-4">
+   244→   271→              <div className="relative bg-stone-50 dark:bg-stone-800 rounded-lg overflow-hidden" style={{ minHeight: '500px' }}>
+   245→   272→                {/* Animated transition wrapper */}
+   246→   273→                <div key={colorMode} className="animate-in fade-in duration-300">
+   247→   274→                <KenyaCountyMap
+   248→   275→                  colorMode={colorMode}
+   249→   276→                  financialYear={selectedFY}
+   250→   277→                  selectedCounties={multiSelectedCounties}
+   251→   278→                  onCountyClick={handleMapCountyClick}
+   252→   279→                  onCountyHover={(code) => {
+   253→   280→                    if (code) {
+   254→   281→                      const shape = kenyaCountyPaths.find(s => s.code === code);
+   255→   282→                      if (shape) setHoveredCounty(shape);
+   256→   283→                    } else {
+   257→   284→                      setHoveredCounty(null);
+   258→   285→                    }
+   259→   286→                  }}
+   260→   287→                  highlightedCounties={selectedCounty ? [selectedCounty.code] : []}
+   261→   288→                  showLabels={true}
+   262→   289→                />
+   263→   290→                </div>
+   264→   291→                {/* Tooltip */}
+   265→   292→                {hoveredCounty && (
+   266→   293→                  <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-stone-200 dark:border-stone-700 p-3 max-w-52 z-10">
+   267→   294→                    <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{hoveredCounty.name}</p>
+   268→   295→                    {(() => {
+   269→   296→                      const gov = governorMap.get(hoveredCounty.name);
+   270→   297→                      return gov ? (
+   271→   298→                        <div className="mt-1 space-y-0.5">
+   272→   299→                          <p className="text-[10px] text-stone-500 dark:text-stone-400">Gov: {gov.name}</p>
+   273→   300→                          <p className="text-[10px] text-stone-500 dark:text-stone-400">Party: {gov.party} ({gov.coalition})</p>
+   274→   301→                          <p className="text-[10px] text-stone-500 dark:text-stone-400">Region: {gov.region}</p>
+   275→   302→                          <p className="text-[10px] text-stone-500 dark:text-stone-400">Pop: {gov.population.toLocaleString()}</p>
+   276→   303→                        </div>
+   277→   304→                      ) : null;
+   278→   305→                    })()}
+   279→   306→                  </div>
+   280→   307→                )}
+   281→   308→              </div>
+   282→   309→              {/* Legend is rendered by KenyaCountyMap internally */}
+   283→   310→            </CardContent>
+   284→   311→          </Card>
+   285→   312→        </div>
+   286→   313→
+   287→   314→        {/* County Details Panel */}
+   288→   315→        <div className="lg:col-span-1">
+   289→   316→          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 sticky top-4">
+   290→   317→            <CardHeader className="pb-2">
+   291→   318→              <CardTitle className="text-xs font-semibold flex items-center gap-2">
+   292→   319→                <Building2 className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
+   293→   320→                County Details
+   294→   321→              </CardTitle>
+   295→   322→            </CardHeader>
+   296→   323→            <CardContent>
+   297→   324→              {selectedCounty ? (
+   298→   325→                <div className="space-y-3">
+   299→   326→                  <div className="flex items-center justify-between">
+   300→   327→                    <div>
+   301→   328→                      <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{selectedCounty.county}</p>
+   302→   329→                      <p className="text-[10px] text-stone-500 dark:text-stone-400">{selectedCounty.region} Region</p>
+   303→   330→                    </div>
+   304→   331→                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setSelectedCounty(null)}>
+   305→   332→                      <X className="h-3.5 w-3.5" />
+   306→   333→                    </Button>
+   307→   334→                  </div>
+   308→   335→                  <Separator />
+   309→   336→                  <div className="space-y-2">
+   310→   337→                    <div className="flex items-start gap-2">
+   311→   338→                      <Users className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+   312→   339→                      <div>
+   313→   340→                        <p className="text-[10px] text-stone-500 dark:text-stone-400">Governor</p>
+   314→   341→                        <p className="text-xs font-semibold text-stone-800 dark:text-stone-100">{selectedCounty.name}</p>
+   315→   342→                      </div>
+   316→   343→                    </div>
+   317→   344→                    <div className="flex items-start gap-2">
+   318→   345→                      <Building2 className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+   319→   346→                      <div>
+   320→   347→                        <p className="text-[10px] text-stone-500 dark:text-stone-400">Party / Coalition</p>
+   321→   348→                        <div className="flex gap-1 mt-0.5">
+   322→   349→                          <Badge variant="outline" className="text-[9px] h-5">{selectedCounty.party}</Badge>
+   323→   350→                          <Badge className={`text-[9px] h-5 ${selectedCounty.coalition === 'Kenya Kwanza Alliance' ? 'bg-blue-100 text-blue-700' : selectedCounty.coalition === 'Azimio la Umoja One Kenya Coalition' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-200'}`}>{selectedCounty.coalition === 'Kenya Kwanza Alliance' ? 'KK' : selectedCounty.coalition === 'Azimio la Umoja One Kenya Coalition' ? 'Azimio' : 'Ind'}</Badge>
+   324→   351→                        </div>
+   325→   352→                      </div>
+   326→   353→                    </div>
+   327→   354→                    <div className="flex items-start gap-2">
+   328→   355→                      <MapPin className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+   329→   356→                      <div>
+   330→   357→                        <p className="text-[10px] text-stone-500 dark:text-stone-400">Capital</p>
+   331→   358→                        <p className="text-xs text-stone-800 dark:text-stone-100">{selectedCounty.capital}</p>
+   332→   359→                      </div>
+   333→   360→                    </div>
+   334→   361→                    <Separator />
+   335→   362→                    <div className="grid grid-cols-2 gap-2 mt-2">
+   336→   363→                      <div className="p-2 bg-stone-50 dark:bg-stone-800 rounded-lg">
+   337→   364→                        <p className="text-[9px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Population</p>
+   338→   365→                        <p className="text-xs font-bold text-stone-800 dark:text-stone-100">{(selectedCounty.population / 1e6).toFixed(1)}M</p>
+   339→   366→                      </div>
+   340→   367→                      <div className="p-2 bg-stone-50 dark:bg-stone-800 rounded-lg">
+   341→   368→                        <p className="text-[9px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Area</p>
+   342→   369→                        <p className="text-xs font-bold text-stone-800 dark:text-stone-100">{(selectedCounty.areaSqKm).toLocaleString()} km²</p>
+   343→   370→                      </div>
+   344→   371→                      <div className="p-2 bg-stone-50 dark:bg-stone-800 rounded-lg">
+   345→   372→                        <p className="text-[9px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Constituencies</p>
+   346→   373→                        <p className="text-xs font-bold text-stone-800 dark:text-stone-100">{selectedCounty.constituenciesCount}</p>
+   347→   374→                      </div>
+   348→   375→                      <div className="p-2 bg-stone-50 dark:bg-stone-800 rounded-lg">
+   349→   376→                        <p className="text-[9px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Wards</p>
+   350→   377→                        <p className="text-xs font-bold text-stone-800 dark:text-stone-100">{selectedCounty.wardsCount}</p>
+   351→   378→                      </div>
+   352→   379→                    </div>
+   353→   380→                    <Separator />
+   354→   381→                    {/* Real audit & budget data */}
+   355→   382→                    {(() => {
+   356→   383→                      const auditRec = countyAuditData.find(a => a.countyCode === selectedCounty.code && a.financialYear === selectedFY);
+   357→   384→                      const budgetRec = countyBudgetData.find(b => b.countyCode === selectedCounty.code && b.financialYear === selectedFY);
+   358→   385→                      return (
+   359→   386→                        <div className="space-y-2">
+   360→   387→                          <p className="text-[10px] font-semibold text-stone-600 dark:text-stone-300">{selectedFY} Data</p>
+   361→   388→                          {auditRec && (
+   362→   389→                            <div className="flex items-start gap-2">
+   363→   390→                              <ShieldCheck className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+   364→   391→                              <div>
+   365→   392→                                <p className="text-[10px] text-stone-500 dark:text-stone-400">OAG Audit Opinion</p>
+   366→   393→                                <Badge className={`text-[9px] h-5 mt-0.5 ${auditRec.executiveOpinion === 'Unmodified' ? 'bg-green-100 text-green-800' : auditRec.executiveOpinion === 'Qualified' ? 'bg-yellow-100 text-yellow-800' : auditRec.executiveOpinion === 'Adverse' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'}`}>
+   367→   394→                                  {auditRec.executiveOpinion || 'Pending'}
+   368→   395→                                </Badge>
+   369→   396→                              </div>
+   370→   397→                            </div>
+   371→   398→                          )}
+   372→   399→                          {budgetRec && (
+   373→   400→                            <>
+   374→   401→                              <div className="flex items-start gap-2">
+   375→   402→                                <TrendingDown className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+   376→   403→                                <div>
+   377→   404→                                  <p className="text-[10px] text-stone-500 dark:text-stone-400">Dev Budget Absorption</p>
+   378→   405→                                  <p className="text-xs font-bold text-stone-800 dark:text-stone-100">{budgetRec.devAbsorptionRate}%</p>
+   379→   406→                                </div>
+   380→   407→                              </div>
+   381→   408→                              <div className="flex items-start gap-2">
+   382→   409→                                <Building2 className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+   383→   410→                                <div>
+   384→   411→                                  <p className="text-[10px] text-stone-500 dark:text-stone-400">Total Budget</p>
+   385→   412→                                  <p className="text-xs font-bold text-stone-800 dark:text-stone-100">KSh {budgetRec.totalBudget}B</p>
+   386→   413→                                </div>
+   387→   414→                              </div>
+   388→   415→                              <div className="flex items-start gap-2">
+   389→   416→                                <AlertTriangle className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+   390→   417→                                <div>
+   391→   418→                                  <p className="text-[10px] text-stone-500 dark:text-stone-400">Pending Bills</p>
+   392→   419→                                  <p className="text-xs font-bold text-stone-800 dark:text-stone-100">KSh {budgetRec.pendingBills}M</p>
+   393→   420→                                </div>
+   394→   421→                              </div>
+   395→   422→                            </>
+   396→   423→                          )}
+   397→   424→                        </div>
+   398→   425→                      );
+   399→   426→                    })()}
+   400→   427→                    {/* Deep Dive Button */}
+   401→   428→                    <Button
+   402→   429→                      size="sm"
+   403→   430→                      className="w-full mt-3 gap-2"
+   404→   431→                      onClick={() => onCountyDeepDive?.(selectedCounty.code)}
+   405→   432→                    >
+   406→   433→                      <MapPin className="h-3.5 w-3.5" />
+   407→   434→                      Deep Dive
+   408→   435→                      <ArrowRight className="h-3.5 w-3.5 ml-auto" />
+   409→   436→                    </Button>
+   410→   437→                  </div>
+   411→   438→                </div>
+   412→   439→              ) : (
+   413→   440→                <div className="text-center py-8">
+   414→   441→                  <MapPin className="h-8 w-8 text-stone-300 mx-auto mb-2" />
+   415→   442→                  <p className="text-xs text-stone-500 dark:text-stone-400">Click a county on the map to view details</p>
+   416→   443→                </div>
+   417→   444→              )}
+   418→   445→            </CardContent>
+   419→   446→          </Card>
+   420→   447→        </div>
+   421→   448→      </div>
+   422→   449→
+   423→   450→      {/* Comparison Bar - shows when 2+ counties are shift-selected */}
+   424→   451→      {multiSelectedCounties.length >= 2 && (
+   425→   452→        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-t border-stone-200 dark:border-stone-700 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+   426→   453→          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+   427→   454→            <GitCompare className="h-4 w-4 text-stone-500 dark:text-stone-400 shrink-0" />
+   428→   455→            <div className="flex-1 flex items-center gap-2 overflow-x-auto">
+   429→   456→              <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider shrink-0">
+   430→   457→                Comparing ({multiSelectedCounties.length}):
+   431→   458→              </span>
+   432→   459→              {multiSelectedCounties.map(code => {
+   433→   460→                const gov = all47Governors.find(g => g.code === code);
+   434→   461→                return (
+   435→   462→                  <Badge
+   436→   463→                    key={code}
+   437→   464→                    variant="secondary"
+   438→   465→                    className="text-[11px] h-7 pr-1 pl-2.5 gap-1.5 shrink-0"
+   439→   466→                  >
+   440→   467→                    {gov?.county || code}
+   441→   468→                    <button
+   442→   469→                      onClick={() => removeMultiSelected(code)}
+   443→   470→                      className="h-4 w-4 rounded-full hover:bg-stone-300/50 flex items-center justify-center transition-colors"
+   444→   471→                    >
+   445→   472→                      <X className="h-2.5 w-2.5" />
+   446→   473→                    </button>
+   447→   474→                  </Badge>
+   448→   475→                );
+   449→   476→              })}
+   450→   477→            </div>
+   451→   478→            <Button
+   452→   479→              size="sm"
+   453→   480→              className="shrink-0 gap-1.5 h-8 text-xs"
+   454→   481→              variant="default"
+   455→   482→              onClick={() => {
+   456→   483→                setMultiSelectedCounties([]);
+   457→   484→              }}
+   458→   485→            >
+   459→   486→              <GitCompare className="h-3.5 w-3.5" />
+   460→   487→              Compare Counties
+   461→   488→            </Button>
+   462→   489→            <Button
+   463→   490→              size="sm"
+   464→   491→              variant="ghost"
+   465→   492→              className="shrink-0 h-8 text-xs text-stone-500 dark:text-stone-400"
+   466→   493→              onClick={() => setMultiSelectedCounties([])}
+   467→   494→            >
+   468→   495→              Clear All
+   469→   496→            </Button>
+   470→   497→          </div>
+   471→   498→        </div>
+   472→   499→      )}
+   473→   500→
+   474→   501→      {/* Map Statistics Footer Cards */}
+   475→   502→      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+   476→   503→        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
+   477→   504→          <CardContent className="py-3 px-4">
+   478→   505→            <div className="flex items-center gap-2">
+   479→   506→              <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center shrink-0">
+   480→   507→                <Layers className="h-4 w-4 text-emerald-600" />
+   481→   508→              </div>
+   482→   509→              <div>
+   483→   510→                <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Counties Colored</p>
+   484→   511→                <p className="text-sm font-bold text-stone-800 dark:text-stone-100">{filteredShapes.length} <span className="text-[10px] font-normal text-stone-400">/ 47</span></p>
+   485→   512→              </div>
+   486→   513→            </div>
+   487→   514→          </CardContent>
+   488→   515→        </Card>
+   489→   516→        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
+   490→   517→          <CardContent className="py-3 px-4">
+   491→   518→            <div className="flex items-center gap-2">
+   492→   519→              <div className="h-8 w-8 rounded-lg bg-amber-50 dark:bg-amber-950 flex items-center justify-center shrink-0">
+   493→   520→                <Filter className="h-4 w-4 text-amber-600" />
+   494→   521→              </div>
+   495→   522→              <div>
+   496→   523→                <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Current Filter</p>
+   497→   524→                <p className="text-sm font-bold text-stone-800 dark:text-stone-100">{quickFilter ? QUICK_FILTERS.find(f => f.key === quickFilter)?.label || quickFilter : 'None'}</p>
+   498→   525→              </div>
+   499→   526→            </div>
+   500→   527→          </CardContent>
+   501→   528→        </Card>
+   502→   529→        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
+   503→   530→          <CardContent className="py-3 px-4">
+   504→   531→            <div className="flex items-center gap-2">
+   505→   532→              <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${multiSelectedCounties.length >= 2 ? 'bg-blue-50 dark:bg-blue-950' : 'bg-stone-50 dark:bg-stone-800'}`}>
+   506→   533→                <GitCompare className={`h-4 w-4 ${multiSelectedCounties.length >= 2 ? 'text-blue-600' : 'text-stone-400'}`} />
+   507→   534→              </div>
+   508→   535→              <div>
+   509→   536→                <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Selected for Comparison</p>
+   510→   537→                <p className={`text-sm font-bold ${multiSelectedCounties.length >= 2 ? 'text-blue-700' : 'text-stone-800 dark:text-stone-100'}`}>{multiSelectedCounties.length}</p>
+   511→   538→              </div>
+   512→   539→            </div>
+   513→   540→          </CardContent>
+   514→   541→        </Card>
+   515→   542→        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
+   516→   543→          <CardContent className="py-3 px-4">
+   517→   544→            <div className="flex items-center gap-2">
+   518→   545→              <div className="h-8 w-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+   519→   546→                <CheckCircle2 className="h-4 w-4 text-violet-600" />
+   520→   547→              </div>
+   521→   548→              <div>
+   522→   549→                <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Audit Coverage</p>
+   523→   550→                <p className="text-sm font-bold text-stone-800 dark:text-stone-100">{auditCoverage} <span className="text-[10px] font-normal text-stone-400">/ 47 ({selectedFY})</span></p>
+   524→   551→              </div>
+   525→   552→            </div>
+   526→   553→          </CardContent>
+   527→   554→        </Card>
+   528→   555→      </div>
+   529→   556→
+   530→   557→      {/* Disclaimer */}
+   531→   558→      <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
+   532→   559→        <CardContent className="py-3 px-4">
+   533→   560→          <div className="flex items-center gap-2">
+   534→   561→            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+   535→   562→            <p className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
+   536→   563→              <span className="font-bold">Note:</span> County boundary shapes are simplified approximations for visualization. Coalition data from IEBC 2022 results.
+   537→   564→              Audit opinions based on OAG {selectedFY} summary. Hold <kbd className="px-1 py-0.5 bg-stone-200 rounded text-[9px] font-mono">Shift</kbd> + Click to select counties for comparison.
+   538→   565→            </p>
+   539→   566→          </div>
+   540→   567→        </CardContent>
+   541→   568→      </Card>
+   542→   569→    </div>
+   543→   570→  );
+   544→   571→}
+   545→   572→
