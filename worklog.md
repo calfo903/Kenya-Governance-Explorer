@@ -338,3 +338,22 @@ Stage Summary:
 - Compact cards show avatar + party + coalition + top 3 duties
 - Constituency sections show MP + all ward MCAs with profile and duty cards
 - Total counts shown: constituencies, MPs, MCAs per county
+
+---
+Task ID: 10
+Agent: Main Agent
+Task: Add preview representative profiles for all 47 counties across 5 representative types (Governors, Senators, Women Reps, MPs, MCAs) with constitutional duties
+
+Work Log:
+- Analyzed existing data architecture: county-leadership.ts has all 47 counties with governor, senator, womanRep, constituencies (MPs), wards (MCAs)
+- Created `/src/components/representative-profiles-page.tsx` (617 lines) — self-contained "use client" component
+- Features: 5-tab navigation (Governors/Senators/Women Reps/MPs/MCAs), county selector, region filter chips, search, statistics bar, profile cards with avatar+party+coalition+term, collapsible constitutional duties per type
+- Each representative type has distinct color accent and constitutional article references (Art. 179, 96, 97, 95, 185)
+- Responsive grid layouts: 1-2 cols for Governors, 2-3 for Senators/Women Reps, 2-4 for MPs, 3-4 for MCAs
+- Integrated into page.tsx: added import, TabId type, nav item under 'Leadership & Projects', tab content, mobile nav entry
+- Build verified clean — zero errors
+
+Stage Summary:
+- New component: `/src/components/representative-profiles-page.tsx`
+- Modified: `/src/app/page.tsx` (import, TabId, navItems, tab content, mobile nav)
+- All 47 counties × 5 representative types covered with constitutional duties

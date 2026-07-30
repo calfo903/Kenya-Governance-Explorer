@@ -43,6 +43,7 @@ import CBEFMeetingPage from '@/components/cbef-meeting-page';
 import ProcurementRedFlagsPage from '@/components/procurement-redflags-page';
 import EmbedWidgetPage from '@/components/embed-widget-page';
 import MzalendoPage from '@/components/mzalendo-page';
+import RepresentativeProfilesPage from '@/components/representative-profiles-page';
 
 import CountyLeadershipTreePage from '@/components/county-leadership-tree';
 import ProjectsBrowserPage from '@/components/projects-browser-page';
@@ -106,7 +107,8 @@ type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema'
   | 'coalition' | 'quiz' | 'servicedelivery'
   | 'stories' | 'cbef' | 'redflags' | 'embed'
   | 'leadership' | 'projects' | 'mzalendo' | 'securetip' | 'compareEnhanced'
-  | 'rankings' | 'milestones' | 'fycomparison';
+  | 'rankings' | 'milestones' | 'fycomparison'
+  | 'representatives';
 
 interface NavItem {
   id: TabId;
@@ -155,6 +157,7 @@ const navItems: NavItem[] = [
   // ── Leadership & Projects ──
   { id: 'leadership', label: 'Leadership Tree', icon: Network, section: 'Leadership & Projects' },
   { id: 'projects', label: 'Projects & Audits', icon: FolderOpen, section: 'Leadership & Projects' },
+  { id: 'representatives', label: 'Representative Profiles', icon: Users, section: 'Leadership & Projects' },
   { id: 'mzalendo', label: 'Mzalendo Profiles', icon: Vote, section: 'Leadership & Projects' },
   { id: 'securetip', label: 'Secure Whistleblower', icon: ShieldCheck, section: 'Leadership & Projects' },
   { id: 'compareEnhanced', label: 'Comparison Matrix', icon: GitCompare, section: 'Analytics' },
@@ -756,6 +759,7 @@ export default function KenyaGovernancePage() {
             {activeTab === 'rankings' && <CountyRankingsPage />}
             {activeTab === 'milestones' && <DevolutionMilestonesPage />}
             {activeTab === 'fycomparison' && <FYComparisonPage />}
+            {activeTab === 'representatives' && <RepresentativeProfilesPage />}
           </main>
 
           {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
@@ -765,7 +769,7 @@ export default function KenyaGovernancePage() {
                 { id: 'summary' as TabId, icon: BarChart3, label: 'Home' },
                 { id: 'countymap' as TabId, icon: Map, label: 'Map' },
                 { id: 'tree' as TabId, icon: TreePine, label: 'Counties' },
-                { id: 'whistleblower' as TabId, icon: Eye, label: 'Report' },
+                { id: 'representatives' as TabId, icon: Users, label: 'Reps' },
                 { id: 'alerts' as TabId, icon: Bell, label: 'Alerts' },
               ].map(item => (
                 <button

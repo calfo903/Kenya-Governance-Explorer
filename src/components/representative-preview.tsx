@@ -105,7 +105,7 @@ const ROLE_MANDATES: Record<string, RoleMandate> = {
       {
         title: 'County Oversight',
         description: 'Oversee county government expenditure, implementation of county budgets, and delivery of devolved services. Can summon county officials for questioning.',
-        icon: <Eye className="h-4 w-4 text-indigo-600" />,
+        icon: <Shield className="h-4 w-4 text-indigo-600" />,
       },
       {
         title: 'Legislative Role',

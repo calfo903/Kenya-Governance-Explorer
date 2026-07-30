@@ -1,0 +1,664 @@
+     1→'use client';
+     2→
+     3→import React from 'react';
+     4→import {
+     5→  Crown, Scale, Heart, Building2, Users,
+     6→  Shield, FileText, Gavel, Landmark, Handshake,
+     7→  CheckCircle2, BookOpen, Clock, UserCheck,
+     8→  Briefcase, AlertTriangle, GraduationCap, DollarSign,
+     9→  Stethoscope, Truck, Leaf, Droplets, MapPin,
+    10→  Megaphone, Vote, Eye,
+    11→} from 'lucide-react';
+    12→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    13→import { Badge } from '@/components/ui/badge';
+    14→import { Separator } from '@/components/ui/separator';
+    15→import { Progress } from '@/components/ui/progress';
+    16→
+    17→// ─── Role Mandates & Duties ──────────────────────────────────────────
+    18→// Based on the Constitution of Kenya 2010, County Government Act 2012,
+    19→// and the Standing Orders of the Senate and National Assembly.
+    20→
+    21→interface RoleDuty {
+    22→  title: string;
+    23→  description: string;
+    24→  icon: React.ReactNode;
+    25→}
+    26→
+    27→interface RoleMandate {
+    28→  roleTitle: string;
+    29→  icon: React.ReactNode;
+    30→  colorClass: string;
+    31→  bgClass: string;
+    32→  borderClass: string;
+    33→  duties: RoleDuty[];
+    34→  constitutionalBasis: string;
+    35→  termLength: string;
+    36→  salaryRange: string;
+    37→  oversightRole: string;
+    38→}
+    39→
+    40→const ROLE_MANDATES: Record<string, RoleMandate> = {
+    41→  governor: {
+    42→    roleTitle: 'Governor',
+    43→    icon: <Crown className="h-5 w-5" />,
+    44→    colorClass: 'text-amber-700',
+    45→    bgClass: 'bg-amber-50',
+    46→    borderClass: 'border-amber-200',
+    47→    constitutionalBasis: 'Article 179, Constitution of Kenya 2010',
+    48→    termLength: '5 years (maximum two terms)',
+    49→    salaryRange: 'KSh 924,000–1.1M/month (SRC scale)',
+    50→    oversightRole: 'Oversees county executive; reports to county assembly',
+    51→    duties: [
+    52→      {
+    53→        title: 'County Chief Executive',
+    54→        description: 'Implement county legislation and national legislation within the county. Provide leadership in county governance and coordinate all county organs.',
+    55→        icon: <Building2 className="h-4 w-4 text-amber-600" />,
+    56→      },
+    57→      {
+    58→        title: 'Budget Preparation',
+    59→        description: 'Prepare annual county budget estimates and submit to the county assembly for approval. Oversee county finance management and ensure prudent expenditure.',
+    60→        icon: <DollarSign className="h-4 w-4 text-amber-600" />,
+    61→      },
+    62→      {
+    63→        title: 'Appointment Powers',
+    64→        description: 'Appoint the County Secretary, CEC Members, and other county public servants with approval of the county assembly. Dismiss CEC members with assembly consent.',
+    65→        icon: <UserCheck className="h-4 w-4 text-amber-600" />,
+    66→      },
+    67→      {
+    68→        title: 'Policy & Planning',
+    69→        description: 'Develop county integrated development plans, county spatial plans, and sectoral strategies. Chair the County Executive Committee meetings.',
+    70→        icon: <FileText className="h-4 w-4 text-amber-600" />,
+    71→      },
+    72→      {
+    73→        title: 'Service Delivery',
+    74→        description: 'Ensure efficient delivery of devolved functions: health, agriculture, education (ECDE), roads, trade, county planning, and disaster management.',
+    75→        icon: <Stethoscope className="h-4 w-4 text-amber-600" />,
+    76→      },
+    77→      {
+    78→        title: 'Accountability',
+    79→        description: 'Attend county assembly sessions to answer questions. Submit annual reports on county implementation. Subject to recall by county voters (Art. 181).',
+    80→        icon: <Shield className="h-4 w-4 text-amber-600" />,
+    81→      },
+    82→    ],
+    83→  },
+    84→  senator: {
+    85→    roleTitle: 'Senator',
+    86→    icon: <Scale className="h-5 w-5" />,
+    87→    colorClass: 'text-indigo-700',
+    88→    bgClass: 'bg-indigo-50',
+    89→    borderClass: 'border-indigo-200',
+    90→    constitutionalBasis: 'Article 96, Constitution of Kenya 2010',
+    91→    termLength: '5 years (no term limits)',
+    92→    salaryRange: 'KSh 740,000–870,000/month (SRC scale)',
+    93→    oversightRole: 'Protects county interests in Senate; oversight of national revenue allocation',
+    94→    duties: [
+    95→      {
+    96→        title: 'County Representation',
+    97→        description: 'Represent the county and its government in the Senate. Advocate for county interests, priorities, and special needs at the national level.',
+    98→        icon: <Vote className="h-4 w-4 text-indigo-600" />,
+    99→      },
+   100→      {
+   101→        title: 'Revenue Oversight',
+   102→        description: 'Oversee the equitable sharing of national revenue between national and county governments. Review and approve the Commission on Revenue Allocation (CRA) formula.',
+   103→        icon: <DollarSign className="h-4 w-4 text-indigo-600" />,
+   104→      },
+   105→      {
+   106→        title: 'County Oversight',
+   107→        description: 'Oversee county government expenditure, implementation of county budgets, and delivery of devolved services. Can summon county officials for questioning.',
+   108→        icon: <Eye className="h-4 w-4 text-indigo-600" />,
+   109→      },
+   110→      {
+   111→        title: 'Legislative Role',
+   112→        description: 'Participate in Senate debates and vote on bills affecting counties: County Allocation of Revenue Bill, Division of Revenue Bill, and county-specific legislation.',
+   113→        icon: <Gavel className="h-4 w-4 text-indigo-600" />,
+   114→      },
+   115→      {
+   116→        title: 'Impeachment Tribunal',
+   117→        description: 'Serve on a special tribunal to hear and determine any charge against a Governor under Article 181(4) when the county assembly has voted to impeach.',
+   118→        icon: <Gavel className="h-4 w-4 text-indigo-600" />,
+   119→      },
+   120→      {
+   121→        title: 'Constitutional Protection',
+   122→        description: 'Defend the devolution framework, county autonomy, and the principle of equitable resource distribution as enshrined in the Constitution.',
+   123→        icon: <Shield className="h-4 w-4 text-indigo-600" />,
+   124→      },
+   125→    ],
+   126→  },
+   127→  womanRep: {
+   128→    roleTitle: 'Woman Representative',
+   129→    icon: <Heart className="h-5 w-5" />,
+   130→    colorClass: 'text-rose-700',
+   131→    bgClass: 'bg-rose-50',
+   132→    borderClass: 'border-rose-200',
+   133→    constitutionalBasis: 'Article 97, Constitution of Kenya 2010',
+   134→    termLength: '5 years (no term limits)',
+   135→    salaryRange: 'KSh 710,000–840,000/month (SRC scale)',
+   136→    oversightRole: 'Represents women\'s interests in National Assembly; sponsors gender-responsive legislation',
+   137→    duties: [
+   138→      {
+   139→        title: 'Women\'s Representation',
+   140→        description: 'Represent the special interests of women, youth, and persons with disabilities in the National Assembly. Advocate for policies that promote gender equity and inclusion.',
+   141→        icon: <Heart className="h-4 w-4 text-rose-600" />,
+   142→      },
+   143→      {
+   144→        title: 'Legislative Participation',
+   145→        description: 'Introduce, debate, and vote on bills in the National Assembly. Sponsor private member\'s bills focusing on women\'s rights, gender-based violence, and child welfare.',
+   146→        icon: <Gavel className="h-4 w-4 text-rose-600" />,
+   147→      },
+   148→      {
+   149→        title: 'Committee Work',
+   150→        description: 'Serve in National Assembly committees, particularly those related to health, education, social protection, and gender equality. Scrutinize government spending on social programs.',
+   151→        icon: <BookOpen className="h-4 w-4 text-rose-600" />,
+   152→      },
+   153→      {
+   154→        title: 'Constituency Oversight',
+   155→        description: 'Oversee the use of the National Government Constituencies Development Fund (NG-CDF) in partnership with the constituency MP. Monitor projects benefitting women and marginalized groups.',
+   156→        icon: <Briefcase className="h-4 w-4 text-rose-600" />,
+   157→      },
+   158→      {
+   159→        title: 'Constituent Services',
+   160→        description: 'Provide linkage between women in the county and national government services. Facilitate access to health programs (NHIF, UHC), education bursaries, and women empowerment funds.',
+   161→        icon: <Users className="h-4 w-4 text-rose-600" />,
+   162→      },
+   163→      {
+   164→        title: 'Affirmative Action Champion',
+   165→        description: 'Champion the implementation of the two-thirds gender rule (Article 81(b)), advocate for women\'s economic empowerment, and push for anti-FGM, anti-GBV legislation.',
+   166→        icon: <Megaphone className="h-4 w-4 text-rose-600" />,
+   167→      },
+   168→    ],
+   169→  },
+   170→  mp: {
+   171→    roleTitle: 'Member of Parliament (MP)',
+   172→    icon: <Building2 className="h-5 w-5" />,
+   173→    colorClass: 'text-emerald-700',
+   174→    bgClass: 'bg-emerald-50',
+   175→    borderClass: 'border-emerald-200',
+   176→    constitutionalBasis: 'Article 95, Constitution of Kenya 2010',
+   177→    termLength: '5 years (no term limits)',
+   178→    salaryRange: 'KSh 710,000–840,000/month (SRC scale)',
+   179→    oversightRole: 'Constituency representation; oversight of national executive; NG-CDF management',
+   180→    duties: [
+   181→      {
+   182→        title: 'Constituency Representation',
+   183→        description: 'Represent the people of the constituency in the National Assembly. Articulate constituency needs, priorities, and development agenda in Parliament.',
+   184→        icon: <Users className="h-4 w-4 text-emerald-600" />,
+   185→      },
+   186→      {
+   187→        title: 'Legislative Role',
+   188→        description: 'Debate, amend, and vote on bills in the National Assembly. Participate in committee hearings, question cabinet secretaries, and oversight of the national executive.',
+   189→        icon: <Gavel className="h-4 w-4 text-emerald-600" />,
+   190→      },
+   191→      {
+   192→        title: 'NG-CDF Oversight',
+   193→        description: 'Oversee the National Government Constituencies Development Fund (NG-CDF). Prioritize projects, ensure proper procurement, and monitor implementation of funded projects.',
+   194→        icon: <DollarSign className="h-4 w-4 text-emerald-600" />,
+   195→      },
+   196→      {
+   197→        title: 'Executive Oversight',
+   198→        description: 'Scrutinize cabinet secretaries and other senior government officials through committee hearings, parliamentary questions, and special investigations.',
+   199→        icon: <Shield className="h-4 w-4 text-emerald-600" />,
+   200→      },
+   201→      {
+   202→        title: 'Constituent Services',
+   203→        description: 'Facilitate access to government services: education bursaries, health services, infrastructure development (roads, water, electricity), and agricultural support.',
+   204→        icon: <MapPin className="h-4 w-4 text-emerald-600" />,
+   205→      },
+   206→      {
+   207→        title: 'Budget Approval',
+   208→        description: 'Review and approve national budgets, taxation measures, and government borrowing. Ensure constituency interests are reflected in national resource allocation.',
+   209→        icon: <FileText className="h-4 w-4 text-emerald-600" />,
+   210→      },
+   211→    ],
+   212→  },
+   213→  mca: {
+   214→    roleTitle: 'Member of County Assembly (MCA)',
+   215→    icon: <Landmark className="h-5 w-5" />,
+   216→    colorClass: 'text-teal-700',
+   217→    bgClass: 'bg-teal-50',
+   218→    borderClass: 'border-teal-200',
+   219→    constitutionalBasis: 'Article 177, Constitution of Kenya 2010; County Government Act 2012',
+   220→    termLength: '5 years (no term limits)',
+   221→    salaryRange: 'KSh 80,000–165,000/month (varies by county)',
+   222→    oversightRole: 'Ward-level representation; county legislation; oversight of county executive',
+   223→    duties: [
+   224→      {
+   225→        title: 'Ward Representation',
+   226→        description: 'Represent the residents of the ward in the County Assembly. Identify ward development priorities and advocate for resources and services at the county level.',
+   227→        icon: <Users className="h-4 w-4 text-teal-600" />,
+   228→      },
+   229→      {
+   230→        title: 'County Legislation',
+   231→        description: 'Debate, amend, and vote on county bills and ordinances. Approve county budgets, plans, and policies that affect service delivery in the ward and county.',
+   232→        icon: <Gavel className="h-4 w-4 text-teal-600" />,
+   233→      },
+   234→      {
+   235→        title: 'Executive Oversight',
+   236→        description: 'Oversee the county executive committee and county public service. Question CEC members, summon county officials, and review county expenditure reports.',
+   237→        icon: <Shield className="h-4 w-4 text-teal-600" />,
+   238→      },
+   239→      {
+   240→        title: 'Ward Development',
+   241→        description: 'Utilize the Ward Development Fund to initiate and monitor local projects: feeder roads, water points, health dispensaries, ECDE centers, and markets.',
+   242→        icon: <MapPin className="h-4 w-4 text-teal-600" />,
+   243→      },
+   244→      {
+   245→        title: 'Public Participation',
+   246→        description: 'Facilitate citizen participation in county governance. Organize ward development forums, collect public input on county policies, and ensure community voices reach the assembly.',
+   247→        icon: <Handshake className="h-4 w-4 text-teal-600" />,
+   248→      },
+   249→      {
+   250→        title: 'Budget & Appropriation',
+   251→        description: 'Review, amend, and approve the County Appropriation Bill. Ensure ward-level projects receive adequate funding. Track actual spending against approved budgets.',
+   252→        icon: <DollarSign className="h-4 w-4 text-teal-600" />,
+   253→      },
+   254→    ],
+   255→  },
+   256→};
+   257→
+   258→// ─── Profile Card Component ────────────────────────────────────────────
+   259→
+   260→interface RepresentativeProfile {
+   261→  name: string;
+   262→  party?: string;
+   263→  coalition?: string;
+   264→  qualification?: string;
+   265→}
+   266→
+   267→interface RepresentativePreviewCardProps {
+   268→  roleKey: string;
+   269→  profile?: RepresentativeProfile | null;
+   270→  wardName?: string;       // For MCA cards — show which ward
+   271→  constituencyName?: string; // For MP/MCA — show which constituency
+   272→  compact?: boolean;       // If true, show minimal view
+   273→}
+   274→
+   275→function getInitials(name: string): string {
+   276→  return name
+   277→    .split(' ')
+   278→    .filter(Boolean)
+   279→    .map((w) => w[0])
+   280→    .slice(0, 2)
+   281→    .join('')
+   282→    .toUpperCase();
+   283→}
+   284→
+   285→const AVATAR_COLORS: Record<string, string> = {
+   286→  governor: 'bg-amber-100 text-amber-700 ring-amber-300',
+   287→  senator: 'bg-indigo-100 text-indigo-700 ring-indigo-300',
+   288→  womanRep: 'bg-rose-100 text-rose-700 ring-rose-300',
+   289→  mp: 'bg-emerald-100 text-emerald-700 ring-emerald-300',
+   290→  mca: 'bg-teal-100 text-teal-700 ring-teal-300',
+   291→};
+   292→
+   293→export function RepresentativePreviewCard({
+   294→  roleKey,
+   295→  profile,
+   296→  wardName,
+   297→  constituencyName,
+   298→  compact = false,
+   299→}: RepresentativePreviewCardProps) {
+   300→  const mandate = ROLE_MANDATES[roleKey];
+   301→  if (!mandate) return null;
+   302→
+   303→  const isPlaceholder = !profile || profile.name.includes('(TBD)') || profile.name.includes('TBD');
+   304→  const avatarColor = AVATAR_COLORS[roleKey] || 'bg-gray-100 text-gray-700 ring-gray-300';
+   305→
+   306→  if (compact) {
+   307→    // Compact card: just profile + key duties
+   308→    return (
+   309→      <Card className={`border ${mandate.borderClass} overflow-hidden`}>
+   310→        <CardContent className="p-3">
+   311→          <div className="flex items-start gap-3">
+   312→            {/* Avatar */}
+   313→            <div
+   314→              className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold ring-2 shrink-0 ${
+   315→                isPlaceholder ? 'bg-gray-100 text-gray-400 ring-gray-200' : avatarColor
+   316→              }`}
+   317→            >
+   318→              {isPlaceholder ? '?' : getInitials(profile.name)}
+   319→            </div>
+   320→            <div className="min-w-0 flex-1">
+   321→              <div className="flex items-center gap-1.5 flex-wrap">
+   322→                <span className={`text-xs font-bold ${mandate.colorClass}`}>
+   323→                  {mandate.roleTitle}
+   324→                </span>
+   325→                {wardName && (
+   326→                  <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 text-teal-600 border-teal-200">
+   327→                    {wardName}
+   328→                  </Badge>
+   329→                )}
+   330→                {constituencyName && (
+   331→                  <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 text-emerald-600 border-emerald-200">
+   332→                    {constituencyName}
+   333→                  </Badge>
+   334→                )}
+   335→              </div>
+   336→              <p className={`text-xs font-medium truncate mt-0.5 ${isPlaceholder ? 'text-gray-400 italic' : 'text-gray-800'}`}>
+   337→                {profile?.name || `${mandate.roleTitle} — TBD`}
+   338→              </p>
+   339→              <div className="flex items-center gap-2 mt-0.5">
+   340→                {profile?.party && !isPlaceholder && (
+   341→                  <span className="text-[10px] text-gray-500">{profile.party}</span>
+   342→                )}
+   343→                {profile?.coalition && !isPlaceholder && (
+   344→                  <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-gray-200 text-gray-500">
+   345→                    {profile.coalition.length > 20 ? profile.coalition.split(' ').slice(0, 2).join(' ') : profile.coalition}
+   346→                  </Badge>
+   347→                )}
+   348→              </div>
+   349→            </div>
+   350→          </div>
+   351→          {/* Key duties (compact) */}
+   352→          <div className="mt-2.5 space-y-1">
+   353→            {mandate.duties.slice(0, 3).map((duty, i) => (
+   354→              <div key={i} className="flex items-start gap-1.5">
+   355→                {duty.icon}
+   356→                <span className="text-[10px] text-gray-600 leading-tight">{duty.title}</span>
+   357→              </div>
+   358→            ))}
+   359→            {mandate.duties.length > 3 && (
+   360→              <span className="text-[9px] text-gray-400 italic">+{mandate.duties.length - 3} more duties</span>
+   361→            )}
+   362→          </div>
+   363→        </CardContent>
+   364→      </Card>
+   365→    );
+   366→  }
+   367→
+   368→  // Full card: profile + all duties + constitutional basis
+   369→  return (
+   370→    <Card className={`border ${mandate.borderClass} overflow-hidden`}>
+   371→      {/* Role Header */}
+   372→      <div className={`${mandate.bgClass} px-4 py-3 border-b ${mandate.borderClass}`}>
+   373→        <div className="flex items-center justify-between">
+   374→          <div className="flex items-center gap-2">
+   375→            <div className={`${mandate.colorClass}`}>{mandate.icon}</div>
+   376→            <div>
+   377→              <h4 className={`text-sm font-bold ${mandate.colorClass}`}>{mandate.roleTitle}</h4>
+   378→              <p className="text-[10px] text-gray-500">{mandate.constitutionalBasis}</p>
+   379→            </div>
+   380→          </div>
+   381→          <div className="text-right">
+   382→            <p className="text-[10px] text-gray-500">Term: {mandate.termLength}</p>
+   383→            <p className="text-[10px] text-gray-500">{mandate.salaryRange}</p>
+   384→          </div>
+   385→        </div>
+   386→      </div>
+   387→
+   388→      <CardContent className="p-4 space-y-3">
+   389→        {/* Profile Section */}
+   390→        <div className="flex items-start gap-3">
+   391→          {/* Avatar */}
+   392→          <div
+   393→            className={`h-14 w-14 rounded-full flex items-center justify-center text-base font-bold ring-2 shrink-0 ${
+   394→              isPlaceholder ? 'bg-gray-100 text-gray-400 ring-gray-200' : avatarColor
+   395→            }`}
+   396→          >
+   397→            {isPlaceholder ? '?' : getInitials(profile?.name || '')}
+   398→          </div>
+   399→          <div className="min-w-0 flex-1">
+   400→            <p className={`text-sm font-bold ${isPlaceholder ? 'text-gray-400 italic' : 'text-gray-900'}`}>
+   401→              {profile?.name || `${mandate.roleTitle} — To Be Determined`}
+   402→            </p>
+   403→            <div className="flex items-center gap-2 mt-1 flex-wrap">
+   404→              {profile?.party && !isPlaceholder && (
+   405→                <Badge variant="outline" className="text-[9px] h-5 border-gray-200">
+   406→                  {profile.party}
+   407→                </Badge>
+   408→              )}
+   409→              {profile?.coalition && !isPlaceholder && (
+   410→                <Badge className={`text-[9px] h-5 ${
+   411→                  profile.coalition === 'Kenya Kwanza Alliance'
+   412→                    ? 'bg-blue-100 text-blue-700'
+   413→                    : profile.coalition === 'Azimio la Umoja One Kenya Coalition'
+   414→                      ? 'bg-emerald-100 text-emerald-700'
+   415→                      : 'bg-gray-100 text-gray-700'
+   416→                }`}>
+   417→                  {profile.coalition === 'Kenya Kwanza Alliance' ? 'Kenya Kwanza' : profile.coalition === 'Azimio la Umoja One Kenya Coalition' ? 'Azimio' : 'Independent'}
+   418→                </Badge>
+   419→              )}
+   420→              {wardName && (
+   421→                <Badge variant="outline" className="text-[9px] h-5 text-teal-600 border-teal-200">
+   422→                  <MapPin className="h-2.5 w-2.5 mr-0.5" /> {wardName}
+   423→                </Badge>
+   424→              )}
+   425→              {constituencyName && (
+   426→                <Badge variant="outline" className="text-[9px] h-5 text-emerald-600 border-emerald-200">
+   427→                  {constituencyName}
+   428→                </Badge>
+   429→              )}
+   430→            </div>
+   431→            {isPlaceholder && (
+   432→              <p className="text-[10px] text-amber-600 mt-1 flex items-center gap-1">
+   433→                <AlertTriangle className="h-3 w-3" />
+   434→                Awaiting official appointment data from IEBC
+   435→              </p>
+   436→            )}
+   437→          </div>
+   438→        </div>
+   439→
+   440→        <Separator />
+   441→
+   442→        {/* Duties */}
+   443→        <div>
+   444→          <div className="flex items-center gap-1.5 mb-2">
+   445→            <BookOpen className={`h-3.5 w-3.5 ${mandate.colorClass}`} />
+   446→            <span className={`text-xs font-semibold ${mandate.colorClass}`}>Key Duties & Mandate</span>
+   447→          </div>
+   448→          <div className="space-y-2">
+   449→            {mandate.duties.map((duty, i) => (
+   450→              <div key={i} className="flex items-start gap-2.5 group">
+   451→                <div className={`mt-0.5 shrink-0 ${mandate.colorClass} opacity-60 group-hover:opacity-100 transition-opacity`}>
+   452→                  {duty.icon}
+   453→                </div>
+   454→                <div className="min-w-0">
+   455→                  <p className="text-[11px] font-semibold text-gray-700">{duty.title}</p>
+   456→                  <p className="text-[10px] text-gray-500 leading-relaxed">{duty.description}</p>
+   457→                </div>
+   458→              </div>
+   459→            ))}
+   460→          </div>
+   461→        </div>
+   462→
+   463→        <Separator />
+   464→
+   465→        {/* Oversight */}
+   466→        <div className={`${mandate.bgClass} rounded-lg px-3 py-2`}>
+   467→          <div className="flex items-start gap-1.5">
+   468→            <Shield className={`h-3.5 w-3.5 ${mandate.colorClass} shrink-0 mt-0.5`} />
+   469→            <div>
+   470→              <p className="text-[10px] font-semibold text-gray-700">Oversight Role</p>
+   471→              <p className="text-[10px] text-gray-600 leading-relaxed">{mandate.oversightRole}</p>
+   472→            </div>
+   473→          </div>
+   474→        </div>
+   475→      </CardContent>
+   476→    </Card>
+   477→  );
+   478→}
+   479→
+   480→// ─── Representative Preview Grid ──────────────────────────────────────
+   481→// Shows all 5 role types as preview cards for a selected county
+   482→
+   483→interface CountyLeadershipInfo {
+   484→  governor?: { name: string; party: string; coalition: string };
+   485→  deputyGovernor?: { name: string; party: string };
+   486→  senator?: { name: string; party: string; coalition: string };
+   487→  womanRep?: { name: string; party: string; coalition: string };
+   488→  constituencies?: Array<{
+   489→    name: string;
+   490→    mp: { name: string; party: string; coalition?: string };
+   491→    wards: Array<{ name: string; mca: string }>;
+   492→  }>;
+   493→}
+   494→
+   495→interface RepresentativePreviewGridProps {
+   496→  leadership: CountyLeadershipInfo;
+   497→  countyName: string;
+   498→  showExpanded?: boolean; // If true, show full cards; if false, show compact
+   499→}
+   500→
+   501→export function RepresentativePreviewGrid({
+   502→  leadership,
+   503→  countyName,
+   504→  showExpanded = false,
+   505→}: RepresentativePreviewGridProps) {
+   506→  const totalMCAs = leadership.constituencies?.reduce(
+   507→    (sum, con) => sum + (con.wards?.length || 0), 0
+   508→  ) || 0;
+   509→  const totalMPs = leadership.constituencies?.length || 0;
+   510→  const totalConstituencies = leadership.constituencies?.length || 0;
+   511→
+   512→  return (
+   513→    <div className="space-y-4">
+   514→      {/* Section Header */}
+   515→      <div className="flex items-center justify-between">
+   516→        <div className="flex items-center gap-2">
+   517→          <Users className="h-4 w-4 text-emerald-600" />
+   518→          <h3 className="text-sm font-bold text-gray-800">
+   519→            {countyName} — Representatives & Duties
+   520→          </h3>
+   521→        </div>
+   522→        <div className="flex items-center gap-2">
+   523→          <Badge variant="outline" className="text-[9px] border-emerald-200 text-emerald-600">
+   524→            {totalConstituencies} Constituencies
+   525→          </Badge>
+   526→          <Badge variant="outline" className="text-[9px] border-blue-200 text-blue-600">
+   527→            {totalMPs} MPs
+   528→          </Badge>
+   529→          <Badge variant="outline" className="text-[9px] border-teal-200 text-teal-600">
+   530→            {totalMCAs} MCAs
+   531→          </Badge>
+   532→        </div>
+   533→      </div>
+   534→
+   535→      {/* Top-level representatives: Governor, Senator, Woman Rep */}
+   536→      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+   537→        <RepresentativePreviewCard
+   538→          roleKey="governor"
+   539→          profile={leadership.governor}
+   540→          compact={!showExpanded}
+   541→        />
+   542→        <RepresentativePreviewCard
+   543→          roleKey="senator"
+   544→          profile={leadership.senator}
+   545→          compact={!showExpanded}
+   546→        />
+   547→        <RepresentativePreviewCard
+   548→          roleKey="womanRep"
+   549→          profile={leadership.womanRep}
+   550→          compact={!showExpanded}
+   551→        />
+   552→      </div>
+   553→
+   554→      {/* MPs and MCAs — show by constituency */}
+   555→      {leadership.constituencies && leadership.constituencies.length > 0 && (
+   556→        <div className="space-y-3">
+   557→          <div className="flex items-center gap-2">
+   558→            <MapPin className="h-4 w-4 text-emerald-600" />
+   559→            <h4 className="text-xs font-bold text-gray-700">
+   560→              Constituency Representatives
+   561→            </h4>
+   562→            <span className="text-[10px] text-gray-400">
+   563→              ({totalConstituencies} constituencies, {totalMPs} MPs, {totalMCAs} MCAs)
+   564→            </span>
+   565→          </div>
+   566→
+   567→          {leadership.constituencies.map((constituency, ci) => (
+   568→            <Card key={`preview-con-${ci}`} className="border-emerald-100 overflow-hidden">
+   569→              <div className="bg-emerald-50/50 px-3 py-2 border-b border-emerald-100 flex items-center gap-2">
+   570→                <MapPin className="h-3.5 w-3.5 text-emerald-600" />
+   571→                <span className="text-xs font-semibold text-emerald-800">{constituency.name}</span>
+   572→                <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-emerald-200 text-emerald-600 ml-auto">
+   573→                  {constituency.wards?.length || 0} wards
+   574→                </Badge>
+   575→              </div>
+   576→              <CardContent className="p-3 space-y-2">
+   577→                {/* MP */}
+   578→                <RepresentativePreviewCard
+   579→                  roleKey="mp"
+   580→                  profile={constituency.mp}
+   581→                  constituencyName={constituency.name}
+   582→                  compact
+   583→                />
+   584→                {/* MCAs */}
+   585→                {constituency.wards && constituency.wards.length > 0 && (
+   586→                  <div className="space-y-1.5">
+   587→                    <div className="flex items-center gap-1">
+   588→                      <Landmark className="h-3 w-3 text-teal-500" />
+   589→                      <span className="text-[10px] font-medium text-teal-600">
+   590→                        Ward Representatives (MCAs)
+   591→                      </span>
+   592→                    </div>
+   593→                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+   594→                      {constituency.wards.map((ward, wi) => (
+   595→                        <RepresentativePreviewCard
+   596→                          key={`preview-ward-${wi}`}
+   597→                          roleKey="mca"
+   598→                          profile={{ name: ward.mca }}
+   599→                          wardName={ward.name}
+   600→                          constituencyName={constituency.name}
+   601→                          compact
+   602→                        />
+   603→                      ))}
+   604→                    </div>
+   605→                  </div>
+   606→                )}
+   607→              </CardContent>
+   608→            </Card>
+   609→          ))}
+   610→        </div>
+   611→      )}
+   612→    </div>
+   613→  );
+   614→}
+   615→
+   616→// ─── Standalone Role Duty Reference Card ──────────────────────────────
+   617→// Shows what each role does (without a specific person)
+   618→
+   619→export function RoleDutyReference({ roleKey }: { roleKey: string }) {
+   620→  const mandate = ROLE_MANDATES[roleKey];
+   621→  if (!mandate) return null;
+   622→
+   623→  return (
+   624→    <Card className={`border ${mandate.borderClass} overflow-hidden`}>
+   625→      <div className={`${mandate.bgClass} px-4 py-2.5 border-b ${mandate.borderClass}`}>
+   626→        <div className="flex items-center gap-2">
+   627→          <div className={`${mandate.colorClass}`}>{mandate.icon}</div>
+   628→          <div>
+   629→            <h4 className={`text-xs font-bold ${mandate.colorClass}`}>{mandate.roleTitle}</h4>
+   630→            <p className="text-[9px] text-gray-500">{mandate.constitutionalBasis}</p>
+   631→          </div>
+   632→        </div>
+   633→      </div>
+   634→      <CardContent className="p-3 space-y-2">
+   635→        <div className="grid grid-cols-2 gap-2 text-[9px]">
+   636→          <div>
+   637→            <span className="text-gray-400">Term:</span>
+   638→            <span className="text-gray-700 font-medium ml-1">{mandate.termLength}</span>
+   639→          </div>
+   640→          <div>
+   641→            <span className="text-gray-400">Salary:</span>
+   642→            <span className="text-gray-700 font-medium ml-1">{mandate.salaryRange}</span>
+   643→          </div>
+   644→        </div>
+   645→        <Separator />
+   646→        <div className="space-y-1.5">
+   647→          {mandate.duties.map((duty, i) => (
+   648→            <div key={i} className="flex items-start gap-1.5">
+   649→              {duty.icon}
+   650→              <div className="min-w-0">
+   651→                <p className="text-[10px] font-semibold text-gray-700">{duty.title}</p>
+   652→                <p className="text-[9px] text-gray-500 leading-relaxed">{duty.description}</p>
+   653→              </div>
+   654→            </div>
+   655→          ))}
+   656→        </div>
+   657→      </CardContent>
+   658→    </Card>
+   659→  );
+   660→}
+   661→
+   662→// ─── Export role mandates for use in other components ────────────────
+   663→export { ROLE_MANDATES };
+   664→
