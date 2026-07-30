@@ -478,3 +478,33 @@ Stage Summary:
 - Map tab and county maps should now render correctly
 - Command palette now covers all 43 registered tabs
 - Build passes cleanly
+
+---
+Task ID: 21
+Agent: Main Agent
+Task: Replace representatives tab with budget allocation viewer
+
+Work Log:
+- Created `src/components/budget-allocation-page.tsx` — comprehensive budget allocation page with:
+  - National overview cards (total budget, dev budget, recurrent budget, own-source revenue, pending bills)
+  - Year-over-year comparison panel (FY 2024/25 Full Year vs FY 2025/26 H1) with toggle
+  - Comparison metrics (budget change, absorption trend, revenue, pending bills)
+  - Sortable, searchable, region-filterable table of all 47 counties
+  - Expandable rows showing per-county FY breakdown with:
+    - Dev vs Recurrent budget bars
+    - SVG gauge circles for absorption rates
+    - Own-source revenue and pending bills
+    - Source citations from CoB reports
+- Updated `page.tsx`: imported BudgetAllocationPage, swapped rendering for `activeTab === 'representatives'`, added Wallet icon import
+- Updated `en.json`: "representatives" → "Budget Allocations", "reps" → "Budget"
+- Updated `sw.json`: "representatives" → "Matumizi ya Fedha", "reps" → "Fedha"
+- Updated `command-palette.tsx`: label and icon for representatives entry
+- Mobile bottom nav icon changed from Users to Wallet
+- Original `representative-profiles-page.tsx` preserved (not deleted)
+- Build verification: `npx next build` passed with zero errors
+
+Stage Summary:
+- Representatives tab now shows county budget allocations across FY 2024/25 and FY 2025/26
+- Interactive table with sort, filter, search, and expandable detail rows
+- Year-over-year comparison with national averages and trend indicators
+- All navigation labels and icons updated (EN + SW)

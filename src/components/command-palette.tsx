@@ -61,6 +61,7 @@ import {
   Heart,
   UserRound,
   Brain,
+  Wallet,
   type LucideIcon,
 } from "lucide-react"
 
@@ -159,7 +160,7 @@ const SECTIONS: NavSection[] = [
     items: [
       { id: "leadership", label: "Leadership Tree", icon: UserCircle },
       { id: "projects", label: "Projects & Audits", icon: FolderKanban },
-      { id: "representatives", label: "Representatives", icon: Users },
+      { id: "representatives", label: "Budget Allocations", icon: Wallet },
       { id: "mzalendo", label: "Mzalendo Profiles", icon: UserCheck },
       { id: "securetip", label: "Secure Whistleblower", icon: ShieldCheck },
       { id: "hansard", label: "Hansard Records", icon: Mic },

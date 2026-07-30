@@ -43,6 +43,7 @@ import CBEFMeetingPage from '@/components/cbef-meeting-page';
 import ProcurementRedFlagsPage from '@/components/procurement-redflags-page';
 import EmbedWidgetPage from '@/components/embed-widget-page';
 import MzalendoPage from '@/components/mzalendo-page';
+import BudgetAllocationPage from '@/components/budget-allocation-page';
 import RepresentativeProfilesPage from '@/components/representative-profiles-page';
 
 import CountyLeadershipTreePage from '@/components/county-leadership-tree';
@@ -101,7 +102,7 @@ import {
   AlertOctagon, Calendar, Code2, Zap,
   Network, FolderOpen, Vote, ShieldCheck, Lock,
   Trophy, Flag, FileBarChart, Award,
-  Bot, Brain, Sparkles, Newspaper,
+  Bot, Brain, Sparkles, Newspaper, Wallet,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -158,7 +159,7 @@ const navItemDefs: NavItem[] = [
   // ── Leadership & Projects ──
   { id: 'leadership', labelKey: 'nav.items.leadership', icon: Network, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'projects', labelKey: 'nav.items.projects', icon: FolderOpen, sectionKey: 'nav.sections.leadershipProjects' },
-  { id: 'representatives', labelKey: 'nav.items.representatives', icon: Users, sectionKey: 'nav.sections.leadershipProjects' },
+  { id: 'representatives', labelKey: 'nav.items.representatives', icon: Wallet, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'mzalendo', labelKey: 'nav.items.mzalendo', icon: Vote, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'securetip', labelKey: 'nav.items.securetip', icon: ShieldCheck, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'hansard', labelKey: 'nav.items.hansard', icon: BookOpen, sectionKey: 'nav.sections.leadershipProjects' },
@@ -620,7 +621,7 @@ function PageContent() {
             {activeTab === 'fycomparison' && <FYComparisonPage />}
             {activeTab === 'hansard' && <AssemblyHansardPage />}
             {activeTab === 'cecm' && <CECMPerformancePage />}
-            {activeTab === 'representatives' && <RepresentativeProfilesPage />}
+            {activeTab === 'representatives' && <BudgetAllocationPage />}
             {activeTab === 'aiChat' && <AIChatPage />}
             {activeTab === 'aiBudgetAnomaly' && <AIBudgetAnomalyPage />}
             {activeTab === 'aiNews' && <AINewsPage />}
@@ -642,7 +643,7 @@ function PageContent() {
                 { id: 'summary' as TabId, icon: BarChart3, labelKey: 'nav.mobileBottom.home' },
                 { id: 'countymap' as TabId, icon: Map, labelKey: 'nav.mobileBottom.map' },
                 { id: 'tree' as TabId, icon: TreePine, labelKey: 'nav.mobileBottom.counties' },
-                { id: 'representatives' as TabId, icon: Users, labelKey: 'nav.mobileBottom.reps' },
+                { id: 'representatives' as TabId, icon: Wallet, labelKey: 'nav.mobileBottom.reps' },
                 { id: 'alerts' as TabId, icon: Bell, labelKey: 'nav.mobileBottom.alerts' },
               ].map(item => (
                 <button
