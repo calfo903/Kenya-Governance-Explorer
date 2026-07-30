@@ -1,0 +1,618 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useMemo } from 'react';
+     4→import { countyLeadershipData } from '@/data/county-leadership';
+     5→import { all47Governors } from '@/data/governors';
+     6→
+     7→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+     8→import { Badge } from '@/components/ui/badge';
+     9→import { Button } from '@/components/ui/button';
+    10→import { Input } from '@/components/ui/input';
+    11→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    12→import { ScrollArea } from '@/components/ui/scroll-area';
+    13→import { Separator } from '@/components/ui/separator';
+    14→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    15→import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+    16→
+    17→import {
+    18→  User, MapPin, Shield, Scale, Landmark, Building2, Users,
+    19→  Search, ChevronRight, ChevronDown, GraduationCap, BookOpen, Vote,
+    20→  Gavel, ClipboardList, Calendar, FileText, TrendingUp,
+    21→} from 'lucide-react';
+    22→
+    23→// ─── TYPES ───────────────────────────────────────────────────────
+    24→
+    25→type RepType = 'governors' | 'senators' | 'womenReps' | 'mps' | 'mcas';
+    26→
+    27→interface RepresentativeProfile {
+    28→  name: string;
+    29→  title: string;
+    30→  jurisdiction: string;
+    31→  county: string;
+    32→  region: string;
+    33→  party: string;
+    34→  coalition: string;
+    35→  termStart: string;
+    36→  termEnd: string;
+    37→  repType: RepType;
+    38→  bio: string;
+    39→  ward?: string;
+    40→  constituency?: string;
+    41→}
+    42→
+    43→// ─── CONSTANTS ───────────────────────────────────────────────────
+    44→
+    45→const REGIONS = ['All', 'Coast', 'North Eastern', 'Eastern', 'Central', 'Rift Valley', 'Western', 'Nyanza', 'Nairobi'] as const;
+    46→
+    47→const REP_TYPE_CONFIG: Record<RepType, {
+    48→  label: string;
+    49→  icon: React.ElementType;
+    50→  accentColor: string;
+    51→  accentBg: string;
+    52→  accentBorder: string;
+    53→  accentText: string;
+    54→  gridCols: string;
+    55→  article: string;
+    56→  duties: string[];
+    57→}> = {
+    58→  governors: {
+    59→    label: 'Governors',
+    60→    icon: Landmark,
+    61→    accentColor: 'text-emerald-600',
+    62→    accentBg: 'bg-emerald-50',
+    63→    accentBorder: 'border-emerald-600',
+    64→    accentText: 'text-emerald-800',
+    65→    gridCols: 'grid-cols-1 md:grid-cols-2',
+    66→    article: 'Article 179',
+    67→    duties: [
+    68→      'Chief executive of the county government',
+    69→      'Implements county legislation and policies',
+    70→      'Appoints County Executive Committee Members (CECMs)',
+    71→      'Manages and coordinates the county public service',
+    72→      'Submits budget estimates to the county assembly',
+    73→      'Oversees all county departments and agencies',
+    74→      'Delivers annual State of the County address',
+    75→    ],
+    76→  },
+    77→  senators: {
+    78→    label: 'Senators',
+    79→    icon: Shield,
+    80→    accentColor: 'text-blue-600',
+    81→    accentBg: 'bg-blue-50',
+    82→    accentBorder: 'border-blue-600',
+    83→    accentText: 'text-blue-800',
+    84→    gridCols: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+    85→    article: 'Article 96',
+    86→    duties: [
+    87→      'Represents the county and its interests at the Senate level',
+    88→      'Protects county interests and devolution',
+    89→      'Oversees county revenue allocation and national share',
+    90→      'Reviews national legislation affecting counties',
+    91→      'Participates in impeachment of state officers',
+    92→      'Serves on Senate committees for oversight',
+    93→      'Debates and approves county allocation bills',
+    94→    ],
+    95→  },
+    96→  womenReps: {
+    97→    label: 'Women Representatives',
+    98→    icon: Users,
+    99→    accentColor: 'text-purple-600',
+   100→    accentBg: 'bg-purple-50',
+   101→    accentBorder: 'border-purple-600',
+   102→    accentText: 'text-purple-800',
+   103→    gridCols: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+   104→    article: 'Article 97',
+   105→    duties: [
+   106→      'Represents women at the National Assembly level',
+   107→      'Champions gender-responsive legislation',
+   108→      'Advocates for women\'s rights and equality',
+   109→      'Participates in bills and committee work',
+   110→      'Oversees executive action on gender matters',
+   111→      'Liaises with county women representatives and groups',
+   112→      'Promotes women\'s participation in governance',
+   113→    ],
+   114→  },
+   115→  mps: {
+   116→    label: 'MPs',
+   117→    icon: Vote,
+   118→    accentColor: 'text-amber-600',
+   119→    accentBg: 'bg-amber-50',
+   120→    accentBorder: 'border-amber-600',
+   121→    accentText: 'text-amber-800',
+   122→    gridCols: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+   123→    article: 'Article 95',
+   124→    duties: [
+   125→      'Represents the constituency at the National Assembly',
+   126→      'Introduces and debates bills in Parliament',
+   127→      'Approves budget estimates for national government',
+   128→      'Oversees executive action and state organs',
+   129→      'Participates in committee oversight work',
+   130→      'Addresses constituency development needs',
+   131→      'Serves on standing and select committees',
+   132→    ],
+   133→  },
+   134→  mcas: {
+   135→    label: 'MCAs',
+   136→    icon: Building2,
+   137→    accentColor: 'text-teal-600',
+   138→    accentBg: 'bg-teal-50',
+   139→    accentBorder: 'border-teal-600',
+   140→    accentText: 'text-teal-800',
+   141→    gridCols: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+   142→    article: 'Article 185',
+   143→    duties: [
+   144→      'Represents the ward at the county assembly',
+   145→      'Makes county laws through the assembly',
+   146→      'Approves county plans and budgets',
+   147→      'Exercises oversight over the county executive',
+   148→      'Considers and approves county borrowing',
+   149→      'Reviews county annual development plans',
+   150→      'Oversees county appointment nominations',
+   151→    ],
+   152→  },
+   153→};
+   154→
+   155→// ─── HELPERS ─────────────────────────────────────────────────────
+   156→
+   157→function getInitials(name: string): string {
+   158→  const cleaned = name.replace(/^(Hon\.?|Dr\.?|Maj\.?|Eng\.?|Prof\.?)\s*/i, '');
+   159→  const parts = cleaned.split(/\s+/).filter(Boolean);
+   160→  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+   161→  return parts[0] ? parts[0].substring(0, 2).toUpperCase() : '??';
+   162→}
+   163→
+   164→function formatTerm(start: string, end: string): string {
+   165→  const fmt = (d: string) => {
+   166→    const date = new Date(d);
+   167→    return date.toLocaleDateString('en-KE', { month: 'short', year: 'numeric' });
+   168→  };
+   169→  return `${fmt(start)} – ${fmt(end)}`;
+   170→}
+   171→
+   172→function shortenCoalition(coalition: string): string {
+   173→  if (coalition.includes('Kenya Kwanza')) return 'Kenya Kwanza';
+   174→  if (coalition.includes('Azimio')) return 'Azimio';
+   175→  if (coalition === 'Independent') return 'Independent';
+   176→  return coalition.length > 30 ? coalition.substring(0, 28) + '…' : coalition;
+   177→}
+   178→
+   179→// ─── BIO GENERATION ──────────────────────────────────────────────
+   180→
+   181→function getGovernorBio(name: string, county: string, party: string): string {
+   182→  return `Elected Governor of ${county} County in the August 2022 General Election on a ${party} ticket. As county chief executive, responsible for implementing county legislation, coordinating county administration, and delivering services to the people of ${county}.`;
+   183→}
+   184→
+   185→function getSenatorBio(name: string, county: string, party: string): string {
+   186→  return `Elected Senator for ${county} County in August 2022. Represents the county at the Senate, protecting county interests, overseeing revenue allocation, and participating in the legislative process at the national level.`;
+   187→}
+   188→
+   189→function getWomanRepBio(name: string, county: string, party: string): string {
+   190→  return `Elected Women Representative for ${county} County in August 2022. Represents women\'s interests at the National Assembly and champions gender-responsive legislation and women\'s participation in governance.`;
+   191→}
+   192→
+   193→function getMpbio(name: string, constituency: string, county: string, party: string): string {
+   194→  return `Elected Member of the National Assembly for ${constituency} Constituency, ${county} County, in August 2022. Represents constituency interests in Parliament, debates legislation, and oversees executive action.`;
+   195→}
+   196→
+   197→function getMcabio(name: string, ward: string, constituency: string, county: string): string {
+   198→  return `Elected Member of the County Assembly representing ${ward} Ward in ${constituency} Constituency, ${county} County. Makes county laws, approves budgets, and provides oversight of the county executive.`;
+   199→}
+   200→
+   201→// ─── MAIN COMPONENT ─────────────────────────────────────────────
+   202→
+   203→export default function RepresentativeProfilesPage() {
+   204→  const [activeRepTab, setActiveRepTab] = useState<RepType>('governors');
+   205→  const [selectedCounty, setSelectedCounty] = useState<string>('all');
+   206→  const [selectedRegion, setSelectedRegion] = useState<string>('All');
+   207→  const [searchQuery, setSearchQuery] = useState('');
+   208→  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+   209→
+   210→  // ── Build all representative profiles ──
+   211→  const allProfiles = useMemo(() => {
+   212→    const profiles: RepresentativeProfile[] = [];
+   213→
+   214→    for (const county of countyLeadershipData) {
+   215→      // Governor
+   216→      const govEntry = all47Governors.find(g => g.code === county.countyCode);
+   217→      profiles.push({
+   218→        name: county.governor.name,
+   219→        title: 'Governor',
+   220→        jurisdiction: `${county.countyName} County`,
+   221→        county: county.countyName,
+   222→        region: county.region,
+   223→        party: county.governor.party,
+   224→        coalition: county.governor.coalition,
+   225→        termStart: county.governor.termStart,
+   226→        termEnd: county.governor.termEnd,
+   227→        repType: 'governors',
+   228→        bio: getGovernorBio(county.governor.name, county.countyName, county.governor.party),
+   229→      });
+   230→
+   231→      // Senator
+   232→      profiles.push({
+   233→        name: county.senator.name,
+   234→        title: 'Senator',
+   235→        jurisdiction: `${county.countyName} County`,
+   236→        county: county.countyName,
+   237→        region: county.region,
+   238→        party: county.senator.party,
+   239→        coalition: county.senator.coalition,
+   240→        termStart: govEntry?.termStart ?? '2022-08-22',
+   241→        termEnd: govEntry?.termEnd ?? '2027-08-22',
+   242→        repType: 'senators',
+   243→        bio: getSenatorBio(county.senator.name, county.countyName, county.senator.party),
+   244→      });
+   245→
+   246→      // Woman Rep
+   247→      profiles.push({
+   248→        name: county.womanRep.name,
+   249→        title: 'Women Representative',
+   250→        jurisdiction: `${county.countyName} County`,
+   251→        county: county.countyName,
+   252→        region: county.region,
+   253→        party: county.womanRep.party,
+   254→        coalition: county.womanRep.coalition,
+   255→        termStart: govEntry?.termStart ?? '2022-08-22',
+   256→        termEnd: govEntry?.termEnd ?? '2027-08-22',
+   257→        repType: 'womenReps',
+   258→        bio: getWomanRepBio(county.womanRep.name, county.countyName, county.womanRep.party),
+   259→      });
+   260→
+   261→      // MPs
+   262→      for (const con of county.constituencies) {
+   263→        profiles.push({
+   264→          name: con.mp.name,
+   265→          title: 'Member of National Assembly',
+   266→          jurisdiction: `${con.name} Constituency`,
+   267→          county: county.countyName,
+   268→          region: county.region,
+   269→          party: con.mp.party,
+   270→          coalition: '',
+   271→          termStart: govEntry?.termStart ?? '2022-08-22',
+   272→          termEnd: govEntry?.termEnd ?? '2027-08-22',
+   273→          repType: 'mps',
+   274→          bio: getMpbio(con.mp.name, con.name, county.countyName, con.mp.party),
+   275→          constituency: con.name,
+   276→        });
+   277→
+   278→        // MCAs
+   279→        for (const ward of con.wards) {
+   280→          profiles.push({
+   281→            name: ward.mca,
+   282→            title: 'Member of County Assembly',
+   283→            jurisdiction: `${ward.name} Ward`,
+   284→            county: county.countyName,
+   285→            region: county.region,
+   286→            party: '',
+   287→            coalition: '',
+   288→            termStart: govEntry?.termStart ?? '2022-08-22',
+   289→            termEnd: govEntry?.termEnd ?? '2027-08-22',
+   290→            repType: 'mcas',
+   291→            bio: getMcabio(ward.mca, ward.name, con.name, county.countyName),
+   292→            constituency: con.name,
+   293→            ward: ward.name,
+   294→          });
+   295→        }
+   296→      }
+   297→    }
+   298→
+   299→    return profiles;
+   300→  }, []);
+   301→
+   302→  // ── Filter profiles ──
+   303→  const filteredProfiles = useMemo(() => {
+   304→    return allProfiles.filter(p => {
+   305→      if (p.repType !== activeRepTab) return false;
+   306→      if (selectedCounty !== 'all' && p.county !== selectedCounty) return false;
+   307→      if (selectedRegion !== 'All' && p.region !== selectedRegion) return false;
+   308→      if (searchQuery) {
+   309→        const q = searchQuery.toLowerCase();
+   310→        if (!p.name.toLowerCase().includes(q) && !p.county.toLowerCase().includes(q) && !p.jurisdiction.toLowerCase().includes(q)) return false;
+   311→      }
+   312→      return true;
+   313→    });
+   314→  }, [allProfiles, activeRepTab, selectedCounty, selectedRegion, searchQuery]);
+   315→
+   316→  // ── Compute stats ──
+   317→  const stats = useMemo(() => {
+   318→    const counts = { governors: 0, senators: 0, womenReps: 0, mps: 0, mcas: 0 };
+   319→    for (const p of allProfiles) { counts[p.repType]++; }
+   320→    return counts;
+   321→  }, [allProfiles]);
+   322→
+   323→  const config = REP_TYPE_CONFIG[activeRepTab];
+   324→  const Icon = config.icon;
+   325→
+   326→  const toggleCard = (id: string) => {
+   327→    const next = new Set(expandedCards);
+   328→    if (next.has(id)) next.delete(id); else next.add(id);
+   329→    setExpandedCards(next);
+   330→  };
+   331→
+   332→  return (
+   333→    <div className="space-y-4">
+   334→      {/* ── Page Header ── */}
+   335→      <div className="bg-white rounded-xl border border-stone-200 p-5">
+   336→        <div className="flex items-start gap-3 mb-4">
+   337→          <div className={`h-10 w-10 rounded-xl ${config.accentBg} flex items-center justify-center shrink-0`}>
+   338→            <Users className={`h-5 w-5 ${config.accentColor}`} />
+   339→          </div>
+   340→          <div>
+   341→            <h2 className="text-base font-bold text-stone-900">Representative Profiles</h2>
+   342→            <p className="text-xs text-stone-500 mt-0.5">
+   343→              Browse all elected representatives across Kenya&apos;s 47 counties — Governors, Senators, Women Reps, MPs &amp; MCAs (2022–2027 term).
+   344→            </p>
+   345→          </div>
+   346→        </div>
+   347→
+   348→        {/* Stats Bar */}
+   349→        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-4">
+   350→          {([['governors', 'Governors', Landmark], ['senators', 'Senators', Shield], ['womenReps', 'Women Reps', Users], ['mps', 'MPs', Vote], ['mcas', 'MCAs', Building2]] as const).map(([key, label, StatIcon]) => (
+   351→            <button
+   352→              key={key}
+   353→              onClick={() => { setActiveRepTab(key as RepType); setSelectedCounty('all'); setSelectedRegion('All'); setSearchQuery(''); }}
+   354→              className={`p-3 rounded-xl border text-center transition-all ${
+   355→                activeRepTab === key
+   356→                  ? `${REP_TYPE_CONFIG[key as RepType].accentBg} ${REP_TYPE_CONFIG[key as RepType].accentBorder} border-l-4`
+   357→                  : 'bg-stone-50 border-stone-200 hover:bg-stone-100'
+   358→              }`}
+   359→            >
+   360→              <StatIcon className={`h-4 w-4 mx-auto mb-1 ${activeRepTab === key ? REP_TYPE_CONFIG[key as RepType].accentColor : 'text-stone-400'}`} />
+   361→              <p className={`text-lg font-bold ${activeRepTab === key ? REP_TYPE_CONFIG[key as RepType].accentText : 'text-stone-700'}`}>{stats[key as keyof typeof stats].toLocaleString()}</p>
+   362→              <p className="text-[10px] text-stone-500 font-medium">{label}</p>
+   363→            </button>
+   364→          ))}
+   365→        </div>
+   366→
+   367→        {/* ── Tabs ── */}
+   368→        <Tabs value={activeRepTab} onValueChange={(v) => { setActiveRepTab(v as RepType); setSearchQuery(''); }}>
+   369→          <TabsList className="w-full h-auto flex-wrap gap-1 bg-stone-100 p-1">
+   370→            {(Object.entries(REP_TYPE_CONFIG) as [RepType, typeof REP_TYPE_CONFIG[RepType]][]).map(([key, cfg]) => (
+   371→              <TabsTrigger
+   372→                key={key}
+   373→                value={key}
+   374→                className={`flex-1 min-w-[100px] gap-1.5 data-[state=active]:shadow-sm ${
+   375→                  activeRepTab === key
+   376→                    ? `${cfg.accentColor} data-[state=active]:bg-white data-[state=active]:text-inherit`
+   377→                    : 'text-stone-600'
+   378→                }`}
+   379→              >
+   380→                <cfg.icon className="h-3.5 w-3.5" />
+   381→                <span className="hidden sm:inline text-xs">{cfg.label}</span>
+   382→              </TabsTrigger>
+   383→            ))}
+   384→          </TabsList>
+   385→
+   386→          {/* Filter Bar */}
+   387→          <div className="mt-4 flex flex-col sm:flex-row gap-3">
+   388→            {/* Search */}
+   389→            <div className="relative flex-1">
+   390→              <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
+   391→              <Input
+   392→                placeholder={`Search ${config.label.toLowerCase()} by name, county, or jurisdiction...`}
+   393→                className="h-10 pl-10 text-sm border-stone-200"
+   394→                value={searchQuery}
+   395→                onChange={(e) => setSearchQuery(e.target.value)}
+   396→              />
+   397→            </div>
+   398→
+   399→            {/* County Selector */}
+   400→            <Select value={selectedCounty} onValueChange={(v) => { setSelectedCounty(v); setSelectedRegion('All'); }}>
+   401→              <SelectTrigger className="h-10 w-full sm:w-[200px] text-sm border-stone-200">
+   402→                <SelectValue placeholder="All Counties" />
+   403→              </SelectTrigger>
+   404→              <SelectContent>
+   405→                <SelectItem value="all">All 47 Counties</SelectItem>
+   406→                <Separator className="my-1" />
+   407→                {countyLeadershipData
+   408→                  .sort((a, b) => a.countyName.localeCompare(b.countyName))
+   409→                  .map((c) => (
+   410→                    <SelectItem key={c.countyCode} value={c.countyName}>
+   411→                      {c.countyName} <span className="text-stone-400">({c.region})</span>
+   412→                    </SelectItem>
+   413→                  ))}
+   414→              </SelectContent>
+   415→            </Select>
+   416→          </div>
+   417→
+   418→          {/* Region Chips */}
+   419→          <div className="mt-3 flex flex-wrap gap-1.5">
+   420→            {REGIONS.map((region) => (
+   421→              <button
+   422→                key={region}
+   423→                onClick={() => { setSelectedRegion(region); setSelectedCounty('all'); }}
+   424→                className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+   425→                  selectedRegion === region
+   426→                    ? `${config.accentBg} ${config.accentColor} ${config.accentBorder}`
+   427→                    : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+   428→                }`}
+   429→              >
+   430→                {region}{region === 'All' ? ` (${allProfiles.filter(p => p.repType === activeRepTab).length})` : ''}
+   431→              </button>
+   432→            ))}
+   433→          </div>
+   434→
+   435→          {/* Results count */}
+   436→          <div className="mt-3 flex items-center justify-between">
+   437→            <p className="text-xs text-stone-500">
+   438→              Showing <span className="font-semibold text-stone-700">{filteredProfiles.length.toLocaleString()}</span> of {stats[activeRepTab].toLocaleString()} {config.label.toLowerCase()}
+   439→            </p>
+   440→            {(selectedCounty !== 'all' || selectedRegion !== 'All' || searchQuery) && (
+   441→              <Button
+   442→                variant="ghost"
+   443→                size="sm"
+   444→                className="h-7 text-[11px] text-stone-500 hover:text-stone-700"
+   445→                onClick={() => { setSelectedCounty('all'); setSelectedRegion('All'); setSearchQuery(''); }}
+   446→              >
+   447→                Clear filters
+   448→              </Button>
+   449→            )}
+   450→          </div>
+   451→
+   452→          {/* ── Tab Contents ── */}
+   453→          {(['governors', 'senators', 'womenReps', 'mps', 'mcas'] as RepType[]).map((type) => {
+   454→            const typeConfig = REP_TYPE_CONFIG[type];
+   455→            const typeProfiles = filteredProfiles.filter(p => p.repType === type);
+   456→            const TypeIcon = typeConfig.icon;
+   457→
+   458→            return (
+   459→              <TabsContent key={type} value={type} className="mt-4">
+   460→                {typeProfiles.length === 0 ? (
+   461→                  <div className="text-center py-16 bg-white rounded-xl border border-stone-200">
+   462→                    <Search className="h-10 w-10 text-stone-300 mx-auto mb-3" />
+   463→                    <h3 className="font-semibold text-stone-700 text-sm">No {typeConfig.label.toLowerCase()} found</h3>
+   464→                    <p className="text-xs text-stone-400 mt-1">Try adjusting your search or filters.</p>
+   465→                  </div>
+   466→                ) : (
+   467→                  <ScrollArea className="max-h-[70vh]">
+   468→                    <div className={`grid ${typeConfig.gridCols} gap-4 pr-4`}>
+   469→                      {typeProfiles.map((profile, idx) => {
+   470→                        const cardId = `${profile.repType}-${profile.name}-${profile.county}`;
+   471→                        const isExpanded = expandedCards.has(cardId);
+   472→
+   473→                        return (
+   474→                          <Card
+   475→                            key={cardId}
+   476→                            className={`bg-white border-stone-200 hover:shadow-md transition-shadow ${
+   477→                              isExpanded ? `border-l-4 ${typeConfig.accentBorder}` : ''
+   478→                            }`}
+   479→                          >
+   480→                            <CardHeader className="pb-3">
+   481→                              <div className="flex items-start gap-3">
+   482→                                {/* Avatar */}
+   483→                                <div
+   484→                                  className={`h-12 w-12 rounded-full ${typeConfig.accentBg} flex items-center justify-center shrink-0 text-sm font-bold ${typeConfig.accentText}`}
+   485→                                >
+   486→                                  {getInitials(profile.name)}
+   487→                                </div>
+   488→                                <div className="flex-1 min-w-0">
+   489→                                  <CardTitle className="text-sm font-bold text-stone-900 leading-tight">
+   490→                                    {profile.name}
+   491→                                  </CardTitle>
+   492→                                  <p className={`text-xs font-medium ${typeConfig.accentColor} mt-0.5`}>{profile.title}</p>
+   493→                                  <div className="flex items-center gap-1 mt-1 text-stone-500">
+   494→                                    <MapPin className="h-3 w-3 shrink-0" />
+   495→                                    <span className="text-[11px] truncate">{profile.jurisdiction}</span>
+   496→                                  </div>
+   497→                                </div>
+   498→                              </div>
+   499→                            </CardHeader>
+   500→
+   501→                            <CardContent className="pt-0 pb-4 space-y-3">
+   502→                              {/* Party + Coalition */}
+   503→                              <div className="flex flex-wrap items-center gap-1.5">
+   504→                                {profile.party && (
+   505→                                  <Badge variant="secondary" className="text-[10px] font-semibold">
+   506→                                    {profile.party}
+   507→                                  </Badge>
+   508→                                )}
+   509→                                {profile.coalition && (
+   510→                                  <Badge variant="outline" className="text-[10px]">
+   511→                                    {shortenCoalition(profile.coalition)}
+   512→                                  </Badge>
+   513→                                )}
+   514→                              </div>
+   515→
+   516→                              {/* Term */}
+   517→                              <div className="flex items-center gap-1.5 text-[11px] text-stone-500">
+   518→                                <Calendar className="h-3 w-3 shrink-0" />
+   519→                                <span>{formatTerm(profile.termStart, profile.termEnd)}</span>
+   520→                              </div>
+   521→
+   522→                              {/* Bio */}
+   523→                              <p className="text-[11px] leading-relaxed text-stone-600">{profile.bio}</p>
+   524→
+   525→                              {/* Region tag */}
+   526→                              <div className="flex items-center gap-1.5">
+   527→                                <Badge variant="outline" className="text-[10px] text-stone-400">
+   528→                                  {profile.region}
+   529→                                </Badge>
+   530→                                {profile.constituency && (
+   531→                                  <Badge variant="outline" className="text-[10px] text-stone-400">
+   532→                                    {profile.constituency}
+   533→                                  </Badge>
+   534→                                )}
+   535→                              </div>
+   536→
+   537→                              <Separator className="my-2" />
+   538→
+   539→                              {/* Constitutional Duties (Collapsible) */}
+   540→                              <Collapsible open={isExpanded} onOpenChange={() => toggleCard(cardId)}>
+   541→                                <CollapsibleTrigger asChild>
+   542→                                  <Button
+   543→                                    variant="ghost"
+   544→                                    size="sm"
+   545→                                    className={`w-full h-8 justify-between text-xs font-medium ${typeConfig.accentColor} hover:${typeConfig.accentBg}`}
+   546→                                  >
+   547→                                    <span className="flex items-center gap-1.5">
+   548→                                      <BookOpen className="h-3.5 w-3.5" />
+   549→                                      {typeConfig.article} — Constitutional Duties
+   550→                                    </span>
+   551→                                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+   552→                                  </Button>
+   553→                                </CollapsibleTrigger>
+   554→                                <CollapsibleContent>
+   555→                                  <div className={`mt-2 p-3 rounded-lg ${typeConfig.accentBg} border border-opacity-50`}>
+   556→                                    <p className={`text-[10px] font-semibold uppercase tracking-wider ${typeConfig.accentText} mb-2`}>
+   557→                                      Kenya Constitution 2010 — {typeConfig.article}
+   558→                                    </p>
+   559→                                    <ul className="space-y-1.5">
+   560→                                      {typeConfig.duties.map((duty, i) => (
+   561→                                        <li key={i} className="flex items-start gap-2 text-[11px] text-stone-700">
+   562→                                          <Gavel className={`h-3 w-3 shrink-0 mt-0.5 ${typeConfig.accentColor}`} />
+   563→                                          <span>{duty}</span>
+   564→                                        </li>
+   565→                                      ))}
+   566→                                    </ul>
+   567→                                  </div>
+   568→                                </CollapsibleContent>
+   569→                              </Collapsible>
+   570→                            </CardContent>
+   571→                          </Card>
+   572→                        );
+   573→                      })}
+   574→                    </div>
+   575→                  </ScrollArea>
+   576→                )}
+   577→              </TabsContent>
+   578→            );
+   579→          })}
+   580→        </Tabs>
+   581→      </div>
+   582→
+   583→      {/* ── Constitutional Reference Card ── */}
+   584→      <Card className="border-stone-200 bg-white">
+   585→        <CardHeader className="pb-2">
+   586→          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+   587→            <Scale className="h-4 w-4 text-emerald-600" />
+   588→            Constitutional Reference — Devolution Chapter
+   589→          </CardTitle>
+   590→          <CardDescription className="text-xs">
+   591→            Kenya Constitution 2010, Chapter 11 — Devolution (Articles 174–200)
+   592→          </CardDescription>
+   593→        </CardHeader>
+   594→        <CardContent>
+   595→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+   596→            {(
+   597→              [
+   598→                ['Article 174', 'Objects of Devolution', 'Promote democratic and accountable exercise of power, foster national unity, recognize diversity, give powers of self-governance, and protect marginalized groups.'],
+   599→                ['Article 179', 'County Executive', 'Each county has a Governor elected directly, a Deputy Governor, and a County Executive Committee. The Governor is the chief executive.'],
+   600→                ['Article 185', 'County Assembly Authority', 'The county assembly makes laws, approves plans and budgets, and exercises oversight over the county executive committee.'],
+   601→                ['Article 95', 'National Assembly', 'Represents the people, legislates, oversees the executive, and approves budgets and expenditure.'],
+   602→                ['Article 96', 'Senate', 'Represents counties, protects county interests, oversees national revenue allocation, and considers county bills.'],
+   603→                ['Article 97', 'Membership of National Assembly', 'Includes 290 elected MPs, 47 Women Representatives, and 12 nominated members representing special interests.'],
+   604→              ] as const
+   605→            ).map(([article, title, desc]) => (
+   606→              <div key={article} className="p-3 bg-stone-50 rounded-lg border border-stone-100">
+   607→                <p className="text-[10px] font-bold text-emerald-700">{article}</p>
+   608→                <p className="text-xs font-semibold text-stone-800 mt-0.5">{title}</p>
+   609→                <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">{desc}</p>
+   610→              </div>
+   611→            ))}
+   612→          </div>
+   613→        </CardContent>
+   614→      </Card>
+   615→    </div>
+   616→  );
+   617→}
+   618→

@@ -60,7 +60,7 @@ export default function ProcurementRedFlagsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-red-600" /> Procurement Red-Flag Detection
         </h2>
         <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
@@ -84,7 +84,7 @@ export default function ProcurementRedFlagsPage() {
         </div>
         <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-3">
           <p className="text-[10px] text-stone-500 dark:text-stone-400">Top Category</p>
-          <p className="text-sm font-bold text-stone-700 dark:text-stone-300">Single Sourcing</p>
+          <p className="text-sm font-bold text-stone-700 dark:text-stone-200 dark:text-stone-300">Single Sourcing</p>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export default function ProcurementRedFlagsPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {Object.entries(TYPE_LABELS).map(([key, label]) => (
               <div key={key} className="p-2 bg-stone-50 dark:bg-stone-800 rounded-lg text-center">
-                <p className="text-[10px] font-semibold text-stone-600 dark:text-stone-400">{label}</p>
+                <p className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 dark:text-stone-400">{label}</p>
                 <Badge variant="outline" className="text-[9px] mt-1">{RED_FLAGS.filter(r => r.type === key).length} flags</Badge>
               </div>
             ))}
@@ -118,11 +118,11 @@ export default function ProcurementRedFlagsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-xs font-semibold text-stone-800 dark:text-stone-200">{flag.county}</h3>
+                      <h3 className="text-xs font-semibold text-stone-800 dark:text-stone-100 dark:text-stone-200">{flag.county}</h3>
                       <Badge className={`text-[9px] ${risk.bg} ${risk.color}`}>{risk.label}</Badge>
                       <Badge variant="outline" className="text-[9px]">{TYPE_LABELS[flag.type]}</Badge>
                     </div>
-                    <p className="text-[11px] text-stone-600 dark:text-stone-400 mt-1 leading-relaxed">{flag.description}</p>
+                    <p className="text-[11px] text-stone-600 dark:text-stone-300 dark:text-stone-400 mt-1 leading-relaxed">{flag.description}</p>
                     <div className="flex items-center gap-3 mt-2 text-[10px] text-stone-400 dark:text-stone-500 flex-wrap">
                       <span>Amount: <span className="font-semibold text-stone-600 dark:text-stone-300">{flag.tenderAmount}</span></span>
                       <span>Source: {flag.source}</span>

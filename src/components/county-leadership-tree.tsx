@@ -304,7 +304,7 @@ function TreeNode({
         onClick={() => {
           if (forceOpen === undefined || forceOpen === null) setInternalOpen(!internalOpen);
         }}
-        className="flex items-center gap-2 w-full text-left py-1.5 px-1 rounded-md hover:bg-emerald-50 transition-colors group"
+        className="flex items-center gap-2 w-full text-left py-1.5 px-1 rounded-md hover:bg-emerald-50 dark:bg-emerald-950 transition-colors group"
       >
         {open ? (
           <ChevronDown className="h-3 w-3 text-emerald-600 shrink-0" />
@@ -312,9 +312,9 @@ function TreeNode({
           <ChevronRight className="h-3 w-3 text-emerald-600 shrink-0" />
         )}
         <span className="shrink-0">{icon}</span>
-        <span className="text-xs font-semibold text-gray-800">{label}</span>
+        <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{label}</span>
         {badge && (
-          <span className="text-[10px] text-emerald-600 font-medium bg-emerald-50 px-1.5 py-0.5 rounded-full">
+          <span className="text-[10px] text-emerald-600 font-medium bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded-full">
             {badge}
           </span>
         )}
@@ -343,13 +343,13 @@ function PersonRow({
 }) {
   const isPlaceholder = name.includes('(TBD)');
   return (
-    <div className="flex items-center gap-2.5 py-1.5 px-1 rounded-md hover:bg-gray-50 transition-colors">
+    <div className="flex items-center gap-2.5 py-1.5 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 dark:bg-gray-900 dark:hover:bg-gray-900 dark:bg-gray-900 transition-colors">
       {icon ? (
         <span className="shrink-0">{icon}</span>
       ) : (
         <div
           className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-            isPlaceholder ? 'bg-gray-100 text-gray-400' : getAvatarColor(name)
+            isPlaceholder ? 'bg-gray-100 dark:bg-gray-800 text-gray-400' : getAvatarColor(name)
           }`}
         >
           {getInitials(name)}
@@ -359,7 +359,7 @@ function PersonRow({
         <div className="flex items-center gap-1.5 flex-wrap">
           <span
             className={`text-xs font-medium truncate ${
-              isPlaceholder ? 'text-gray-400 italic' : 'text-gray-800'
+              isPlaceholder ? 'text-gray-400 italic' : 'text-gray-800 dark:text-gray-100'
             }`}
           >
             {name}
@@ -367,7 +367,7 @@ function PersonRow({
           {coalition && !isPlaceholder && (
             <Badge
               variant="outline"
-              className="text-[9px] px-1.5 py-0 h-4 font-normal border-emerald-300 text-emerald-700 bg-emerald-50"
+              className="text-[9px] px-1.5 py-0 h-4 font-normal border-emerald-300 text-emerald-700 bg-emerald-50 dark:bg-emerald-950"
             >
               {coalition}
             </Badge>
@@ -388,12 +388,12 @@ function PersonRow({
 
 function CECRow({ portfolio, fullName }: { portfolio: string; fullName: string }) {
   return (
-    <div className="flex items-center gap-2 py-1 px-1 rounded-md hover:bg-gray-50 transition-colors">
+    <div className="flex items-center gap-2 py-1 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 dark:bg-gray-900 dark:hover:bg-gray-900 dark:bg-gray-900 transition-colors">
       {portfolioIcon(portfolio)}
       <div className="min-w-0 flex-1">
         <span
           className={`text-[11px] font-medium truncate ${
-            fullName.includes('(TBD)') ? 'text-gray-400 italic' : 'text-gray-700'
+            fullName.includes('(TBD)') ? 'text-gray-400 italic' : 'text-gray-700 dark:text-gray-200'
           }`}
         >
           {fullName}
@@ -410,7 +410,7 @@ function WardRow({ wardName, mcaName }: { wardName: string; mcaName?: string }) 
   return (
     <div className="flex items-center gap-2 py-0.5 px-1">
       <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
-      <span className="text-[11px] text-gray-600">{wardName}</span>
+      <span className="text-[11px] text-gray-600 dark:text-gray-300">{wardName}</span>
       {mcaName && <span className="text-[10px] text-gray-400">— {mcaName}</span>}
     </div>
   );
@@ -421,7 +421,7 @@ function WardRow({ wardName, mcaName }: { wardName: string; mcaName?: string }) 
 function AuditBadge({ opinion }: { opinion: AuditOpinion | string | null | undefined }) {
   if (!opinion) {
     return (
-      <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 border border-gray-200">
+      <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700">
         N/A
       </span>
     );
@@ -432,7 +432,7 @@ function AuditBadge({ opinion }: { opinion: AuditOpinion | string | null | undef
     Adverse: 'bg-orange-100 text-orange-700 border-orange-300',
     Disclaimer: 'bg-red-100 text-red-700 border-red-300',
   };
-  const colorClass = colorMap[opinion] || 'bg-gray-100 text-gray-500 border-gray-300';
+  const colorClass = colorMap[opinion] || 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600';
   return (
     <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${colorClass}`}>
       {opinion}
@@ -457,10 +457,10 @@ function HorizontalBar({
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-[10px]">
-        <span className="text-gray-600 font-medium">{label}</span>
-        <span className="text-gray-500">{pct}%</span>
+        <span className="text-gray-600 dark:text-gray-300 font-medium">{label}</span>
+        <span className="text-gray-500 dark:text-gray-400">{pct}%</span>
       </div>
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${color}`}
           style={{ width: `${pct}%` }}
@@ -529,14 +529,14 @@ export default function CountyLeadershipTreePage() {
   }, [budgetData]);
 
   const pendingBillsSeverity = useMemo(() => {
-    if (!budgetData) return { color: 'text-gray-400', bg: 'bg-gray-50', label: 'N/A' };
+    if (!budgetData) return { color: 'text-gray-400', bg: 'bg-gray-50 dark:bg-gray-900', label: 'N/A' };
     const bills = budgetData.pendingBills;
     const totalBudgetM = budgetData.totalBudget * 1000;
-    if (bills === 0) return { color: 'text-gray-400', bg: 'bg-gray-50', label: 'None reported' };
-    if (bills > totalBudgetM * 0.5) return { color: 'text-red-600', bg: 'bg-red-50', label: 'Critical' };
-    if (bills > totalBudgetM * 0.3) return { color: 'text-orange-600', bg: 'bg-orange-50', label: 'High' };
-    if (bills > totalBudgetM * 0.15) return { color: 'text-yellow-600', bg: 'bg-yellow-50', label: 'Moderate' };
-    return { color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Low' };
+    if (bills === 0) return { color: 'text-gray-400', bg: 'bg-gray-50 dark:bg-gray-900', label: 'None reported' };
+    if (bills > totalBudgetM * 0.5) return { color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950', label: 'Critical' };
+    if (bills > totalBudgetM * 0.3) return { color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-950', label: 'High' };
+    if (bills > totalBudgetM * 0.15) return { color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950', label: 'Moderate' };
+    return { color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950', label: 'Low' };
   }, [budgetData]);
 
   // ── New state: search, tabs, expand/collapse, refs ──
@@ -628,7 +628,7 @@ export default function CountyLeadershipTreePage() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-emerald-600" />
-              <span className="text-sm font-semibold text-gray-700">Select County</span>
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Select County</span>
             </div>
             <Select value={selectedCounty} onValueChange={(v) => { setSelectedCounty(v); setExpandAll(null); }}>
               <SelectTrigger className="w-full sm:w-72">
@@ -651,7 +651,7 @@ export default function CountyLeadershipTreePage() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              className="h-8 text-xs gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:bg-emerald-950"
               onClick={handleRandomCounty}
             >
               <Shuffle className="h-3 w-3" />
@@ -662,7 +662,7 @@ export default function CountyLeadershipTreePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`h-8 text-xs gap-1 ${expandAll === true ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  className={`h-8 text-xs gap-1 ${expandAll === true ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 dark:bg-gray-900 dark:hover:bg-gray-900 dark:bg-gray-900'}`}
                   onClick={() => setExpandAll(true)}
                 >
                   <ChevronsUpDown className="h-3 w-3" />
@@ -671,7 +671,7 @@ export default function CountyLeadershipTreePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`h-8 text-xs gap-1 ${expandAll === false ? 'bg-gray-100 border-gray-400 text-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  className={`h-8 text-xs gap-1 ${expandAll === false ? 'bg-gray-100 dark:bg-gray-800 border-gray-400 text-gray-800 dark:text-gray-100' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 dark:bg-gray-900 dark:hover:bg-gray-900 dark:bg-gray-900'}`}
                   onClick={() => setExpandAll(false)}
                 >
                   <ChevronsDownUp className="h-3 w-3" />
@@ -690,23 +690,23 @@ export default function CountyLeadershipTreePage() {
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div className="text-center">
                 <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Population</div>
-                <div className="text-sm font-bold text-gray-800 mt-0.5">{(countyMeta.population / 1000000).toFixed(1)}M</div>
+                <div className="text-sm font-bold text-gray-800 dark:text-gray-100 mt-0.5">{(countyMeta.population / 1000000).toFixed(1)}M</div>
               </div>
               <div className="text-center">
                 <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Area</div>
-                <div className="text-sm font-bold text-gray-800 mt-0.5">{countyMeta.area.toLocaleString()} km²</div>
+                <div className="text-sm font-bold text-gray-800 dark:text-gray-100 mt-0.5">{countyMeta.area.toLocaleString()} km²</div>
               </div>
               <div className="text-center">
                 <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Constituencies</div>
-                <div className="text-sm font-bold text-gray-800 mt-0.5">{totalConstituencies}</div>
+                <div className="text-sm font-bold text-gray-800 dark:text-gray-100 mt-0.5">{totalConstituencies}</div>
               </div>
               <div className="text-center">
                 <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Wards</div>
-                <div className="text-sm font-bold text-gray-800 mt-0.5">{totalWards}</div>
+                <div className="text-sm font-bold text-gray-800 dark:text-gray-100 mt-0.5">{totalWards}</div>
               </div>
               <div className="text-center col-span-2 sm:col-span-1">
                 <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">MCA Verified</div>
-                <div className="text-sm font-bold text-gray-800 mt-0.5">
+                <div className="text-sm font-bold text-gray-800 dark:text-gray-100 mt-0.5">
                   {dataQuality ? `${dataQuality.mcaVerified}/${dataQuality.mcaTotal}` : '—'}
                 </div>
               </div>
@@ -718,10 +718,10 @@ export default function CountyLeadershipTreePage() {
       {/* ── Empty State ──────────────────────────────────────────── */}
       {!selectedCounty && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+          <div className="h-16 w-16 rounded-full bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center mb-4">
             <Landmark className="h-8 w-8 text-emerald-400" />
           </div>
-          <h3 className="text-sm font-semibold text-gray-700">County Leadership Explorer</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">County Leadership Explorer</h3>
           <p className="text-xs text-gray-400 mt-1 max-w-sm">
             Select a county above to view the leadership hierarchy and financial dashboard.
             Explore governors, MCAs, MPs, budget data, and audit opinions.
@@ -747,7 +747,7 @@ export default function CountyLeadershipTreePage() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab.key
                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-transparent'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-800 dark:bg-gray-800 border border-transparent'
                 }`}
               >
                 {tab.icon}
@@ -761,7 +761,7 @@ export default function CountyLeadershipTreePage() {
                     ? 'bg-green-100 text-green-700 border-green-300'
                     : dataQuality.level === 'partial'
                       ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
-                      : 'bg-gray-100 text-gray-500 border-gray-300'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600'
                 }`}
                 variant="outline"
               >
@@ -785,7 +785,7 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-sm font-semibold text-gray-800">
+                    <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                       {currentCounty.countyName} — Leadership Structure
                     </CardTitle>
                     {dataQuality && (
@@ -795,7 +795,7 @@ export default function CountyLeadershipTreePage() {
                             ? 'bg-green-100 text-green-700 border-green-300'
                             : dataQuality.level === 'partial'
                               ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
-                              : 'bg-gray-100 text-gray-500 border-gray-300'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600'
                         }`}
                         variant="outline"
                       >
@@ -974,7 +974,7 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
                   <IdCard className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-gray-800">
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                     Representatives & Duties
                   </CardTitle>
                   <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-300 ml-auto">
@@ -1027,7 +1027,7 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-gray-800">Funding Sources</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">Funding Sources</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1 space-y-3">
@@ -1061,7 +1061,7 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-gray-800">Budget Absorption</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">Budget Absorption</CardTitle>
                 </div>
                 {budgetData && (
                   <p className="text-[10px] text-gray-400">
@@ -1074,7 +1074,7 @@ export default function CountyLeadershipTreePage() {
                   <>
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-[11px]">
-                        <span className="font-medium text-gray-700">Development</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-200">Development</span>
                         <span
                           className={`font-semibold ${
                             budgetData.devAbsorptionRate >= 50
@@ -1105,7 +1105,7 @@ export default function CountyLeadershipTreePage() {
 
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-[11px]">
-                        <span className="font-medium text-gray-700">Recurrent</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-200">Recurrent</span>
                         <span
                           className={`font-semibold ${
                             budgetData.recurrentAbsorptionRate >= 85
@@ -1132,7 +1132,7 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-gray-800">Expense Breakdown</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">Expense Breakdown</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1 space-y-2">
@@ -1140,13 +1140,13 @@ export default function CountyLeadershipTreePage() {
                   expenseBreakdown.map((item) => (
                     <div key={item.label} className="space-y-0.5">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300">
                           {item.icon}
                           <span>{item.label}</span>
                         </div>
-                        <span className="text-[11px] font-medium text-gray-700">{item.pct}%</span>
+                        <span className="text-[11px] font-medium text-gray-700 dark:text-gray-200">{item.pct}%</span>
                       </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${item.color}`}
                           style={{ width: `${item.pct}%` }}
@@ -1165,7 +1165,7 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-gray-800">Pending Bills</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">Pending Bills</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1">
@@ -1199,7 +1199,7 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-gray-800">OAG Audit Opinion</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">OAG Audit Opinion</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1 space-y-2">
@@ -1219,12 +1219,12 @@ export default function CountyLeadershipTreePage() {
                     )}
                     {latestAudit.keyFindings && latestAudit.keyFindings.length > 0 && (
                       <div className="space-y-1 mt-2">
-                        <span className="text-[10px] font-semibold text-gray-600">Key Findings</span>
+                        <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">Key Findings</span>
                         <ul className="space-y-1">
                           {latestAudit.keyFindings.slice(0, 3).map((f, i) => (
                             <li
                               key={i}
-                              className="text-[10px] text-gray-500 flex items-start gap-1.5"
+                              className="text-[10px] text-gray-500 dark:text-gray-400 flex items-start gap-1.5"
                             >
                               <AlertTriangle className="h-3 w-3 text-amber-400 shrink-0 mt-0.5" />
                               <span>{f}</span>
@@ -1257,21 +1257,21 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
                   <TrendingDown className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-gray-800">Disbursement Summary</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">Disbursement Summary</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1">
                 {budgetData ? (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-lg bg-emerald-50 p-3 text-center">
-                        <div className="text-[10px] text-gray-500 font-medium mb-1">Total Allocation</div>
+                      <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950 p-3 text-center">
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mb-1">Total Allocation</div>
                         <div className="text-sm font-bold text-emerald-700">
                           {formatBillions(budgetData.totalBudget)}
                         </div>
                       </div>
-                      <div className="rounded-lg bg-amber-50 p-3 text-center">
-                        <div className="text-[10px] text-gray-500 font-medium mb-1">Est. Spending</div>
+                      <div className="rounded-lg bg-amber-50 dark:bg-amber-950 p-3 text-center">
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mb-1">Est. Spending</div>
                         <div className="text-sm font-bold text-amber-700">
                           {formatBillions(
                             budgetData.totalBudget *
@@ -1286,20 +1286,20 @@ export default function CountyLeadershipTreePage() {
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px]">
-                        <span className="text-gray-500">Dev Budget</span>
-                        <span className="text-gray-700 font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">Dev Budget</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-medium">
                           {formatBillions(budgetData.developmentBudget)}
                         </span>
                       </div>
                       <div className="flex justify-between text-[10px]">
-                        <span className="text-gray-500">Recurrent Budget</span>
-                        <span className="text-gray-700 font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">Recurrent Budget</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-medium">
                           {formatBillions(budgetData.recurrentBudget)}
                         </span>
                       </div>
                       <div className="flex justify-between text-[10px]">
-                        <span className="text-gray-500">Own Revenue</span>
-                        <span className="text-gray-700 font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">Own Revenue</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-medium">
                           {formatCurrency(budgetData.ownSourceRevenue)}
                         </span>
                       </div>
@@ -1318,18 +1318,18 @@ export default function CountyLeadershipTreePage() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-gray-800">County Contact & Links</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">County Contact & Links</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Capital Town</div>
-                    <div className="text-sm font-semibold text-gray-800 mt-0.5">{countyMeta?.capital || 'N/A'}</div>
+                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-100 mt-0.5">{countyMeta?.capital || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">County Code</div>
-                    <div className="text-sm font-semibold text-gray-800 mt-0.5">{selectedCounty}</div>
+                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-100 mt-0.5">{selectedCounty}</div>
                   </div>
                   <div>
                     <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Official Website</div>

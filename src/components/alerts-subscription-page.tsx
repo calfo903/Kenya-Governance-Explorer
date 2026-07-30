@@ -100,7 +100,7 @@ export default function AlertsSubscriptionPage() {
           </div>
         </div>
 
-        <Card className="border-emerald-200 bg-emerald-50">
+        <Card className="border-emerald-200 bg-emerald-50 dark:bg-emerald-950">
           <CardContent className="py-8 px-6 text-center">
             <div className="h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="h-8 w-8 text-emerald-600" />
@@ -112,8 +112,8 @@ export default function AlertsSubscriptionPage() {
               for {selectedCounties.size} {selectedCounties.size === 1 ? 'county' : 'counties'}
               across {selectedAlerts.size} alert {selectedAlerts.size === 1 ? 'type' : 'types'}.
             </p>
-            <div className="mt-4 p-3 bg-white rounded-lg border border-emerald-100 inline-block">
-              <p className="text-xs text-stone-600">
+            <div className="mt-4 p-3 bg-white dark:bg-stone-900 rounded-lg border border-emerald-100 inline-block">
+              <p className="text-xs text-stone-600 dark:text-stone-300">
                 <span className="font-bold">{email || phone}</span> — {selectedCounties.size} counties — {selectedAlerts.size} alert types
               </p>
             </div>
@@ -121,11 +121,11 @@ export default function AlertsSubscriptionPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-stone-200 bg-stone-50">
+        <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
           <CardContent className="py-3 px-4">
             <div className="flex items-start gap-2">
               <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-[10px] text-stone-600 leading-relaxed">
+              <p className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
                 <span className="font-bold">Demo mode:</span> This is a UI-only subscription form. Actual alert delivery requires backend integration with email/SMS services, a data monitoring pipeline, and a notification system connected to OAG, CoB, EACC, and county assembly data feeds.
               </p>
             </div>
@@ -160,28 +160,28 @@ export default function AlertsSubscriptionPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Contact & Counties */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold">Contact & County Selection</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Email Address</label>
-              <Input type="email" placeholder="your@email.com" className="h-9 text-xs border-stone-200" value={email} onChange={e => setEmail(e.target.value)} />
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Email Address</label>
+              <Input type="email" placeholder="your@email.com" className="h-9 text-xs border-stone-200 dark:border-stone-700" value={email} onChange={e => setEmail(e.target.value)} />
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Phone (for SMS alerts)</label>
-              <Input type="tel" placeholder="+254 7XX XXX XXX" className="h-9 text-xs border-stone-200" value={phone} onChange={e => setPhone(e.target.value)} />
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Phone (for SMS alerts)</label>
+              <Input type="tel" placeholder="+254 7XX XXX XXX" className="h-9 text-xs border-stone-200 dark:border-stone-700" value={phone} onChange={e => setPhone(e.target.value)} />
             </div>
 
             <Separator />
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider">Counties ({selectedCounties.size} selected)</label>
+                <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider">Counties ({selectedCounties.size} selected)</label>
                 <div className="flex gap-2 items-center">
                   <Select value={regionFilter} onValueChange={setRegionFilter}>
-                    <SelectTrigger className="h-7 text-[10px] border-stone-200 w-28"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-7 text-[10px] border-stone-200 dark:border-stone-700 w-28"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Regions</SelectItem>
                       {REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
@@ -195,9 +195,9 @@ export default function AlertsSubscriptionPage() {
               <ScrollArea className="max-h-64">
                 <div className="grid grid-cols-2 gap-1">
                   {filteredCounties.map(g => (
-                    <label key={g.county} className={`flex items-center gap-1.5 p-1.5 rounded border cursor-pointer transition-colors text-[10px] ${selectedCounties.has(g.county) ? 'bg-blue-50 border-blue-200' : 'bg-white border-stone-100 hover:bg-stone-50'}`}>
+                    <label key={g.county} className={`flex items-center gap-1.5 p-1.5 rounded border cursor-pointer transition-colors text-[10px] ${selectedCounties.has(g.county) ? 'bg-blue-50 dark:bg-blue-950 border-blue-200' : 'bg-white dark:bg-stone-900 border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'}`}>
                       <Checkbox checked={selectedCounties.has(g.county)} onCheckedChange={() => toggleCounty(g.county)} className="h-3.5 w-3.5" />
-                      <span className="text-stone-700 font-medium truncate">{g.county}</span>
+                      <span className="text-stone-700 dark:text-stone-200 font-medium truncate">{g.county}</span>
                     </label>
                   ))}
                 </div>
@@ -208,19 +208,19 @@ export default function AlertsSubscriptionPage() {
 
         {/* Alert Types & Frequency */}
         <div className="space-y-4">
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-semibold">Alert Types ({selectedAlerts.size} selected)</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {ALERT_TYPES.map(alert => (
-                <label key={alert.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedAlerts.has(alert.id) ? 'bg-blue-50 border-blue-200' : 'bg-white border-stone-100 hover:bg-stone-50'}`}>
+                <label key={alert.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedAlerts.has(alert.id) ? 'bg-blue-50 dark:bg-blue-950 border-blue-200' : 'bg-white dark:bg-stone-900 border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'}`}>
                   <Checkbox checked={selectedAlerts.has(alert.id)} onCheckedChange={() => toggleAlert(alert.id)} />
                   <div className="flex items-center gap-2 flex-1">
-                    <div className="text-stone-500">{alert.icon}</div>
+                    <div className="text-stone-500 dark:text-stone-400">{alert.icon}</div>
                     <div>
-                      <p className="text-xs font-semibold text-stone-700">{alert.label}</p>
-                      <p className="text-[9px] text-stone-500">{alert.description}</p>
+                      <p className="text-xs font-semibold text-stone-700 dark:text-stone-200">{alert.label}</p>
+                      <p className="text-[9px] text-stone-500 dark:text-stone-400">{alert.description}</p>
                     </div>
                   </div>
                 </label>
@@ -228,18 +228,18 @@ export default function AlertsSubscriptionPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-semibold">Delivery Frequency</CardTitle>
             </CardHeader>
             <CardContent>
               <RadioGroup value={frequency} onValueChange={setFrequency} className="space-y-2">
                 {FREQUENCIES.map(f => (
-                  <label key={f.value} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${frequency === f.value ? 'bg-blue-50 border-blue-200' : 'bg-white border-stone-100 hover:bg-stone-50'}`}>
+                  <label key={f.value} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${frequency === f.value ? 'bg-blue-50 dark:bg-blue-950 border-blue-200' : 'bg-white dark:bg-stone-900 border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'}`}>
                     <RadioGroupItem value={f.value} />
                     <div>
-                      <p className="text-xs font-semibold text-stone-700">{f.label}</p>
-                      <p className="text-[9px] text-stone-500">{f.description}</p>
+                      <p className="text-xs font-semibold text-stone-700 dark:text-stone-200">{f.label}</p>
+                      <p className="text-[9px] text-stone-500 dark:text-stone-400">{f.description}</p>
                     </div>
                   </label>
                 ))}
@@ -247,12 +247,12 @@ export default function AlertsSubscriptionPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-stone-200 bg-stone-50">
+          <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
             <CardContent className="py-3 px-4">
               <div className="flex items-start gap-2">
                 <label className="flex items-start gap-2 cursor-pointer">
                   <Checkbox checked={agreeTerms} onCheckedChange={(v) => setAgreeTerms(v === true)} />
-                  <span className="text-[10px] text-stone-600 leading-relaxed">
+                  <span className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
                     <span className="font-bold">Privacy notice:</span> I agree that my contact information will be used to send governance alerts. I understand this is a demo service
                     and no data is transmitted externally. In production, data would be handled per the Kenya Data Protection Act, 2019.
                   </span>

@@ -75,14 +75,14 @@ export default function ConstitutionPage() {
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
         <Input
           placeholder='Search articles (e.g. "devolution", "Article 35", "county assembly", "land")...'
-          className="h-10 pl-10 text-sm border-stone-200 bg-white"
+          className="h-10 pl-10 text-sm border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
         />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-white rounded-xl border border-stone-200 p-1">
+      <div className="flex gap-1 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-1">
         {[
           { id: 'principles', label: 'Key Principles', icon: Scale },
           { id: 'chapters', label: 'All Chapters', icon: BookOpen },
@@ -95,7 +95,7 @@ export default function ConstitutionPage() {
             className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
               activeTab === tab.id
                 ? 'bg-emerald-700 text-white'
-                : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'
             }`}
           >
             <tab.icon className="h-3.5 w-3.5" />
@@ -107,11 +107,11 @@ export default function ConstitutionPage() {
       {/* Key Principles */}
       {activeTab === 'principles' && (
         <div className="space-y-3">
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardContent className="py-3 px-4">
               <div className="flex items-center gap-2">
                 <Scale className="h-4 w-4 text-emerald-700" />
-                <p className="text-xs text-stone-600">
+                <p className="text-xs text-stone-600 dark:text-stone-300">
                   <span className="font-bold">{constitutionalPrinciples.length} key constitutional principles</span> most relevant to county governance, accountability, and citizen rights.
                 </p>
               </div>
@@ -120,7 +120,7 @@ export default function ConstitutionPage() {
 
           <Accordion type="multiple" defaultValue={['0', '1']} className="space-y-2">
             {filteredPrinciples.map((principle, i) => (
-              <AccordionItem key={i} value={`${i}`} className="border border-stone-200 rounded-xl bg-white overflow-hidden px-1">
+              <AccordionItem key={i} value={`${i}`} className="border border-stone-200 dark:border-stone-700 rounded-xl bg-white dark:bg-stone-900 overflow-hidden px-1">
                 <AccordionTrigger className="py-3 px-3 hover:no-underline">
                   <div className="flex items-start gap-3 text-left">
                     <div className="h-7 w-7 rounded-lg bg-emerald-700 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -132,8 +132,8 @@ export default function ConstitutionPage() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-3 pb-3">
-                  <p className="text-xs text-stone-600 leading-relaxed mb-3">{principle.description}</p>
-                  <div className="p-2.5 bg-emerald-50 rounded-lg border border-emerald-100">
+                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed mb-3">{principle.description}</p>
+                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950 rounded-lg border border-emerald-100">
                     <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">Governance Relevance</p>
                     <p className="text-[11px] text-emerald-800 leading-relaxed">{principle.relevance}</p>
                   </div>
@@ -147,11 +147,11 @@ export default function ConstitutionPage() {
       {/* All Chapters */}
       {activeTab === 'chapters' && (
         <div className="space-y-3">
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardContent className="py-3 px-4">
               <div className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-emerald-700" />
-                <p className="text-xs text-stone-600">
+                <p className="text-xs text-stone-600 dark:text-stone-300">
                   <span className="font-bold">{filteredChapters.length} chapters</span> of the Constitution of Kenya 2010, with summaries and key provisions.
                 </p>
               </div>
@@ -160,7 +160,7 @@ export default function ConstitutionPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filteredChapters.map((chapter, i) => (
-              <Card key={i} className="border-stone-200 bg-white hover:border-emerald-200 transition-colors">
+              <Card key={i} className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-emerald-200 transition-colors">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -169,22 +169,22 @@ export default function ConstitutionPage() {
                         chapter.number === 11 || chapter.number === 12 ? 'bg-emerald-100 text-emerald-800' :
                         chapter.number === 4 ? 'bg-blue-100 text-blue-800' :
                         chapter.number === 6 ? 'bg-red-100 text-red-800' :
-                        'bg-slate-100 text-slate-700'
+                        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
                       }`}>
                         {typeof chapter.number === 'string' && chapter.number.startsWith('S') ? <Layers className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
                       </div>
                       <div>
                         <CardTitle className="text-xs font-semibold leading-tight">{chapter.title}</CardTitle>
-                        <p className="text-[10px] text-stone-500">{chapter.articles}</p>
+                        <p className="text-[10px] text-stone-500 dark:text-stone-400">{chapter.articles}</p>
                       </div>
                     </div>
                     {chapter.keyProvisions.length > 1 && <Badge variant="secondary" className="text-[10px] h-5">{chapter.keyProvisions.length} provisions</Badge>}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <p className="text-[11px] text-stone-600 leading-relaxed">{chapter.summary}</p>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed">{chapter.summary}</p>
                   {chapter.keyProvisions.slice(0, 3).map((kp, j) => (
-                    <div key={j} className="flex items-start gap-1.5 text-[10px] text-stone-500">
+                    <div key={j} className="flex items-start gap-1.5 text-[10px] text-stone-500 dark:text-stone-400">
                       <ArrowRight className="h-2.5 w-2.5 text-emerald-600 shrink-0 mt-0.5" />
                       <span><span className="font-semibold text-emerald-700">{kp.article}:</span> {kp.text}</span>
                     </div>
@@ -202,7 +202,7 @@ export default function ConstitutionPage() {
       {/* Devolution Articles */}
       {activeTab === 'devolution' && (
         <div className="space-y-3">
-          <Card className="border-emerald-200 bg-emerald-50">
+          <Card className="border-emerald-200 bg-emerald-50 dark:bg-emerald-950">
             <CardContent className="py-4 px-4">
               <div className="flex items-start gap-3">
                 <Landmark className="h-5 w-5 text-emerald-700 shrink-0" />
@@ -218,13 +218,13 @@ export default function ConstitutionPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {devolutionSpecificArticles.map((article, i) => (
-              <div key={i} className="p-3 bg-white rounded-lg border border-stone-200 hover:border-emerald-200 transition-colors">
+              <div key={i} className="p-3 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-emerald-200 transition-colors">
                 <div className="flex items-center gap-2 mb-1.5">
                   <div className="h-6 w-6 rounded bg-emerald-700 text-white text-[9px] font-bold flex items-center justify-center shrink-0">{i + 1}</div>
                   <p className="text-xs font-bold text-emerald-800">{article.article}</p>
                 </div>
-                <p className="text-[11px] font-semibold text-stone-700 mb-1">{article.title}</p>
-                <p className="text-[10px] text-stone-500 leading-relaxed">{article.desc}</p>
+                <p className="text-[11px] font-semibold text-stone-700 dark:text-stone-200 mb-1">{article.title}</p>
+                <p className="text-[10px] text-stone-500 dark:text-stone-400 leading-relaxed">{article.desc}</p>
               </div>
             ))}
           </div>
@@ -234,7 +234,7 @@ export default function ConstitutionPage() {
       {/* Preamble */}
       {activeTab === 'preamble' && (
         <div className="space-y-4">
-          <Card className="border-emerald-200 bg-white">
+          <Card className="border-emerald-200 bg-white dark:bg-stone-900">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <FileText className="h-4 w-4 text-emerald-700" /> The Preamble
@@ -242,13 +242,13 @@ export default function ConstitutionPage() {
               <CardDescription className="text-xs">The philosophical foundation of the Constitution — adopted by the people of Kenya.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950 rounded-xl border border-emerald-100">
                 <p className="text-sm text-emerald-900 leading-relaxed italic font-serif">&ldquo;{constitutionPreamble}&rdquo;</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">Key Principles from the Preamble</CardTitle>
             </CardHeader>
@@ -264,22 +264,22 @@ export default function ConstitutionPage() {
                   { principle: 'Gender Equity', desc: 'Promotes gender equity and social justice.' },
                   { principle: 'People\'s Power', desc: 'The people of Kenya adopt this Constitution — authority flows from the people.' },
                 ].map((item, i) => (
-                  <div key={i} className="p-2.5 bg-stone-50 rounded-lg border border-stone-100">
+                  <div key={i} className="p-2.5 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
                     <div className="flex items-center gap-2 mb-1">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                      <p className="text-[11px] font-bold text-stone-800">{item.principle}</p>
+                      <p className="text-[11px] font-bold text-stone-800 dark:text-stone-100">{item.principle}</p>
                     </div>
-                    <p className="text-[10px] text-stone-500 leading-relaxed pl-5">{item.desc}</p>
+                    <p className="text-[10px] text-stone-500 dark:text-stone-400 leading-relaxed pl-5">{item.desc}</p>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardContent className="py-3 px-4">
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-stone-500" />
+                <Globe className="h-4 w-4 text-stone-500 dark:text-stone-400" />
                 <a href="https://kenyalaw.org/klr/" target="_blank" rel="noopener noreferrer"
                   className="text-xs text-emerald-600 hover:underline flex items-center gap-1">
                   Read the full Constitution at KenyaLaw.org

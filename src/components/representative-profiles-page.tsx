@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { countyLeadershipData } from '@/data/county-leadership';
 import { all47Governors } from '@/data/governors';
 
@@ -59,7 +60,7 @@ const REP_TYPE_CONFIG: Record<RepType, {
     label: 'Governors',
     icon: Landmark,
     accentColor: 'text-emerald-600',
-    accentBg: 'bg-emerald-50',
+    accentBg: 'bg-emerald-50 dark:bg-emerald-950',
     accentBorder: 'border-emerald-600',
     accentText: 'text-emerald-800',
     gridCols: 'grid-cols-1 md:grid-cols-2',
@@ -78,7 +79,7 @@ const REP_TYPE_CONFIG: Record<RepType, {
     label: 'Senators',
     icon: Shield,
     accentColor: 'text-blue-600',
-    accentBg: 'bg-blue-50',
+    accentBg: 'bg-blue-50 dark:bg-blue-950',
     accentBorder: 'border-blue-600',
     accentText: 'text-blue-800',
     gridCols: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
@@ -116,7 +117,7 @@ const REP_TYPE_CONFIG: Record<RepType, {
     label: 'MPs',
     icon: Vote,
     accentColor: 'text-amber-600',
-    accentBg: 'bg-amber-50',
+    accentBg: 'bg-amber-50 dark:bg-amber-950',
     accentBorder: 'border-amber-600',
     accentText: 'text-amber-800',
     gridCols: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
@@ -201,6 +202,7 @@ function getMcabio(name: string, ward: string, constituency: string, county: str
 // ─── MAIN COMPONENT ─────────────────────────────────────────────
 
 export default function RepresentativeProfilesPage() {
+  const t = useTranslations();
   const [activeRepTab, setActiveRepTab] = useState<RepType>('governors');
   const [selectedCounty, setSelectedCounty] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('All');
@@ -323,6 +325,25 @@ export default function RepresentativeProfilesPage() {
   const config = REP_TYPE_CONFIG[activeRepTab];
   const Icon = config.icon;
 
+  // Localized label and duties
+  const localizedConfig = useMemo(() => {
+    const labelMap: Record<RepType, string> = {
+      governors: t('representatives.governors'),
+      senators: t('representatives.senators'),
+      womenReps: t('representatives.womenReps'),
+      mps: t('representatives.mps'),
+      mcas: t('representatives.mcas'),
+    };
+    const dutiesMap: Record<RepType, string[]> = {
+      governors: t.raw('representatives.duties.governors'),
+      senators: t.raw('representatives.duties.senators'),
+      womenReps: t.raw('representatives.duties.womenReps'),
+      mps: t.raw('representatives.duties.mps'),
+      mcas: t.raw('representatives.duties.mcas'),
+    };
+    return { ...config, label: labelMap[activeRepTab], duties: dutiesMap[activeRepTab] };
+  }, [config, activeRepTab, t]);
+
   const toggleCard = (id: string) => {
     const next = new Set(expandedCards);
     if (next.has(id)) next.delete(id); else next.add(id);
@@ -332,53 +353,53 @@ export default function RepresentativeProfilesPage() {
   return (
     <div className="space-y-4">
       {/* ── Page Header ── */}
-      <div className="bg-white rounded-xl border border-stone-200 p-5">
+      <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-5">
         <div className="flex items-start gap-3 mb-4">
           <div className={`h-10 w-10 rounded-xl ${config.accentBg} flex items-center justify-center shrink-0`}>
             <Users className={`h-5 w-5 ${config.accentColor}`} />
           </div>
           <div>
-            <h2 className="text-base font-bold text-stone-900">Representative Profiles</h2>
-            <p className="text-xs text-stone-500 mt-0.5">
-              Browse all elected representatives across Kenya&apos;s 47 counties — Governors, Senators, Women Reps, MPs &amp; MCAs (2022–2027 term).
+            <h2 className="text-base font-bold text-stone-900 dark:text-stone-50">{t('representatives.representativeProfiles')}</h2>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+              {t('representatives.repSubtitle')}
             </p>
           </div>
         </div>
 
         {/* Stats Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-4">
-          {([['governors', 'Governors', Landmark], ['senators', 'Senators', Shield], ['womenReps', 'Women Reps', Users], ['mps', 'MPs', Vote], ['mcas', 'MCAs', Building2]] as const).map(([key, label, StatIcon]) => (
+          {([['governors', 'representatives.governors', Landmark], ['senators', 'representatives.senators', Shield], ['womenReps', 'representatives.womenReps', Users], ['mps', 'representatives.mps', Vote], ['mcas', 'representatives.mcas', Building2]] as const).map(([key, labelKey, StatIcon]) => (
             <button
               key={key}
               onClick={() => { setActiveRepTab(key as RepType); setSelectedCounty('all'); setSelectedRegion('All'); setSearchQuery(''); }}
               className={`p-3 rounded-xl border text-center transition-all ${
                 activeRepTab === key
                   ? `${REP_TYPE_CONFIG[key as RepType].accentBg} ${REP_TYPE_CONFIG[key as RepType].accentBorder} border-l-4`
-                  : 'bg-stone-50 border-stone-200 hover:bg-stone-100'
+                  : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:bg-stone-700'
               }`}
             >
               <StatIcon className={`h-4 w-4 mx-auto mb-1 ${activeRepTab === key ? REP_TYPE_CONFIG[key as RepType].accentColor : 'text-stone-400'}`} />
-              <p className={`text-lg font-bold ${activeRepTab === key ? REP_TYPE_CONFIG[key as RepType].accentText : 'text-stone-700'}`}>{stats[key as keyof typeof stats].toLocaleString()}</p>
-              <p className="text-[10px] text-stone-500 font-medium">{label}</p>
+              <p className={`text-lg font-bold ${activeRepTab === key ? REP_TYPE_CONFIG[key as RepType].accentText : 'text-stone-700 dark:text-stone-200'}`}>{stats[key as keyof typeof stats].toLocaleString()}</p>
+              <p className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">{t(labelKey as any)}</p>
             </button>
           ))}
         </div>
 
         {/* ── Tabs ── */}
         <Tabs value={activeRepTab} onValueChange={(v) => { setActiveRepTab(v as RepType); setSearchQuery(''); }}>
-          <TabsList className="w-full h-auto flex-wrap gap-1 bg-stone-100 p-1">
+          <TabsList className="w-full h-auto flex-wrap gap-1 bg-stone-100 dark:bg-stone-700 p-1">
             {(Object.entries(REP_TYPE_CONFIG) as [RepType, typeof REP_TYPE_CONFIG[RepType]][]).map(([key, cfg]) => (
               <TabsTrigger
                 key={key}
                 value={key}
                 className={`flex-1 min-w-[100px] gap-1.5 data-[state=active]:shadow-sm ${
                   activeRepTab === key
-                    ? `${cfg.accentColor} data-[state=active]:bg-white data-[state=active]:text-inherit`
-                    : 'text-stone-600'
+                    ? `${cfg.accentColor} data-[state=active]:bg-white dark:bg-stone-900 data-[state=active]:text-inherit`
+                    : 'text-stone-600 dark:text-stone-300'
                 }`}
               >
                 <cfg.icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline text-xs">{cfg.label}</span>
+                <span className="hidden sm:inline text-xs">{t(`representatives.${key}` as any)}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -389,8 +410,8 @@ export default function RepresentativeProfilesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
               <Input
-                placeholder={`Search ${config.label.toLowerCase()} by name, county, or jurisdiction...`}
-                className="h-10 pl-10 text-sm border-stone-200"
+                placeholder={t('representatives.searchPlaceholder', { type: localizedConfig.label.toLowerCase() })}
+                className="h-10 pl-10 text-sm border-stone-200 dark:border-stone-700"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -398,11 +419,11 @@ export default function RepresentativeProfilesPage() {
 
             {/* County Selector */}
             <Select value={selectedCounty} onValueChange={(v) => { setSelectedCounty(v); setSelectedRegion('All'); }}>
-              <SelectTrigger className="h-10 w-full sm:w-[200px] text-sm border-stone-200">
-                <SelectValue placeholder="All Counties" />
+              <SelectTrigger className="h-10 w-full sm:w-[200px] text-sm border-stone-200 dark:border-stone-700">
+                <SelectValue placeholder={t('representatives.allCounties')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All 47 Counties</SelectItem>
+                <SelectItem value="all">{t('representatives.allCounties')}</SelectItem>
                 <Separator className="my-1" />
                 {countyLeadershipData
                   .sort((a, b) => a.countyName.localeCompare(b.countyName))
@@ -424,7 +445,7 @@ export default function RepresentativeProfilesPage() {
                 className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
                   selectedRegion === region
                     ? `${config.accentBg} ${config.accentColor} ${config.accentBorder}`
-                    : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                    : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'
                 }`}
               >
                 {region}{region === 'All' ? ` (${allProfiles.filter(p => p.repType === activeRepTab).length})` : ''}
@@ -434,17 +455,17 @@ export default function RepresentativeProfilesPage() {
 
           {/* Results count */}
           <div className="mt-3 flex items-center justify-between">
-            <p className="text-xs text-stone-500">
-              Showing <span className="font-semibold text-stone-700">{filteredProfiles.length.toLocaleString()}</span> of {stats[activeRepTab].toLocaleString()} {config.label.toLowerCase()}
+            <p className="text-xs text-stone-500 dark:text-stone-400">
+              {t('common.showing')} <span className="font-semibold text-stone-700 dark:text-stone-200">{filteredProfiles.length.toLocaleString()}</span> {t('common.of')} {stats[activeRepTab].toLocaleString()} {localizedConfig.label.toLowerCase()}
             </p>
             {(selectedCounty !== 'all' || selectedRegion !== 'All' || searchQuery) && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 text-[11px] text-stone-500 hover:text-stone-700"
+                className="h-7 text-[11px] text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200"
                 onClick={() => { setSelectedCounty('all'); setSelectedRegion('All'); setSearchQuery(''); }}
               >
-                Clear filters
+                {t('common.clearFilters')}
               </Button>
             )}
           </div>
@@ -458,10 +479,10 @@ export default function RepresentativeProfilesPage() {
             return (
               <TabsContent key={type} value={type} className="mt-4">
                 {typeProfiles.length === 0 ? (
-                  <div className="text-center py-16 bg-white rounded-xl border border-stone-200">
+                  <div className="text-center py-16 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700">
                     <Search className="h-10 w-10 text-stone-300 mx-auto mb-3" />
-                    <h3 className="font-semibold text-stone-700 text-sm">No {typeConfig.label.toLowerCase()} found</h3>
-                    <p className="text-xs text-stone-400 mt-1">Try adjusting your search or filters.</p>
+                    <h3 className="font-semibold text-stone-700 dark:text-stone-200 text-sm">{t('representatives.noRepsFound', { type: typeConfig.label.toLowerCase() })}</h3>
+                    <p className="text-xs text-stone-400 mt-1">{t('common.tryAdjusting')}</p>
                   </div>
                 ) : (
                   <ScrollArea className="max-h-[70vh]">
@@ -473,7 +494,7 @@ export default function RepresentativeProfilesPage() {
                         return (
                           <Card
                             key={cardId}
-                            className={`bg-white border-stone-200 hover:shadow-md transition-shadow ${
+                            className={`bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700 hover:shadow-md transition-shadow ${
                               isExpanded ? `border-l-4 ${typeConfig.accentBorder}` : ''
                             }`}
                           >
@@ -486,11 +507,11 @@ export default function RepresentativeProfilesPage() {
                                   {getInitials(profile.name)}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <CardTitle className="text-sm font-bold text-stone-900 leading-tight">
+                                  <CardTitle className="text-sm font-bold text-stone-900 dark:text-stone-50 leading-tight">
                                     {profile.name}
                                   </CardTitle>
                                   <p className={`text-xs font-medium ${typeConfig.accentColor} mt-0.5`}>{profile.title}</p>
-                                  <div className="flex items-center gap-1 mt-1 text-stone-500">
+                                  <div className="flex items-center gap-1 mt-1 text-stone-500 dark:text-stone-400">
                                     <MapPin className="h-3 w-3 shrink-0" />
                                     <span className="text-[11px] truncate">{profile.jurisdiction}</span>
                                   </div>
@@ -514,13 +535,13 @@ export default function RepresentativeProfilesPage() {
                               </div>
 
                               {/* Term */}
-                              <div className="flex items-center gap-1.5 text-[11px] text-stone-500">
+                              <div className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400">
                                 <Calendar className="h-3 w-3 shrink-0" />
                                 <span>{formatTerm(profile.termStart, profile.termEnd)}</span>
                               </div>
 
                               {/* Bio */}
-                              <p className="text-[11px] leading-relaxed text-stone-600">{profile.bio}</p>
+                              <p className="text-[11px] leading-relaxed text-stone-600 dark:text-stone-300">{profile.bio}</p>
 
                               {/* Region tag */}
                               <div className="flex items-center gap-1.5">
@@ -546,7 +567,7 @@ export default function RepresentativeProfilesPage() {
                                   >
                                     <span className="flex items-center gap-1.5">
                                       <BookOpen className="h-3.5 w-3.5" />
-                                      {typeConfig.article} — Constitutional Duties
+                                      {typeConfig.article} — {t('representatives.constitutionalDuties')}
                                     </span>
                                     {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                                   </Button>
@@ -554,11 +575,11 @@ export default function RepresentativeProfilesPage() {
                                 <CollapsibleContent>
                                   <div className={`mt-2 p-3 rounded-lg ${typeConfig.accentBg} border border-opacity-50`}>
                                     <p className={`text-[10px] font-semibold uppercase tracking-wider ${typeConfig.accentText} mb-2`}>
-                                      Kenya Constitution 2010 — {typeConfig.article}
+                                      {t('representatives.kenyaConstitution')} — {typeConfig.article}
                                     </p>
                                     <ul className="space-y-1.5">
                                       {typeConfig.duties.map((duty, i) => (
-                                        <li key={i} className="flex items-start gap-2 text-[11px] text-stone-700">
+                                        <li key={i} className="flex items-start gap-2 text-[11px] text-stone-700 dark:text-stone-200">
                                           <Gavel className={`h-3 w-3 shrink-0 mt-0.5 ${typeConfig.accentColor}`} />
                                           <span>{duty}</span>
                                         </li>
@@ -581,14 +602,14 @@ export default function RepresentativeProfilesPage() {
       </div>
 
       {/* ── Constitutional Reference Card ── */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Scale className="h-4 w-4 text-emerald-600" />
             Constitutional Reference — Devolution Chapter
           </CardTitle>
           <CardDescription className="text-xs">
-            Kenya Constitution 2010, Chapter 11 — Devolution (Articles 174–200)
+            {t('representatives.devolutionChapter')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -603,10 +624,10 @@ export default function RepresentativeProfilesPage() {
                 ['Article 97', 'Membership of National Assembly', 'Includes 290 elected MPs, 47 Women Representatives, and 12 nominated members representing special interests.'],
               ] as const
             ).map(([article, title, desc]) => (
-              <div key={article} className="p-3 bg-stone-50 rounded-lg border border-stone-100">
+              <div key={article} className="p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
                 <p className="text-[10px] font-bold text-emerald-700">{article}</p>
-                <p className="text-xs font-semibold text-stone-800 mt-0.5">{title}</p>
-                <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">{desc}</p>
+                <p className="text-xs font-semibold text-stone-800 dark:text-stone-100 mt-0.5">{title}</p>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>

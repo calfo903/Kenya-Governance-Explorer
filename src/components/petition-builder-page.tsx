@@ -203,18 +203,18 @@ ${applicantId ? `ID No: ${applicantId}` : 'ID No: [Number]'}`;
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Form */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold flex items-center gap-2">
-              <Building2 className="h-3.5 w-3.5 text-slate-700" />
+              <Building2 className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
               Petition Details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Target Body *</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Target Body *</label>
               <Select value={selectedTarget} onValueChange={setSelectedTarget}>
-                <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select target..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select target..." /></SelectTrigger>
                 <SelectContent>
                   {TARGETS.map(t => (
                     <SelectItem key={t.value} value={t.value}>
@@ -228,9 +228,9 @@ ${applicantId ? `ID No: ${applicantId}` : 'ID No: [Number]'}`;
               </Select>
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">County *</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">County *</label>
               <Select value={selectedCounty} onValueChange={setSelectedCounty}>
-                <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select county..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select county..." /></SelectTrigger>
                 <SelectContent className="max-h-60">
                   {all47Governors.map(g => (
                     <SelectItem key={g.county} value={g.county}>{g.county}</SelectItem>
@@ -239,9 +239,9 @@ ${applicantId ? `ID No: ${applicantId}` : 'ID No: [Number]'}`;
               </Select>
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Topic Template *</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Topic Template *</label>
               <Select value={selectedTopic} onValueChange={handleSelectTopic}>
-                <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select topic..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select topic..." /></SelectTrigger>
                 <SelectContent className="max-h-60">
                   {TOPICS.map(t => (
                     <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
@@ -251,12 +251,12 @@ ${applicantId ? `ID No: ${applicantId}` : 'ID No: [Number]'}`;
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider">Petition Body *</label>
+                <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider">Petition Body *</label>
                 <span className={`text-[10px] ${wordCount < 50 ? 'text-amber-600' : 'text-emerald-600'}`}>{wordCount} words</span>
               </div>
               <Textarea
                 placeholder="Write your petition body here, or select a topic template to auto-fill..."
-                className="text-xs border-stone-200 min-h-[150px]"
+                className="text-xs border-stone-200 dark:border-stone-700 min-h-[150px]"
                 value={petitionBody}
                 onChange={e => setPetitionBody(e.target.value)}
               />
@@ -266,20 +266,20 @@ ${applicantId ? `ID No: ${applicantId}` : 'ID No: [Number]'}`;
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Your Name</label>
-                <Input placeholder="Full name" className="h-9 text-xs border-stone-200" value={applicantName} onChange={e => setApplicantName(e.target.value)} />
+                <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Your Name</label>
+                <Input placeholder="Full name" className="h-9 text-xs border-stone-200 dark:border-stone-700" value={applicantName} onChange={e => setApplicantName(e.target.value)} />
               </div>
               <div>
-                <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">ID Number</label>
-                <Input placeholder="National ID" className="h-9 text-xs border-stone-200" value={applicantId} onChange={e => setApplicantId(e.target.value)} />
+                <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">ID Number</label>
+                <Input placeholder="National ID" className="h-9 text-xs border-stone-200 dark:border-stone-700" value={applicantId} onChange={e => setApplicantId(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Number of Supporters</label>
-              <Input placeholder="e.g. 150" className="h-9 text-xs border-stone-200" value={signatures} onChange={e => setSignatures(e.target.value)} />
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Number of Supporters</label>
+              <Input placeholder="e.g. 150" className="h-9 text-xs border-stone-200 dark:border-stone-700" value={signatures} onChange={e => setSignatures(e.target.value)} />
             </div>
 
-            <Card className="bg-amber-50 border-amber-100">
+            <Card className="bg-amber-50 dark:bg-amber-950 border-amber-100">
               <CardContent className="py-3 px-3">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
@@ -300,15 +300,15 @@ ${applicantId ? `ID No: ${applicantId}` : 'ID No: [Number]'}`;
         </Card>
 
         {/* Preview */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xs font-semibold flex items-center gap-2">
-                  <FileText className="h-3.5 w-3.5 text-slate-700" />
+                  <FileText className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
                   Petition Preview
                 </CardTitle>
-                <CardDescription className="text-[10px] text-stone-500">Formatted petition document</CardDescription>
+                <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">Formatted petition document</CardDescription>
               </div>
               {generatedPetition && (
                 <Button size="sm" className="h-7 text-[10px] gap-1.5" onClick={handleCopy}>
@@ -320,14 +320,14 @@ ${applicantId ? `ID No: ${applicantId}` : 'ID No: [Number]'}`;
           <CardContent>
             {generatedPetition ? (
               <ScrollArea className="h-[600px]">
-                <div className="p-4 bg-white rounded-lg border border-stone-200 text-xs text-stone-700 leading-relaxed font-mono whitespace-pre-wrap">
+                <div className="p-4 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 text-xs text-stone-700 dark:text-stone-200 leading-relaxed font-mono whitespace-pre-wrap">
                   {generatedPetition}
                 </div>
               </ScrollArea>
             ) : (
               <div className="text-center py-16">
                 <Gavel className="h-10 w-10 text-stone-300 mx-auto mb-3" />
-                <p className="text-sm text-stone-500">Fill in the form to generate your petition</p>
+                <p className="text-sm text-stone-500 dark:text-stone-400">Fill in the form to generate your petition</p>
                 <p className="text-[10px] text-stone-400 mt-1">Select a target, county, and topic to begin</p>
               </div>
             )}

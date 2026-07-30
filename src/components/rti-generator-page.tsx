@@ -171,19 +171,19 @@ CC:
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Form */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold flex items-center gap-2">
-              <Building2 className="h-3.5 w-3.5 text-slate-700" />
+              <Building2 className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
               Request Details
             </CardTitle>
-            <CardDescription className="text-[10px] text-stone-500">Fill in the fields to auto-generate your RTI letter</CardDescription>
+            <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">Fill in the fields to auto-generate your RTI letter</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">County *</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">County *</label>
               <Select value={selectedCounty} onValueChange={setSelectedCounty}>
-                <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select county..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select county..." /></SelectTrigger>
                 <SelectContent className="max-h-60">
                   {all47Governors.map(g => (
                     <SelectItem key={g.county} value={g.county}>{g.county} ({g.region})</SelectItem>
@@ -192,9 +192,9 @@ CC:
               </Select>
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Department *</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Department *</label>
               <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select department..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select department..." /></SelectTrigger>
                 <SelectContent className="max-h-60">
                   {COUNTY_DEPARTMENTS.map(d => (
                     <SelectItem key={d} value={d}>{d}</SelectItem>
@@ -203,9 +203,9 @@ CC:
               </Select>
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Information Type *</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Information Type *</label>
               <Select value={selectedInfoType} onValueChange={setSelectedInfoType}>
-                <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select information type..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select information type..." /></SelectTrigger>
                 <SelectContent className="max-h-60">
                   {INFO_TYPES.map(i => (
                     <SelectItem key={i.value} value={i.value}>
@@ -222,34 +222,34 @@ CC:
             <Separator />
 
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Your Full Name</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Your Full Name</label>
               <Input
                 placeholder="Enter your full name"
-                className="h-9 text-xs border-stone-200"
+                className="h-9 text-xs border-stone-200 dark:border-stone-700"
                 value={applicantName}
                 onChange={e => setApplicantName(e.target.value)}
               />
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Your Address</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Your Address</label>
               <Input
                 placeholder="P.O. Box XXX - Town, Kenya"
-                className="h-9 text-xs border-stone-200"
+                className="h-9 text-xs border-stone-200 dark:border-stone-700"
                 value={applicantAddress}
                 onChange={e => setApplicantAddress(e.target.value)}
               />
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Specific Details (optional)</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Specific Details (optional)</label>
               <Textarea
                 placeholder="Provide specific details about the information you need — financial year, project name, date range, etc."
-                className="text-xs border-stone-200 min-h-[80px]"
+                className="text-xs border-stone-200 dark:border-stone-700 min-h-[80px]"
                 value={specificDetails}
                 onChange={e => setSpecificDetails(e.target.value)}
               />
             </div>
 
-            <Card className="bg-blue-50 border-blue-100">
+            <Card className="bg-blue-50 dark:bg-blue-950 border-blue-100">
               <CardContent className="py-3 px-3">
                 <div className="flex items-start gap-2">
                   <Info className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
@@ -264,15 +264,15 @@ CC:
         </Card>
 
         {/* Preview */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xs font-semibold flex items-center gap-2">
-                  <FileText className="h-3.5 w-3.5 text-slate-700" />
+                  <FileText className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
                   Letter Preview
                 </CardTitle>
-                <CardDescription className="text-[10px] text-stone-500">Generated RTI request letter</CardDescription>
+                <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">Generated RTI request letter</CardDescription>
               </div>
               {isFormComplete && (
                 <Button size="sm" className="h-7 text-[10px] gap-1.5" onClick={handleCopy}>
@@ -284,14 +284,14 @@ CC:
           <CardContent>
             {isFormComplete ? (
               <ScrollArea className="h-[600px]">
-                <div className="p-4 bg-white rounded-lg border border-stone-200 text-xs text-stone-700 leading-relaxed font-mono whitespace-pre-wrap">
+                <div className="p-4 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 text-xs text-stone-700 dark:text-stone-200 leading-relaxed font-mono whitespace-pre-wrap">
                   {generatedLetter}
                 </div>
               </ScrollArea>
             ) : (
               <div className="text-center py-16">
                 <FileText className="h-10 w-10 text-stone-300 mx-auto mb-3" />
-                <p className="text-sm text-stone-500">Fill in the form to generate your RTI letter</p>
+                <p className="text-sm text-stone-500 dark:text-stone-400">Fill in the form to generate your RTI letter</p>
                 <p className="text-[10px] text-stone-400 mt-1">Select a county, department, and information type to begin</p>
               </div>
             )}
@@ -300,11 +300,11 @@ CC:
       </div>
 
       {/* Legal references */}
-      <Card className="border-stone-200 bg-stone-50">
+      <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
         <CardContent className="py-3 px-4">
           <div className="flex items-start gap-2">
-            <Scale className="h-3.5 w-3.5 text-slate-600 shrink-0 mt-0.5" />
-            <div className="text-[10px] text-stone-600 leading-relaxed">
+            <Scale className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300 shrink-0 mt-0.5" />
+            <div className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
               <span className="font-bold">Legal references:</span> Article 35 (Constitution of Kenya 2010), Access to Information Act 2016, Commission on Administrative Justice Act 2011.
               For help with RTI requests, contact the Ombudsman: <span className="font-medium">0800-720-222 (toll-free)</span> or visit <a href="https://www.caj.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">caj.go.ke</a>.
             </div>

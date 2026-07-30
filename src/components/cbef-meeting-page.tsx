@@ -56,7 +56,7 @@ export default function CBEFMeetingPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-blue-600" /> CBEF Meeting Finder
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
@@ -109,8 +109,8 @@ export default function CBEFMeetingPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-200">{meeting.county} County CBEF</h3>
-                    <Badge className={`text-[9px] ${meeting.status === 'upcoming' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'}`}>
+                    <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-100 dark:text-stone-200">{meeting.county} County CBEF</h3>
+                    <Badge className={`text-[9px] ${meeting.status === 'upcoming' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 dark:bg-stone-800 dark:text-stone-400'}`}>
                       {meeting.status === 'upcoming' ? 'Upcoming' : 'Completed'}
                     </Badge>
                   </div>
@@ -123,7 +123,7 @@ export default function CBEFMeetingPage() {
                     <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">Agenda</p>
                     <ul className="space-y-0.5">
                       {meeting.agenda.map((item, i) => (
-                        <li key={i} className="text-[11px] text-stone-600 dark:text-stone-400 flex items-start gap-1.5">
+                        <li key={i} className="text-[11px] text-stone-600 dark:text-stone-300 dark:text-stone-400 flex items-start gap-1.5">
                           <ChevronRight className="h-3 w-3 shrink-0 mt-0.5 text-stone-400 dark:text-stone-500" />
                           {item}
                         </li>

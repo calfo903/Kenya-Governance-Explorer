@@ -29,7 +29,7 @@ import {
 const COALITION_COLORS: Record<string, string> = {
   'Kenya Kwanza Alliance': 'bg-emerald-100 text-emerald-800 border-emerald-300',
   'Azimio la Umoja One Kenya Coalition': 'bg-blue-100 text-blue-800 border-blue-300',
-  'Independent': 'bg-gray-100 text-gray-700 border-gray-300',
+  'Independent': 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600',
 };
 
 const COALITION_DOT_COLORS: Record<string, string> = {
@@ -112,7 +112,7 @@ function SocialLinks({ social }: { social: MzalendoMember['socialMedia'] }) {
           href={`https://x.com/${social.x.replace('@', '')}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
           aria-label="X (Twitter) profile"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -126,7 +126,7 @@ function SocialLinks({ social }: { social: MzalendoMember['socialMedia'] }) {
           href={`https://facebook.com${social.facebook}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
           aria-label="Facebook profile"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -139,7 +139,7 @@ function SocialLinks({ social }: { social: MzalendoMember['socialMedia'] }) {
           href={`https://instagram.com/${social.instagram.replace('@', '')}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
           aria-label="Instagram profile"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -152,7 +152,7 @@ function SocialLinks({ social }: { social: MzalendoMember['socialMedia'] }) {
           href={social.website}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
           aria-label="Official website"
         >
           <Globe className="h-3.5 w-3.5" />
@@ -180,7 +180,7 @@ function VoteRecordSection({ member }: { member: MzalendoMember }) {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full mt-2 h-8 text-xs gap-1.5 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 justify-start px-2"
+          className="w-full mt-2 h-8 text-xs gap-1.5 text-stone-600 dark:text-stone-300 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:hover:text-stone-100 justify-start px-2"
         >
           <Vote className="h-3.5 w-3.5" />
           Vote Record
@@ -188,15 +188,15 @@ function VoteRecordSection({ member }: { member: MzalendoMember }) {
         </Button>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-2 space-y-3 p-3 bg-stone-50 dark:bg-stone-900 rounded-lg border border-stone-100 dark:border-stone-800">
+        <div className="mt-2 space-y-3 p-3 bg-stone-50 dark:bg-stone-800 dark:bg-stone-900 rounded-lg border border-stone-100 dark:border-stone-800">
           {/* Stats */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <Vote className="h-3.5 w-3.5 text-stone-500" />
-                <span className="text-xs font-medium text-stone-600 dark:text-stone-400">Total Votes</span>
+                <Vote className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" />
+                <span className="text-xs font-medium text-stone-600 dark:text-stone-300 dark:text-stone-400">Total Votes</span>
               </div>
-              <span className="text-sm font-bold text-stone-800 dark:text-stone-200">{record.totalVotes}</span>
+              <span className="text-sm font-bold text-stone-800 dark:text-stone-100 dark:text-stone-200">{record.totalVotes}</span>
             </div>
             <Badge variant="outline" className={`text-xs ${getAttendanceBadgeClass(record.attendanceRate)}`}>
               {record.attendanceRate}% attendance
@@ -227,7 +227,7 @@ function VoteRecordSection({ member }: { member: MzalendoMember }) {
                 >
                   <span className="mt-0.5 shrink-0">{getVoteIcon(bill.vote)}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-stone-700 dark:text-stone-300 leading-snug truncate">
+                    <p className="text-stone-700 dark:text-stone-200 dark:text-stone-300 leading-snug truncate">
                       {bill.billTitle}
                     </p>
                     <p className="text-stone-400 dark:text-stone-500 mt-0.5">
@@ -262,7 +262,7 @@ function MemberCard({ member }: { member: MzalendoMember }) {
           <div className="flex items-center gap-2 min-w-0">
             <GenderIcon gender={member.gender} />
             <div className="min-w-0">
-              <CardTitle className="text-sm font-bold leading-tight text-stone-900 dark:text-stone-100 truncate">
+              <CardTitle className="text-sm font-bold leading-tight text-stone-900 dark:text-stone-50 dark:text-stone-100 truncate">
                 {member.name}
               </CardTitle>
               <CardDescription className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 leading-snug">
@@ -294,7 +294,7 @@ function MemberCard({ member }: { member: MzalendoMember }) {
             {member.party}
           </Badge>
           {member.coalition && (
-            <Badge variant="outline" className={`text-xs ${COALITION_COLORS[member.coalition] || 'bg-gray-100 text-gray-700 border-gray-300'}`}>
+            <Badge variant="outline" className={`text-xs ${COALITION_COLORS[member.coalition] || 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600'}`}>
               <span className={`inline-block h-2 w-2 rounded-full mr-1 ${COALITION_DOT_COLORS[member.coalition] || 'bg-gray-500'}`} />
               {coalitionLabel}
             </Badge>
@@ -347,7 +347,7 @@ function StatisticsPanel({ members }: { members: MzalendoMember[] }) {
   return (
     <Card className="border-stone-200 dark:border-stone-700 dark:bg-stone-900">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-bold flex items-center gap-2 text-stone-900 dark:text-stone-100">
+        <CardTitle className="text-sm font-bold flex items-center gap-2 text-stone-900 dark:text-stone-50 dark:text-stone-100">
           <BarChart3 className="h-4 w-4 text-emerald-600" />
           Overview Statistics
         </CardTitle>
@@ -361,7 +361,7 @@ function StatisticsPanel({ members }: { members: MzalendoMember[] }) {
           <div className="text-center space-y-1">
             <div className="flex items-center justify-center gap-1.5">
               <Users className="h-4 w-4 text-stone-400" />
-              <span className="text-2xl font-bold text-stone-900 dark:text-stone-100">{totalMembers}</span>
+              <span className="text-2xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{totalMembers}</span>
             </div>
             <p className="text-xs text-stone-500 dark:text-stone-400">Total Members</p>
           </div>
@@ -389,7 +389,7 @@ function StatisticsPanel({ members }: { members: MzalendoMember[] }) {
                 return (
                   <span key={name} className="flex items-center gap-0.5 text-xs">
                     <span className={`h-2 w-2 rounded-full ${color}`} />
-                    <span className="font-semibold text-stone-700 dark:text-stone-300">{count}</span>
+                    <span className="font-semibold text-stone-700 dark:text-stone-200 dark:text-stone-300">{count}</span>
                     <span className="text-stone-400 dark:text-stone-500">{label}</span>
                   </span>
                 );
@@ -532,7 +532,7 @@ export default function MzalendoPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
           <GraduationCap className="h-5 w-5 text-emerald-600" />
           Mzalendo Parliament Profiles
         </h2>
@@ -548,12 +548,12 @@ export default function MzalendoPage() {
       <Card className="border-stone-200 dark:border-stone-700 dark:bg-stone-900">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-stone-800 dark:text-stone-200">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-stone-800 dark:text-stone-100 dark:text-stone-200">
               <Filter className="h-4 w-4 text-emerald-600" />
               Filters
             </CardTitle>
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200" onClick={clearFilters}>
+              <Button variant="ghost" size="sm" className="h-7 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200 dark:text-stone-400 dark:hover:text-stone-200" onClick={clearFilters}>
                 Clear all
               </Button>
             )}

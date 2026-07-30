@@ -9,4 +9,4 @@ export type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'sch
   | 'stories' | 'cbef' | 'redflags' | 'embed'
   | 'leadership' | 'projects' | 'mzalendo' | 'securetip' | 'compareEnhanced'
   | 'rankings' | 'milestones' | 'fycomparison'
-  | 'representatives';
+  | 'representatives' | 'reports' | 'hansard' | 'cecm';

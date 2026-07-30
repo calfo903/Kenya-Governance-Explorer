@@ -31,7 +31,7 @@ const CATEGORY_CONFIG: Record<EventCategory, { label: string; color: string; bg:
   budget: { label: 'Budget', color: 'text-amber-700', bg: 'bg-amber-100 border-amber-200', icon: <BarChart3 className="h-3.5 w-3.5 text-amber-600" /> },
   legislation: { label: 'Legislation', color: 'text-purple-700', bg: 'bg-purple-100 border-purple-200', icon: <Scale className="h-3.5 w-3.5 text-purple-600" /> },
   anticorruption: { label: 'Anti-Corruption', color: 'text-red-700', bg: 'bg-red-100 border-red-200', icon: <Shield className="h-3.5 w-3.5 text-red-600" /> },
-  devolution: { label: 'Devolution', color: 'text-slate-700', bg: 'bg-slate-100 border-slate-200', icon: <Landmark className="h-3.5 w-3.5 text-slate-600" /> },
+  devolution: { label: 'Devolution', color: 'text-slate-700 dark:text-slate-200', bg: 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', icon: <Landmark className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" /> },
 };
 
 const TIMELINE_EVENTS: TimelineEvent[] = [
@@ -137,11 +137,11 @@ export default function TimelinePage() {
       </div>
 
       {/* Filters */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardContent className="py-3 px-4">
           <div className="flex flex-col md:flex-row gap-3">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="h-9 w-44 text-xs border-stone-200"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-44 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
@@ -150,7 +150,7 @@ export default function TimelinePage() {
               </SelectContent>
             </Select>
             <Select value={yearFilter} onValueChange={setYearFilter}>
-              <SelectTrigger className="h-9 w-32 text-xs border-stone-200"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-32 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {years.map(y => (
                   <SelectItem key={y} value={y}>{y === 'all' ? 'All Years' : y}</SelectItem>
@@ -159,7 +159,7 @@ export default function TimelinePage() {
             </Select>
             <div className="flex flex-wrap gap-1.5 ml-auto">
               {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
-                <Badge key={key} variant="outline" className="text-[9px] gap-1 h-5 cursor-pointer hover:bg-stone-50" onClick={() => setCategoryFilter(categoryFilter === key ? 'all' : key)}>
+                <Badge key={key} variant="outline" className="text-[9px] gap-1 h-5 cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800" onClick={() => setCategoryFilter(categoryFilter === key ? 'all' : key)}>
                   {cfg.icon} {cfg.label}
                 </Badge>
               ))}
@@ -177,12 +177,12 @@ export default function TimelinePage() {
               <div className="flex-1 h-px bg-stone-200" />
               <Badge variant="secondary" className="text-[10px] h-5">{events.length} events</Badge>
             </div>
-            <div className="ml-4 border-l-2 border-stone-200 pl-4 space-y-3">
+            <div className="ml-4 border-l-2 border-stone-200 dark:border-stone-700 pl-4 space-y-3">
               {events.map((event, i) => {
                 const cfg = CATEGORY_CONFIG[event.category];
                 const dateStr = new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                 return (
-                  <Card key={`${event.date}-${i}`} className="border-stone-200 bg-white hover:border-slate-300 transition-colors">
+                  <Card key={`${event.date}-${i}`} className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-slate-300 transition-colors">
                     <CardContent className="py-3 px-4">
                       <div className="flex flex-col md:flex-row md:items-start gap-3">
                         <div className="flex-1 min-w-0">
@@ -190,8 +190,8 @@ export default function TimelinePage() {
                             <Badge className={`text-[9px] h-5 ${cfg.bg}`}>{cfg.icon} {cfg.label}</Badge>
                             <span className="text-[10px] text-stone-400">{dateStr}</span>
                           </div>
-                          <p className="text-xs font-bold text-slate-800">{event.title}</p>
-                          <p className="text-[11px] text-stone-600 mt-1 leading-relaxed">{event.description}</p>
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{event.title}</p>
+                          <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">{event.description}</p>
                           {event.source && (
                             <div className="flex items-center gap-1.5 mt-2">
                               {event.sourceUrl ? (
@@ -199,7 +199,7 @@ export default function TimelinePage() {
                                   <ExternalLink className="h-3 w-3" /> {event.source}
                                 </a>
                               ) : (
-                                <span className="text-[10px] text-stone-500 flex items-center gap-1">
+                                <span className="text-[10px] text-stone-500 dark:text-stone-400 flex items-center gap-1">
                                   <BookOpen className="h-3 w-3" /> Source: {event.source}
                                 </span>
                               )}

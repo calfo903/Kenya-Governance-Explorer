@@ -65,16 +65,16 @@ interface Milestone {
 
 const TYPE_CONFIG: Record<MilestoneType, { label: string; color: string; bg: string; border: string; dot: string }> = {
   constitutional: { label: 'Constitutional', color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-300', dot: 'bg-purple-500' },
-  legislative: { label: 'Legislative', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-300', dot: 'bg-blue-500' },
-  fiscal: { label: 'Fiscal', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-300', dot: 'bg-amber-500' },
-  political: { label: 'Political', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-300', dot: 'bg-emerald-500' },
-  crisis: { label: 'Crisis', color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-300', dot: 'bg-red-500' },
+  legislative: { label: 'Legislative', color: 'text-blue-700', bg: 'bg-blue-50 dark:bg-blue-950', border: 'border-blue-300', dot: 'bg-blue-500' },
+  fiscal: { label: 'Fiscal', color: 'text-amber-700', bg: 'bg-amber-50 dark:bg-amber-950', border: 'border-amber-300', dot: 'bg-amber-500' },
+  political: { label: 'Political', color: 'text-emerald-700', bg: 'bg-emerald-50 dark:bg-emerald-950', border: 'border-emerald-300', dot: 'bg-emerald-500' },
+  crisis: { label: 'Crisis', color: 'text-red-700', bg: 'bg-red-50 dark:bg-red-950', border: 'border-red-300', dot: 'bg-red-500' },
 };
 
 const IMPACT_CONFIG: Record<ImpactLevel, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
   high: { label: 'High Impact', variant: 'default', className: 'bg-stone-900 text-white hover:bg-stone-800' },
   medium: { label: 'Medium Impact', variant: 'secondary', className: 'bg-amber-100 text-amber-800 hover:bg-amber-200' },
-  low: { label: 'Low Impact', variant: 'outline', className: 'border-stone-300 text-stone-600' },
+  low: { label: 'Low Impact', variant: 'outline', className: 'border-stone-300 text-stone-600 dark:text-stone-300' },
 };
 
 // ── Milestone Data ─────────────────────────────────────────────────
@@ -309,15 +309,15 @@ export default function DevolutionMilestonesPage() {
       {/* ── Page Header ── */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-stone-900 flex items-center gap-2">
+          <h2 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50 flex items-center gap-2">
             <Landmark className="h-6 w-6 text-emerald-600" />
             Devolution Milestones Tracker
           </h2>
-          <p className="text-sm text-stone-500 mt-1">
+          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
             Tracking Kenya&apos;s devolution journey from the 2010 Constitution to present day
           </p>
         </div>
-        <Badge variant="outline" className="w-fit text-xs border-stone-300 text-stone-600">
+        <Badge variant="outline" className="w-fit text-xs border-stone-300 text-stone-600 dark:text-stone-300">
           <Clock className="h-3 w-3 mr-1" />
           2010 — 2026
         </Badge>
@@ -327,7 +327,7 @@ export default function DevolutionMilestonesPage() {
 
       {/* ── Progress Dashboard ── */}
       <section>
-        <h3 className="text-lg font-semibold text-stone-800 mb-3 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-100 mb-3 flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-emerald-600" />
           Devolution Progress Dashboard
         </h3>
@@ -354,7 +354,7 @@ export default function DevolutionMilestonesPage() {
             negative
           />
           <DashboardCard
-            icon={<TrendingUp className="h-4 w-4 text-stone-600" />}
+            icon={<TrendingUp className="h-4 w-4 text-stone-600 dark:text-stone-300" />}
             label="Avg Budget Absorption"
             value="54%"
             subValue="Dev expenditure"
@@ -382,7 +382,7 @@ export default function DevolutionMilestonesPage() {
       {/* ── Interactive Timeline ── */}
       <section>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h3 className="text-lg font-semibold text-stone-800 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-100 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-emerald-600" />
             Devolution Timeline
           </h3>
@@ -456,10 +456,10 @@ export default function DevolutionMilestonesPage() {
                                   {typeConf.label}
                                 </Badge>
                               </div>
-                              <h4 className="text-sm font-semibold text-stone-800 leading-snug">
+                              <h4 className="text-sm font-semibold text-stone-800 dark:text-stone-100 leading-snug">
                                 {milestone.title}
                               </h4>
-                              <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
                                 {milestone.description}
                               </p>
                             </div>
@@ -475,8 +475,8 @@ export default function DevolutionMilestonesPage() {
 
                         {/* Expanded details */}
                         {isExpanded && (
-                          <div className="mt-3 pt-3 border-t border-stone-200">
-                            <p className="text-xs text-stone-600 leading-relaxed">
+                          <div className="mt-3 pt-3 border-t border-stone-200 dark:border-stone-700">
+                            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
                               {milestone.details}
                             </p>
                           </div>
@@ -495,7 +495,7 @@ export default function DevolutionMilestonesPage() {
 
       {/* ── Charts Section ── */}
       <section>
-        <h3 className="text-lg font-semibold text-stone-800 mb-3 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-100 mb-3 flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-emerald-600" />
           Data & Trends
         </h3>
@@ -503,10 +503,10 @@ export default function DevolutionMilestonesPage() {
           {/* Audit Trend Chart */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-stone-800">
+              <CardTitle className="text-sm font-semibold text-stone-800 dark:text-stone-100">
                 3-Year County Audit Opinion Trends
               </CardTitle>
-              <CardDescription className="text-xs text-stone-500">
+              <CardDescription className="text-xs text-stone-500 dark:text-stone-400">
                 OAG audit opinions by category (FY 2022/23 – FY 2024/25)
               </CardDescription>
             </CardHeader>
@@ -573,10 +573,10 @@ export default function DevolutionMilestonesPage() {
           {/* Funding Trend Chart */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-stone-800">
+              <CardTitle className="text-sm font-semibold text-stone-800 dark:text-stone-100">
                 Equitable Share Disbursement Trend
               </CardTitle>
-              <CardDescription className="text-xs text-stone-500">
+              <CardDescription className="text-xs text-stone-500 dark:text-stone-400">
                 County equitable share in KSh Billions (FY 2013/14 – FY 2024/25)
               </CardDescription>
             </CardHeader>
@@ -625,7 +625,7 @@ export default function DevolutionMilestonesPage() {
 
       {/* ── Key Statistics ── */}
       <section>
-        <h3 className="text-lg font-semibold text-stone-800 mb-3 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-100 mb-3 flex items-center gap-2">
           <Star className="h-4 w-4 text-amber-500" />
           Key Devolution Statistics
         </h3>
@@ -660,28 +660,28 @@ export default function DevolutionMilestonesPage() {
             value="3,200+"
             description="Estimated number of active and concluded court cases involving county governments, including procurement disputes and employment matters."
           />
-          <Card className="border-stone-200">
+          <Card className="border-stone-200 dark:border-stone-700">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Landmark className="h-5 w-5 text-stone-600" />
-                <span className="text-xs font-medium text-stone-500">Elected Representatives</span>
+                <Landmark className="h-5 w-5 text-stone-600 dark:text-stone-300" />
+                <span className="text-xs font-medium text-stone-500 dark:text-stone-400">Elected Representatives</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-2 rounded-lg bg-stone-50">
-                  <div className="text-lg font-bold text-stone-800">47</div>
-                  <div className="text-[10px] text-stone-500">Senators</div>
+                <div className="text-center p-2 rounded-lg bg-stone-50 dark:bg-stone-800">
+                  <div className="text-lg font-bold text-stone-800 dark:text-stone-100">47</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Senators</div>
                 </div>
-                <div className="text-center p-2 rounded-lg bg-stone-50">
-                  <div className="text-lg font-bold text-stone-800">47</div>
-                  <div className="text-[10px] text-stone-500">Women Reps</div>
+                <div className="text-center p-2 rounded-lg bg-stone-50 dark:bg-stone-800">
+                  <div className="text-lg font-bold text-stone-800 dark:text-stone-100">47</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Women Reps</div>
                 </div>
-                <div className="text-center p-2 rounded-lg bg-stone-50">
-                  <div className="text-lg font-bold text-stone-800">290</div>
-                  <div className="text-[10px] text-stone-500">MPs (NA)</div>
+                <div className="text-center p-2 rounded-lg bg-stone-50 dark:bg-stone-800">
+                  <div className="text-lg font-bold text-stone-800 dark:text-stone-100">290</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">MPs (NA)</div>
                 </div>
-                <div className="text-center p-2 rounded-lg bg-stone-50">
-                  <div className="text-lg font-bold text-stone-800">1,450</div>
-                  <div className="text-[10px] text-stone-500">MCAs</div>
+                <div className="text-center p-2 rounded-lg bg-stone-50 dark:bg-stone-800">
+                  <div className="text-lg font-bold text-stone-800 dark:text-stone-100">1,450</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">MCAs</div>
                 </div>
               </div>
             </CardContent>
@@ -699,10 +699,10 @@ export default function DevolutionMilestonesPage() {
               <BookOpen className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-stone-800 mb-2">
+              <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-100 mb-2">
                 16 Years of Devolution: A Summary
               </h3>
-              <p className="text-xs text-stone-600 leading-relaxed">
+              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
                 Since the promulgation of the 2010 Constitution, Kenya has made significant strides in devolution.
                 All 47 counties are operational with elected leadership and functional assemblies. Over KSh 3.77 trillion
                 has been disbursed to counties, funding healthcare, infrastructure, agriculture, and local governance.
@@ -742,14 +742,14 @@ function DashboardCard({
     ? 'text-emerald-700'
     : negative
       ? 'text-red-700'
-      : 'text-stone-800';
+      : 'text-stone-800 dark:text-stone-100';
 
   return (
-    <Card className="border-stone-200">
+    <Card className="border-stone-200 dark:border-stone-700">
       <CardContent className="p-3">
         <div className="flex items-center gap-1.5 mb-1.5">
           {icon}
-          <span className="text-[10px] font-medium text-stone-500 leading-tight">
+          <span className="text-[10px] font-medium text-stone-500 dark:text-stone-400 leading-tight">
             {label}
           </span>
         </div>
@@ -774,14 +774,14 @@ function StatCard({
   description: string;
 }) {
   return (
-    <Card className="border-stone-200">
+    <Card className="border-stone-200 dark:border-stone-700">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-2">
           {icon}
-          <span className="text-xs font-medium text-stone-500">{label}</span>
+          <span className="text-xs font-medium text-stone-500 dark:text-stone-400">{label}</span>
         </div>
-        <div className="text-xl font-bold text-stone-800 mb-1">{value}</div>
-        <p className="text-[11px] text-stone-500 leading-relaxed">{description}</p>
+        <div className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-1">{value}</div>
+        <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">{description}</p>
       </CardContent>
     </Card>
   );

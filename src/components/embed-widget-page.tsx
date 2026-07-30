@@ -39,7 +39,7 @@ export default function EmbedWidgetPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
           <Code2 className="h-5 w-5 text-indigo-600" /> Embeddable County Widgets
         </h2>
         <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
@@ -103,24 +103,24 @@ export default function EmbedWidgetPage() {
             <CardDescription className="text-xs">Widget appearance on your site</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-600 rounded-xl p-4 mx-auto max-w-[320px]">
+            <div className="bg-white dark:bg-stone-900 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 dark:border-stone-600 rounded-xl p-4 mx-auto max-w-[320px]">
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                   <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-stone-900 dark:text-stone-100">{governor?.name || 'Governor'}</p>
+                  <p className="text-xs font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{governor?.name || 'Governor'}</p>
                   <p className="text-[10px] text-stone-500 dark:text-stone-400">{governor?.county} County</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-center mb-3">
-                <div className="bg-stone-50 dark:bg-stone-700 rounded-lg p-2">
+                <div className="bg-stone-50 dark:bg-stone-800 dark:bg-stone-700 rounded-lg p-2">
                   <p className="text-[10px] text-stone-500 dark:text-stone-400">Population</p>
-                  <p className="text-sm font-bold text-stone-800 dark:text-stone-200">{governor?.population.toLocaleString()}</p>
+                  <p className="text-sm font-bold text-stone-800 dark:text-stone-100 dark:text-stone-200">{governor?.population.toLocaleString()}</p>
                 </div>
-                <div className="bg-stone-50 dark:bg-stone-700 rounded-lg p-2">
+                <div className="bg-stone-50 dark:bg-stone-800 dark:bg-stone-700 rounded-lg p-2">
                   <p className="text-[10px] text-stone-500 dark:text-stone-400">Wards</p>
-                  <p className="text-sm font-bold text-stone-800 dark:text-stone-200">{governor?.wardsCount}</p>
+                  <p className="text-sm font-bold text-stone-800 dark:text-stone-100 dark:text-stone-200">{governor?.wardsCount}</p>
                 </div>
               </div>
               <div className="space-y-1.5">

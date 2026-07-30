@@ -48,15 +48,15 @@ export default function CoalitionComparisonPage() {
   }, []);
 
   const colorClasses: Record<string, { bg: string; text: string; border: string; lightBg: string }> = {
-    yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-200', border: 'border-yellow-200 dark:border-yellow-700', lightBg: 'bg-yellow-50 dark:bg-yellow-900/20' },
-    blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-200', border: 'border-blue-200 dark:border-blue-700', lightBg: 'bg-blue-50 dark:bg-blue-900/20' },
-    stone: { bg: 'bg-stone-100 dark:bg-stone-800', text: 'text-stone-700 dark:text-stone-300', border: 'border-stone-200 dark:border-stone-600', lightBg: 'bg-stone-50 dark:bg-stone-800' },
+    yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-200', border: 'border-yellow-200 dark:border-yellow-700', lightBg: 'bg-yellow-50 dark:bg-yellow-950 dark:bg-yellow-900/20' },
+    blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-200', border: 'border-blue-200 dark:border-blue-700', lightBg: 'bg-blue-50 dark:bg-blue-950 dark:bg-blue-900/20' },
+    stone: { bg: 'bg-stone-100 dark:bg-stone-700 dark:bg-stone-800', text: 'text-stone-700 dark:text-stone-200 dark:text-stone-300', border: 'border-stone-200 dark:border-stone-700 dark:border-stone-600', lightBg: 'bg-stone-50 dark:bg-stone-800' },
   };
 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
           <GitCompare className="h-5 w-5 text-emerald-600" /> Coalition Performance Comparison
         </h2>
         <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
@@ -132,7 +132,7 @@ export default function CoalitionComparisonPage() {
                       { label: 'Adverse/Disclaimer', pct: c.coalition === 'Kenya Kwanza Alliance' ? 16 : 11 },
                     ].map(item => (
                       <div key={item.label} className="flex items-center gap-2 text-[10px]">
-                        <span className="w-24 text-stone-600 dark:text-stone-400">{item.label}</span>
+                        <span className="w-24 text-stone-600 dark:text-stone-300 dark:text-stone-400">{item.label}</span>
                         <div className="flex-1 h-2 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${item.label === 'Clean Audits' ? 'bg-green-500' : item.label === 'Qualified' ? 'bg-yellow-500' : 'bg-red-500'}`}
                             style={{ width: `${item.pct}%` }} />
@@ -165,12 +165,12 @@ export default function CoalitionComparisonPage() {
             {[
               { name: 'Kenya Kwanza', rate: 48, color: 'bg-yellow-500', text: 'text-yellow-700 dark:text-yellow-400' },
               { name: 'Azimio', rate: 42, color: 'bg-blue-500', text: 'text-blue-700 dark:text-blue-400' },
-              { name: 'Independent', rate: 52, color: 'bg-stone-500', text: 'text-stone-700 dark:text-stone-400' },
+              { name: 'Independent', rate: 52, color: 'bg-stone-500', text: 'text-stone-700 dark:text-stone-200 dark:text-stone-400' },
               { name: 'National Avg', rate: latestBudget.avgDevelopmentAbsorption, color: 'bg-red-500', text: 'text-red-700 dark:text-red-400' },
             ].map(item => (
               <div key={item.name} className="flex items-center gap-3">
-                <span className="text-xs text-stone-600 dark:text-stone-400 w-24">{item.name}</span>
-                <div className="flex-1 h-4 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                <span className="text-xs text-stone-600 dark:text-stone-300 dark:text-stone-400 w-24">{item.name}</span>
+                <div className="flex-1 h-4 bg-stone-100 dark:bg-stone-700 dark:bg-stone-800 rounded-full overflow-hidden">
                   <div className={`h-full ${item.color} rounded-full flex items-center justify-end pr-2 transition-all`}
                     style={{ width: `${Math.max(item.rate, 5)}%` }}>
                     <span className="text-[10px] font-bold text-white">{item.rate}%</span>

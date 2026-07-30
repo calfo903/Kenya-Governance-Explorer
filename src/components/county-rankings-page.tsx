@@ -78,21 +78,21 @@ function getTier(score: number): TierKey {
 }
 
 const TIER_CONFIG: Record<TierKey, { label: string; color: string; bg: string; border: string; text: string; desc: string }> = {
-  S: { label: 'S Tier', color: 'bg-emerald-100 text-emerald-800 border-emerald-300', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', desc: 'Top Performers (80+)' },
-  A: { label: 'A Tier', color: 'bg-blue-100 text-blue-800 border-blue-300', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', desc: 'Good (60-79)' },
-  B: { label: 'B Tier', color: 'bg-amber-100 text-amber-800 border-amber-300', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', desc: 'Average (40-59)' },
-  C: { label: 'C Tier', color: 'bg-orange-100 text-orange-800 border-orange-300', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', desc: 'Below Average (20-39)' },
-  D: { label: 'D Tier', color: 'bg-red-100 text-red-800 border-red-300', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', desc: 'Poor Performers (<20)' },
+  S: { label: 'S Tier', color: 'bg-emerald-100 text-emerald-800 border-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-950', border: 'border-emerald-200', text: 'text-emerald-700', desc: 'Top Performers (80+)' },
+  A: { label: 'A Tier', color: 'bg-blue-100 text-blue-800 border-blue-300', bg: 'bg-blue-50 dark:bg-blue-950', border: 'border-blue-200', text: 'text-blue-700', desc: 'Good (60-79)' },
+  B: { label: 'B Tier', color: 'bg-amber-100 text-amber-800 border-amber-300', bg: 'bg-amber-50 dark:bg-amber-950', border: 'border-amber-200', text: 'text-amber-700', desc: 'Average (40-59)' },
+  C: { label: 'C Tier', color: 'bg-orange-100 text-orange-800 border-orange-300', bg: 'bg-orange-50 dark:bg-orange-950', border: 'border-orange-200', text: 'text-orange-700', desc: 'Below Average (20-39)' },
+  D: { label: 'D Tier', color: 'bg-red-100 text-red-800 border-red-300', bg: 'bg-red-50 dark:bg-red-950', border: 'border-red-200', text: 'text-red-700', desc: 'Poor Performers (<20)' },
 };
 
 function getAuditBadgeColor(opinion: AuditOpinion | null): string {
-  if (!opinion) return 'bg-gray-100 text-gray-500 border-gray-300';
+  if (!opinion) return 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600';
   switch (opinion) {
     case AUDIT_OPINIONS.UNMODIFIED: return 'bg-emerald-100 text-emerald-800 border-emerald-300';
     case AUDIT_OPINIONS.QUALIFIED: return 'bg-amber-100 text-amber-800 border-amber-300';
     case AUDIT_OPINIONS.ADVERSE: return 'bg-orange-100 text-orange-800 border-orange-300';
     case AUDIT_OPINIONS.DISCLAIMER: return 'bg-red-100 text-red-800 border-red-300';
-    default: return 'bg-gray-100 text-gray-500 border-gray-300';
+    default: return 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600';
   }
 }
 
@@ -109,10 +109,10 @@ function getScoreBadgeColor(score: number): string {
 function CustomChartTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string; color?: string }>; label?: string }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-lg">
-      <p className="text-[11px] font-semibold text-stone-700">{label}</p>
+    <div className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 shadow-lg">
+      <p className="text-[11px] font-semibold text-stone-700 dark:text-stone-200">{label}</p>
       {payload.map((entry, i) => (
-        <p key={i} className="text-[11px] text-stone-600">
+        <p key={i} className="text-[11px] text-stone-600 dark:text-stone-300">
           <span style={{ color: entry.color }}>●</span>{' '}
           {entry.name}: <span className="font-semibold">{typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}</span>
         </p>
@@ -263,15 +263,15 @@ export default function CountyRankingsPage() {
     <TooltipProvider delayDuration={200}>
     <div className="min-h-screen bg-stone-50/50">
       {/* Header */}
-      <div className="border-b border-stone-200 bg-white px-4 py-6 sm:px-6 lg:px-8">
+      <div className="border-b border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="flex items-center gap-2 text-xl font-bold text-stone-900 sm:text-2xl">
+              <h1 className="flex items-center gap-2 text-xl font-bold text-stone-900 dark:text-stone-50 sm:text-2xl">
                 <Trophy className="h-6 w-6 text-amber-500" />
                 County Governance Rankings
               </h1>
-              <p className="mt-1 text-xs text-stone-500 sm:text-sm">
+              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 sm:text-sm">
                 Composite scoring of all 47 counties — FY 2024/25 | Audit, Budget Absorption & Own-Source Revenue
               </p>
             </div>
@@ -288,13 +288,13 @@ export default function CountyRankingsPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Scoring Formula Card */}
-        <Card className="mb-6 border-stone-200 bg-white">
+        <Card className="mb-6 border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <Star className="h-4 w-4 text-amber-500" />
-              <h3 className="text-sm font-semibold text-stone-800">Composite Scoring Formula</h3>
+              <h3 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Composite Scoring Formula</h3>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-stone-600 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-stone-600 dark:text-stone-300 sm:grid-cols-4">
               <div className="flex items-center gap-1.5">
                 <Shield className="h-3 w-3 text-emerald-600" />
                 <span><strong>30%</strong> Audit Opinion</span>
@@ -324,7 +324,7 @@ export default function CountyRankingsPage() {
               placeholder="Search county, governor, party..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-md border border-stone-200 bg-white pl-9 pr-3 text-sm text-stone-700 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-300"
+              className="h-9 w-full rounded-md border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 pl-9 pr-3 text-sm text-stone-700 dark:text-stone-200 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-300"
             />
           </div>
           <div className="flex gap-2">
@@ -358,7 +358,7 @@ export default function CountyRankingsPage() {
 
         {/* Main Tabs: Rankings + Charts */}
         <Tabs defaultValue="rankings" className="space-y-6">
-          <TabsList className="bg-stone-100">
+          <TabsList className="bg-stone-100 dark:bg-stone-700">
             <TabsTrigger value="rankings" className="text-xs gap-1.5">
               <Award className="h-3.5 w-3.5" />Tier Rankings
             </TabsTrigger>
@@ -370,14 +370,14 @@ export default function CountyRankingsPage() {
           {/* ═══════════ TIER RANKINGS TAB ═══════════ */}
           <TabsContent value="rankings" className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-stone-500">
+              <p className="text-xs text-stone-500 dark:text-stone-400">
                 Showing {filteredScores.length} of 47 counties
                 {regionFilter !== 'all' && ` in ${regionFilter}`}
               </p>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-380px)] min-h-[500px] rounded-lg border border-stone-200 bg-white">
-              <div className="divide-y divide-stone-100">
+            <ScrollArea className="h-[calc(100vh-380px)] min-h-[500px] rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
+              <div className="divide-y divide-stone-100 dark:divide-stone-800">
                 {filteredScores.map((county) => {
                   const tier = getTier(county.compositeScore);
                   const tc = TIER_CONFIG[tier];
@@ -408,10 +408,10 @@ export default function CountyRankingsPage() {
                         {/* County Info */}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="truncate text-sm font-semibold text-stone-800">{county.countyName}</span>
+                            <span className="truncate text-sm font-semibold text-stone-800 dark:text-stone-100">{county.countyName}</span>
                             <span className="hidden text-[10px] text-stone-400 sm:inline">{county.countyCode}</span>
                           </div>
-                          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-stone-500">
+                          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400">
                             <span className="truncate">{county.governor}</span>
                             <span className="hidden sm:inline text-stone-300">•</span>
                             <span className="hidden sm:inline">{county.party}</span>
@@ -461,63 +461,63 @@ export default function CountyRankingsPage() {
                         <div className={`border-t ${tc.border} px-4 pb-4 pt-3 sm:px-6`}>
                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             {/* Governor Card */}
-                            <div className="rounded-lg border border-stone-200 bg-white p-3">
+                            <div className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 p-3">
                               <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Governor</p>
-                              <p className="mt-1 text-sm font-semibold text-stone-800">{county.governor}</p>
+                              <p className="mt-1 text-sm font-semibold text-stone-800 dark:text-stone-100">{county.governor}</p>
                               <div className="mt-1.5 flex flex-wrap gap-1">
                                 <Badge variant="outline" className="text-[10px]">{county.party}</Badge>
-                                <Badge variant="outline" className="text-[10px] text-stone-500">{county.coalition}</Badge>
+                                <Badge variant="outline" className="text-[10px] text-stone-500 dark:text-stone-400">{county.coalition}</Badge>
                               </div>
                             </div>
 
                             {/* Audit Opinion */}
-                            <div className="rounded-lg border border-stone-200 bg-white p-3">
+                            <div className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 p-3">
                               <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Audit Opinion (FY 2024/25)</p>
                               <div className="mt-1.5">
                                 <Badge variant="outline" className={`${getAuditBadgeColor(county.auditOpinion)} text-xs font-semibold`}>
                                   {county.auditOpinion ?? 'Not Available'}
                                 </Badge>
                               </div>
-                              <p className="mt-1 text-[11px] text-stone-500">Score: <strong>{county.auditScore}/100</strong></p>
+                              <p className="mt-1 text-[11px] text-stone-500 dark:text-stone-400">Score: <strong>{county.auditScore}/100</strong></p>
                             </div>
 
                             {/* Budget */}
-                            <div className="rounded-lg border border-stone-200 bg-white p-3">
+                            <div className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 p-3">
                               <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Budget FY 2024/25</p>
-                              <p className="mt-1 text-sm font-semibold text-stone-800">KSh {county.totalBudget.toFixed(1)}B</p>
-                              <p className="mt-1 text-[11px] text-stone-500">Own-Source: KSh {(county.ownSourceRevenue / 1000).toFixed(1)}B</p>
-                              <p className="text-[11px] text-stone-500">Pending Bills: KSh {(county.pendingBills / 1000).toFixed(1)}B</p>
+                              <p className="mt-1 text-sm font-semibold text-stone-800 dark:text-stone-100">KSh {county.totalBudget.toFixed(1)}B</p>
+                              <p className="mt-1 text-[11px] text-stone-500 dark:text-stone-400">Own-Source: KSh {(county.ownSourceRevenue / 1000).toFixed(1)}B</p>
+                              <p className="text-[11px] text-stone-500 dark:text-stone-400">Pending Bills: KSh {(county.pendingBills / 1000).toFixed(1)}B</p>
                             </div>
 
                             {/* All Scores Breakdown */}
-                            <div className="rounded-lg border border-stone-200 bg-white p-3">
+                            <div className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 p-3">
                               <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Score Breakdown</p>
                               <div className="mt-2 space-y-2">
                                 <div>
                                   <div className="flex justify-between text-[11px]">
-                                    <span className="text-stone-600">Audit (30%)</span>
-                                    <span className="font-semibold text-stone-800">{county.auditScore}</span>
+                                    <span className="text-stone-600 dark:text-stone-300">Audit (30%)</span>
+                                    <span className="font-semibold text-stone-800 dark:text-stone-100">{county.auditScore}</span>
                                   </div>
                                   <Progress value={county.auditScore} className="mt-0.5 h-1.5" />
                                 </div>
                                 <div>
                                   <div className="flex justify-between text-[11px]">
-                                    <span className="text-stone-600">Dev Absorption (30%)</span>
-                                    <span className="font-semibold text-stone-800">{county.devAbsorptionScore}%</span>
+                                    <span className="text-stone-600 dark:text-stone-300">Dev Absorption (30%)</span>
+                                    <span className="font-semibold text-stone-800 dark:text-stone-100">{county.devAbsorptionScore}%</span>
                                   </div>
                                   <Progress value={county.devAbsorptionScore} className="mt-0.5 h-1.5" />
                                 </div>
                                 <div>
                                   <div className="flex justify-between text-[11px]">
-                                    <span className="text-stone-600">Own-Source (20%)</span>
-                                    <span className="font-semibold text-stone-800">{county.ownSourceScore.toFixed(1)}</span>
+                                    <span className="text-stone-600 dark:text-stone-300">Own-Source (20%)</span>
+                                    <span className="font-semibold text-stone-800 dark:text-stone-100">{county.ownSourceScore.toFixed(1)}</span>
                                   </div>
                                   <Progress value={Math.min(county.ownSourceScore, 100)} className="mt-0.5 h-1.5" />
                                 </div>
                                 <div>
                                   <div className="flex justify-between text-[11px]">
-                                    <span className="text-stone-600">Recurrent Abs. (20%)</span>
-                                    <span className="font-semibold text-stone-800">{county.recurrentAbsorptionScore}%</span>
+                                    <span className="text-stone-600 dark:text-stone-300">Recurrent Abs. (20%)</span>
+                                    <span className="font-semibold text-stone-800 dark:text-stone-100">{county.recurrentAbsorptionScore}%</span>
                                   </div>
                                   <Progress value={county.recurrentAbsorptionScore} className="mt-0.5 h-1.5" />
                                 </div>
@@ -537,9 +537,9 @@ export default function CountyRankingsPage() {
           <TabsContent value="charts" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               {/* Top 10 Bar Chart */}
-              <Card className="border-stone-200">
+              <Card className="border-stone-200 dark:border-stone-700">
                 <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-100">
                     <Trophy className="h-4 w-4 text-amber-500" />
                     Top 10 Counties — Composite Score
                   </CardTitle>
@@ -563,9 +563,9 @@ export default function CountyRankingsPage() {
               </Card>
 
               {/* Bottom 10 Bar Chart */}
-              <Card className="border-stone-200">
+              <Card className="border-stone-200 dark:border-stone-700">
                 <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-100">
                     <AlertTriangle className="h-4 w-4 text-red-500" />
                     Bottom 10 Counties — Composite Score
                   </CardTitle>
@@ -589,9 +589,9 @@ export default function CountyRankingsPage() {
               </Card>
 
               {/* Radar Chart - Region Comparison */}
-              <Card className="border-stone-200">
+              <Card className="border-stone-200 dark:border-stone-700">
                 <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-100">
                     <RadarIcon className="h-4 w-4 text-blue-500" />
                     Regional Comparison — Avg Composite Score
                   </CardTitle>
@@ -618,9 +618,9 @@ export default function CountyRankingsPage() {
               </Card>
 
               {/* Pie Chart - Audit Opinion Distribution */}
-              <Card className="border-stone-200">
+              <Card className="border-stone-200 dark:border-stone-700">
                 <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-100">
                     <Shield className="h-4 w-4 text-emerald-500" />
                     Audit Opinion Distribution
                   </CardTitle>
@@ -648,7 +648,7 @@ export default function CountyRankingsPage() {
                       <Legend
                         verticalAlign="bottom"
                         iconType="circle"
-                        formatter={(value: string) => <span className="text-[11px] text-stone-600">{value}</span>}
+                        formatter={(value: string) => <span className="text-[11px] text-stone-600 dark:text-stone-300">{value}</span>}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -656,9 +656,9 @@ export default function CountyRankingsPage() {
               </Card>
 
               {/* Scatter Plot - Dev Absorption vs Own-Source Revenue */}
-              <Card className="border-stone-200 lg:col-span-2">
+              <Card className="border-stone-200 dark:border-stone-700 lg:col-span-2">
                 <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-100">
                     <CircleDot className="h-4 w-4 text-purple-500" />
                     Budget Absorption vs Own-Source Revenue
                   </CardTitle>
@@ -693,12 +693,12 @@ export default function CountyRankingsPage() {
                           if (!active || !payload?.length) return null;
                           const d = payload[0].payload;
                           return (
-                            <div className="rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-lg">
-                              <p className="text-[11px] font-semibold text-stone-700">{d.name}</p>
-                              <p className="text-[11px] text-stone-600">Dev Absorption: <strong>{d.x}%</strong></p>
-                              <p className="text-[11px] text-stone-600">Own-Source Score: <strong>{d.y.toFixed(1)}</strong></p>
-                              <p className="text-[11px] text-stone-600">Total Budget: <strong>KSh {d.z.toFixed(1)}B</strong></p>
-                              <p className="text-[11px] text-stone-600">Composite: <strong>{d.composite}</strong></p>
+                            <div className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 shadow-lg">
+                              <p className="text-[11px] font-semibold text-stone-700 dark:text-stone-200">{d.name}</p>
+                              <p className="text-[11px] text-stone-600 dark:text-stone-300">Dev Absorption: <strong>{d.x}%</strong></p>
+                              <p className="text-[11px] text-stone-600 dark:text-stone-300">Own-Source Score: <strong>{d.y.toFixed(1)}</strong></p>
+                              <p className="text-[11px] text-stone-600 dark:text-stone-300">Total Budget: <strong>KSh {d.z.toFixed(1)}B</strong></p>
+                              <p className="text-[11px] text-stone-600 dark:text-stone-300">Composite: <strong>{d.composite}</strong></p>
                             </div>
                           );
                         }}
@@ -719,7 +719,7 @@ export default function CountyRankingsPage() {
                     {(['S', 'A', 'B', 'C', 'D'] as TierKey[]).map(t => (
                       <div key={t} className="flex items-center gap-1.5">
                         <div className={`h-2.5 w-2.5 rounded-full ${t === 'S' ? 'bg-emerald-600' : t === 'A' ? 'bg-cyan-600' : t === 'B' ? 'bg-amber-600' : t === 'C' ? 'bg-orange-600' : 'bg-red-600'}`} />
-                        <span className="text-stone-600">{TIER_CONFIG[t].label}</span>
+                        <span className="text-stone-600 dark:text-stone-300">{TIER_CONFIG[t].label}</span>
                       </div>
                     ))}
                   </div>

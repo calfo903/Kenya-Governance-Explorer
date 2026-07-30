@@ -50,9 +50,9 @@ const SERVICE_DATA: ServiceMetric[] = [
 ];
 
 const SECTORS = [
-  { id: 'health', label: 'Health Facilities', icon: Heart, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20', bar: 'bg-red-500' },
-  { id: 'education', label: 'Classrooms Built', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20', bar: 'bg-blue-500' },
-  { id: 'roads', label: 'Roads (km)', icon: Wrench, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20', bar: 'bg-amber-500' },
+  { id: 'health', label: 'Health Facilities', icon: Heart, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950 dark:bg-red-900/20', bar: 'bg-red-500' },
+  { id: 'education', label: 'Classrooms Built', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950 dark:bg-blue-900/20', bar: 'bg-blue-500' },
+  { id: 'roads', label: 'Roads (km)', icon: Wrench, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950 dark:bg-amber-900/20', bar: 'bg-amber-500' },
   { id: 'water', label: 'Water Points', icon: Droplets, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-900/20', bar: 'bg-cyan-500' },
 ];
 
@@ -82,7 +82,7 @@ export default function ServiceDeliveryPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
             <Building2 className="h-5 w-5 text-blue-600" /> Service Delivery Tracker
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Infrastructure and service delivery metrics by sector — actual vs. CIDP targets</p>
@@ -111,7 +111,7 @@ export default function ServiceDeliveryPage() {
                   </div>
                   <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">{s.label}</span>
                 </div>
-                <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{pct}%</p>
+                <p className="text-2xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{pct}%</p>
                 <p className="text-[10px] text-stone-400 dark:text-stone-500">of CIDP target</p>
                 <Progress value={pct} className={`h-1.5 mt-2 [&>div]:${s.bar}`} />
               </div>
@@ -146,13 +146,13 @@ export default function ServiceDeliveryPage() {
                       <div className="flex items-center justify-between text-[10px] mb-1">
                         <div className="flex items-center gap-1.5">
                           <sec.icon className={`h-3 w-3 ${sec.color}`} />
-                          <span className="text-stone-600 dark:text-stone-400 font-medium">{sec.label}</span>
+                          <span className="text-stone-600 dark:text-stone-300 dark:text-stone-400 font-medium">{sec.label}</span>
                         </div>
-                        <span className="text-stone-500 dark:text-stone-500">
+                        <span className="text-stone-500 dark:text-stone-400 dark:text-stone-500">
                           {sec.actual.toLocaleString()} / {sec.target.toLocaleString()} {sec.unit} ({pct}%)
                         </span>
                       </div>
-                      <div className="h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-stone-100 dark:bg-stone-700 dark:bg-stone-800 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full ${sec.bar} transition-all`} style={{ width: `${pct}%` }} />
                       </div>
                     </div>

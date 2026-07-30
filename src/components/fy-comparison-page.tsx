@@ -87,13 +87,13 @@ function getOpinionTrendIcon(trend: string) {
 }
 
 function getOpinionBadgeClass(opinion: string | null) {
-  if (!opinion) return 'bg-gray-100 text-gray-500 border-gray-300';
+  if (!opinion) return 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600';
   switch (opinion) {
     case 'Unmodified': return 'bg-green-100 text-green-800 border-green-300';
     case 'Qualified': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
     case 'Adverse': return 'bg-orange-100 text-orange-800 border-orange-300';
     case 'Disclaimer': return 'bg-red-100 text-red-800 border-red-300';
-    default: return 'bg-gray-100 text-gray-500 border-gray-300';
+    default: return 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600';
   }
 }
 
@@ -211,16 +211,16 @@ export default function FYComparisonPage() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+              <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center shrink-0">
                 <BarChart3 className="h-5 w-5 text-emerald-600" />
               </div>
               <div>
-                <CardTitle className="text-base font-bold text-stone-900">Financial Year Comparison</CardTitle>
-                <CardDescription className="text-xs text-stone-500 mt-0.5">
+                <CardTitle className="text-base font-bold text-stone-900 dark:text-stone-50">Financial Year Comparison</CardTitle>
+                <CardDescription className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                   Compare county audit opinions and budget absorption across 3 financial years. Sources: OAG & CoB.
                 </CardDescription>
               </div>
@@ -267,7 +267,7 @@ export default function FYComparisonPage() {
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
             {[
-              { label: 'Total Counties', value: summaryStats.total, color: 'bg-stone-100 text-stone-800', icon: Target },
+              { label: 'Total Counties', value: summaryStats.total, color: 'bg-stone-100 dark:bg-stone-700 text-stone-800 dark:text-stone-100', icon: Target },
               { label: 'Improved', value: summaryStats.improved, color: 'bg-green-100 text-green-800', icon: TrendingUp },
               { label: 'Declined', value: summaryStats.declined, color: 'bg-red-100 text-red-800', icon: TrendingDown },
               { label: 'Same', value: summaryStats.same, color: 'bg-amber-100 text-amber-800', icon: Minus },
@@ -287,7 +287,7 @@ export default function FYComparisonPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Audit Opinion Trend — Executive */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Scale className="h-4 w-4 text-emerald-600" />
@@ -315,7 +315,7 @@ export default function FYComparisonPage() {
         </Card>
 
         {/* Devolution Funding Trend */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -346,7 +346,7 @@ export default function FYComparisonPage() {
       </div>
 
       {/* Key Insights */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-emerald-600" />
@@ -389,11 +389,11 @@ export default function FYComparisonPage() {
             ].map((insight, i) => (
               <div key={i} className={`p-3 rounded-lg border ${
                 insight.type === 'success' ? 'bg-green-50 border-green-200' :
-                insight.type === 'warning' ? 'bg-amber-50 border-amber-200' :
-                'bg-blue-50 border-blue-200'
+                insight.type === 'warning' ? 'bg-amber-50 dark:bg-amber-950 border-amber-200' :
+                'bg-blue-50 dark:bg-blue-950 border-blue-200'
               }`}>
-                <p className="text-xs font-semibold text-stone-900 mb-1">{insight.title}</p>
-                <p className="text-[11px] text-stone-600 leading-relaxed">{insight.desc}</p>
+                <p className="text-xs font-semibold text-stone-900 dark:text-stone-50 mb-1">{insight.title}</p>
+                <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed">{insight.desc}</p>
               </div>
             ))}
           </div>
@@ -402,7 +402,7 @@ export default function FYComparisonPage() {
 
       {/* Top Movers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-green-700">
               <ArrowUpRight className="h-4 w-4" />
@@ -431,7 +431,7 @@ export default function FYComparisonPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-red-700">
               <ArrowDownRight className="h-4 w-4" />
@@ -462,7 +462,7 @@ export default function FYComparisonPage() {
       </div>
 
       {/* Full County Comparison Table */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Calendar className="h-4 w-4 text-emerald-600" />
@@ -472,32 +472,32 @@ export default function FYComparisonPage() {
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[500px]">
-            <table className="w-full text-xs">
-              <thead className="sticky top-0 bg-stone-50 z-10">
-                <tr className="border-b border-stone-200">
-                  <th className="text-left py-2 px-2 font-semibold text-stone-600 min-w-[140px]">County</th>
-                  <th className="text-center py-2 px-1 font-semibold text-stone-600">FY 2022/23</th>
-                  <th className="text-center py-2 px-1 font-semibold text-stone-600">FY 2023/24</th>
-                  <th className="text-center py-2 px-1 font-semibold text-stone-600">FY 2024/25</th>
-                  <th className="text-center py-2 px-1 font-semibold text-stone-600">Trend</th>
-                  <th className="text-center py-2 px-1 font-semibold text-stone-600">Dev Abs.</th>
+            <table aria-label="County audit opinion comparison across financial years" className="w-full text-xs">
+              <thead className="sticky top-0 bg-stone-50 dark:bg-stone-800 z-10">
+                <tr className="border-b border-stone-200 dark:border-stone-700">
+                  <th scope="col" className="text-left py-2 px-2 font-semibold text-stone-600 dark:text-stone-300 min-w-[140px]">County</th>
+                  <th scope="col" className="text-center py-2 px-1 font-semibold text-stone-600 dark:text-stone-300">FY 2022/23</th>
+                  <th scope="col" className="text-center py-2 px-1 font-semibold text-stone-600 dark:text-stone-300">FY 2023/24</th>
+                  <th scope="col" className="text-center py-2 px-1 font-semibold text-stone-600 dark:text-stone-300">FY 2024/25</th>
+                  <th scope="col" className="text-center py-2 px-1 font-semibold text-stone-600 dark:text-stone-300">Trend</th>
+                  <th scope="col" className="text-center py-2 px-1 font-semibold text-stone-600 dark:text-stone-300">Dev Abs.</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.map((county, idx) => (
                   <React.Fragment key={county.code}>
                     <tr
-                      className={`border-b border-stone-100 hover:bg-stone-50 cursor-pointer transition-colors ${
+                      className={`border-b border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 dark:bg-stone-800 cursor-pointer transition-colors ${
                         expandedCounty === county.code ? 'bg-emerald-50/50' : ''
                       }`}
                       onClick={() => setExpandedCounty(expandedCounty === county.code ? null : county.code)}
                     >
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono text-stone-400">{county.code}</span>
+                          <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400">{county.code}</span>
                           <div>
-                            <p className="font-semibold text-stone-900">{county.name}</p>
-                            <p className="text-[10px] text-stone-400">{county.governor} · {county.party}</p>
+                            <p className="font-semibold text-stone-900 dark:text-stone-50">{county.name}</p>
+                            <p className="text-[10px] text-stone-500 dark:text-stone-400">{county.governor} · {county.party}</p>
                           </div>
                         </div>
                       </td>
@@ -530,44 +530,44 @@ export default function FYComparisonPage() {
                               style={{ width: `${Math.min(100, county.devAbsorption['FY 2024/25'])}%` }}
                             />
                           </div>
-                          <span className="text-[10px] font-medium text-stone-600">{county.devAbsorption['FY 2024/25']}%</span>
+                          <span className="text-[10px] font-medium text-stone-600 dark:text-stone-300">{county.devAbsorption['FY 2024/25']}%</span>
                         </div>
                       </td>
                     </tr>
                     {expandedCounty === county.code && (
-                      <tr className="bg-stone-50 border-b border-stone-200">
+                      <tr className="bg-stone-50 dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700">
                         <td colSpan={6} className="py-3 px-4">
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px]">
                             <div>
-                              <p className="font-semibold text-stone-700 mb-1">Score Progression</p>
+                              <p className="font-semibold text-stone-700 dark:text-stone-200 mb-1">Score Progression</p>
                               {FINANCIAL_YEARS.map(fy => (
                                 <div key={fy} className="flex items-center justify-between py-0.5">
-                                  <span className="text-stone-500">{fy}</span>
+                                  <span className="text-stone-500 dark:text-stone-400">{fy}</span>
                                   <div className="flex items-center gap-2">
                                     <div className="w-16 h-1.5 bg-stone-200 rounded-full overflow-hidden">
                                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${county.scores[fy]}%` }} />
                                     </div>
-                                    <span className="font-mono font-bold text-stone-700 w-6 text-right">{county.scores[fy]}</span>
+                                    <span className="font-mono font-bold text-stone-700 dark:text-stone-200 w-6 text-right">{county.scores[fy]}</span>
                                   </div>
                                 </div>
                               ))}
                             </div>
                             <div>
-                              <p className="font-semibold text-stone-700 mb-1">Budget Absorption</p>
+                              <p className="font-semibold text-stone-700 dark:text-stone-200 mb-1">Budget Absorption</p>
                               {FINANCIAL_YEARS.map(fy => (
                                 <div key={fy} className="flex items-center justify-between py-0.5">
-                                  <span className="text-stone-500">{fy}</span>
-                                  <span className="font-mono font-bold text-stone-700">{county.devAbsorption[fy]}%</span>
+                                  <span className="text-stone-500 dark:text-stone-400">{fy}</span>
+                                  <span className="font-mono font-bold text-stone-700 dark:text-stone-200">{county.devAbsorption[fy]}%</span>
                                 </div>
                               ))}
                             </div>
                             <div>
-                              <p className="font-semibold text-stone-700 mb-1">Details</p>
-                              <p className="text-stone-500">Governor: {county.governor}</p>
-                              <p className="text-stone-500">Party: {county.party}</p>
-                              <p className="text-stone-500">Region: {county.region}</p>
-                              <p className="text-stone-500">Coalition: {county.coalition}</p>
-                              <p className="text-stone-500">Trend: <Badge variant="outline" className={`text-[9px] h-4 px-1 ${
+                              <p className="font-semibold text-stone-700 dark:text-stone-200 mb-1">Details</p>
+                              <p className="text-stone-500 dark:text-stone-400">Governor: {county.governor}</p>
+                              <p className="text-stone-500 dark:text-stone-400">Party: {county.party}</p>
+                              <p className="text-stone-500 dark:text-stone-400">Region: {county.region}</p>
+                              <p className="text-stone-500 dark:text-stone-400">Coalition: {county.coalition}</p>
+                              <p className="text-stone-500 dark:text-stone-400">Trend: <Badge variant="outline" className={`text-[9px] h-4 px-1 ${
                                 county.trend === 'improved' ? 'text-green-700 border-green-300' :
                                 county.trend === 'declined' ? 'text-red-700 border-red-300' : 'text-amber-700 border-amber-300'
                               }`}>{county.trend}</Badge></p>
@@ -585,11 +585,11 @@ export default function FYComparisonPage() {
       </Card>
 
       {/* Data Sources */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xs font-semibold text-stone-500">Data Sources</CardTitle>
+          <CardTitle className="text-xs font-semibold text-stone-500 dark:text-stone-400">Data Sources</CardTitle>
         </CardHeader>
-        <CardContent className="text-[11px] text-stone-500 space-y-1">
+        <CardContent className="text-[11px] text-stone-500 dark:text-stone-400 space-y-1">
           <p>Audit opinions: Office of the Auditor-General (OAG) of Kenya — <a href="https://www.oagkenya.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">oagkenya.go.ke</a></p>
           <p>Budget absorption: Controller of Budget (CoB) CBIRR Reports — <a href="https://cob.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">cob.go.ke</a></p>
           <p>Equitable share: Commission on Revenue Allocation (CRA) — <a href="https://www.cra.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">cra.go.ke</a></p>

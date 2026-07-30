@@ -78,7 +78,7 @@ export default function AuditTrendsPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
             <LineChart className="h-5 w-5 text-emerald-600" /> Year-over-Year Audit Trends
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Track how county audit opinions have changed across FY 2022/23 → FY 2023/24 → FY 2024/25</p>
@@ -95,10 +95,10 @@ export default function AuditTrendsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Tracked Counties', value: COUNTY_AUDIT_TRENDS.length.toString(), sub: 'With multi-year data', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' },
+          { label: 'Tracked Counties', value: COUNTY_AUDIT_TRENDS.length.toString(), sub: 'With multi-year data', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950 dark:bg-emerald-900/20' },
           { label: 'Improved', value: COUNTY_AUDIT_TRENDS.filter(c => getTrendDirection(c.fy2223.executive, c.fy2425.executive) === 'up').length.toString(), sub: 'FY 22/23 → 24/25', color: 'text-green-600 bg-green-50 dark:bg-green-900/20' },
-          { label: 'Declined', value: COUNTY_AUDIT_TRENDS.filter(c => getTrendDirection(c.fy2223.executive, c.fy2425.executive) === 'down').length.toString(), sub: 'FY 22/23 → 24/25', color: 'text-red-600 bg-red-50 dark:bg-red-900/20' },
-          { label: 'Stable', value: COUNTY_AUDIT_TRENDS.filter(c => getTrendDirection(c.fy2223.executive, c.fy2425.executive) === 'stable').length.toString(), sub: 'No change', color: 'text-stone-600 bg-stone-50 dark:bg-stone-800' },
+          { label: 'Declined', value: COUNTY_AUDIT_TRENDS.filter(c => getTrendDirection(c.fy2223.executive, c.fy2425.executive) === 'down').length.toString(), sub: 'FY 22/23 → 24/25', color: 'text-red-600 bg-red-50 dark:bg-red-950 dark:bg-red-900/20' },
+          { label: 'Stable', value: COUNTY_AUDIT_TRENDS.filter(c => getTrendDirection(c.fy2223.executive, c.fy2425.executive) === 'stable').length.toString(), sub: 'No change', color: 'text-stone-600 dark:text-stone-300 bg-stone-50 dark:bg-stone-800' },
         ].map(s => (
           <div key={s.label} className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-3">
             <p className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">{s.label}</p>
@@ -142,13 +142,13 @@ export default function AuditTrendsPage() {
             {sorted.map((c) => {
               const trend = c.execTrend;
               return (
-                <div key={c.code} className="grid grid-cols-[1fr_1fr_24px_1fr_24px_1fr_80px] gap-2 px-3 py-2.5 bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 rounded-lg items-center hover:bg-stone-50 dark:hover:bg-stone-750 transition-colors">
+                <div key={c.code} className="grid grid-cols-[1fr_1fr_24px_1fr_24px_1fr_80px] gap-2 px-3 py-2.5 bg-white dark:bg-stone-900 dark:bg-stone-800 border border-stone-100 dark:border-stone-800 dark:border-stone-700 rounded-lg items-center hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-750 transition-colors">
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-stone-800 dark:text-stone-200 truncate">{c.county}</p>
+                    <p className="text-xs font-medium text-stone-800 dark:text-stone-100 dark:text-stone-200 truncate">{c.county}</p>
                     <p className="text-[10px] text-stone-400 dark:text-stone-500">{c.region} · {c.coalition.split(' ')[0]}</p>
                   </div>
                   <div className="flex justify-center">
-                    <Badge className={`text-[10px] ${AUDIT_COLOR[c.fy2223.executive]}/20 text-stone-700 dark:text-stone-300`}>{c.fy2223.executive}</Badge>
+                    <Badge className={`text-[10px] ${AUDIT_COLOR[c.fy2223.executive]}/20 text-stone-700 dark:text-stone-200 dark:text-stone-300`}>{c.fy2223.executive}</Badge>
                   </div>
                   <div className="flex justify-center">
                     {getTrendDirection(c.fy2223.executive, c.fy2324.executive) === 'up' && <TrendingUp className="h-3 w-3 text-green-500" />}
@@ -156,7 +156,7 @@ export default function AuditTrendsPage() {
                     {getTrendDirection(c.fy2223.executive, c.fy2324.executive) === 'stable' && <Minus className="h-3 w-3 text-stone-400" />}
                   </div>
                   <div className="flex justify-center">
-                    <Badge className={`text-[10px] ${AUDIT_COLOR[c.fy2324.executive]}/20 text-stone-700 dark:text-stone-300`}>{c.fy2324.executive}</Badge>
+                    <Badge className={`text-[10px] ${AUDIT_COLOR[c.fy2324.executive]}/20 text-stone-700 dark:text-stone-200 dark:text-stone-300`}>{c.fy2324.executive}</Badge>
                   </div>
                   <div className="flex justify-center">
                     {trend === 'up' && <TrendingUp className="h-3 w-3 text-green-500" />}
@@ -164,7 +164,7 @@ export default function AuditTrendsPage() {
                     {trend === 'stable' && <Minus className="h-3 w-3 text-stone-400" />}
                   </div>
                   <div className="flex justify-center">
-                    <Badge className={`text-[10px] ${AUDIT_COLOR[c.fy2425.executive]}/20 text-stone-700 dark:text-stone-300`}>{c.fy2425.executive}</Badge>
+                    <Badge className={`text-[10px] ${AUDIT_COLOR[c.fy2425.executive]}/20 text-stone-700 dark:text-stone-200 dark:text-stone-300`}>{c.fy2425.executive}</Badge>
                   </div>
                   <div className="flex justify-end">
                     <Badge variant={trend === 'up' ? 'default' : trend === 'down' ? 'destructive' : 'secondary'} className="text-[9px]">

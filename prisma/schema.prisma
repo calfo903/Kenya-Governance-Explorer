@@ -144,8 +144,42 @@ model WhistleblowerReport {
   id             String   @id @default(uuid())
   category       String
   countyCode     String?
-  description    String
   encrypted      Boolean  @default(false)
   status         String   @default("pending")
   createdAt      DateTime @default(now())
+}
+
+model CitizenStory {
+  id          String   @id @default(uuid())
+  countyName  String
+  sector      String
+  title       String
+  experience  String
+  rating      Int
+  anonymous   Boolean  @default(true)
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([countyName])
+  @@index([sector])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model CitizenTip {
+  id          String   @id @default(uuid())
+  countyName  String
+  category    String
+  description String
+  anonymous   Boolean  @default(true)
+  status      String   @default("pending")
+  adminNotes  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([countyName])
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
 }

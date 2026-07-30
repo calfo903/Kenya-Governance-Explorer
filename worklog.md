@@ -387,3 +387,24 @@ Stage Summary:
 - 9 new region data files + types file
 - 50 unit tests (all passing)
 - Build: clean, zero errors
+
+---
+Task ID: 12
+Agent: Main Agent + 5 Subagents
+Task: Implement 11 major features (excluding County Comparison Drag-and-Drop)
+
+Work Log:
+- §1 Prisma + React Query: Seeded SQLite DB (47 counties, 47 governors, 47 leadership, 466 CECMs, 1344 MCAs, 141 audit records, 94 budget records). Created 5 React Query hooks, 5 /api/db/* routes, QueryProvider wrapper.
+- §2 Swahili i18n: Installed next-intl + Zustand locale store. Created EN/SW message files (~150+ keys). Translated 5 key components. Language toggle in header.
+- §3 Dark Mode: Fixed 46 component files with dark: variants. Fixed SVG county map colors for dark mode. Fixed gray/slate/neutral palettes.
+- §4 Citizen Report Dashboard: New CitizenStory + CitizenTip Prisma models. 4 API routes with status state machines. Full dashboard with stats, filters, status action buttons, React Query mutations.
+- §9 PWA Support: manifest.json, app icons (192+512), service worker (cache-first/network-first/stale-while-revalidate), install prompt, offline indicator.
+- §10 Accessibility: Skip nav link, ARIA labels on navigation/map/tables, keyboard navigation on county SVG paths, focus-visible emerald ring, color contrast fixes, decorative icon hiding.
+- §11 Assembly Hansard: 47 county assembly entries with website/Hansard URLs. Sortable/filterable table page. Stats cards showing coverage.
+- §12 CECM Performance: Composite scoring system (budget 50%, audit 30%, staffing 20%) for all 47 counties. Dashboard with sortable table, score bars, legend. Choropleth color mode added to existing map component.
+
+Stage Summary:
+- 22 API routes total (10 original + 4 db routes + 4 report routes + health + root + db/counties/code)
+- 50 unit tests passing (npm test)
+- 47 counties fully covered across all features
+- Build: clean, zero errors, 22 routes registered

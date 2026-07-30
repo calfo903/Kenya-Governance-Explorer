@@ -39,7 +39,7 @@ interface GovernorTracking {
 const STATUS_CONFIG: Record<DeliveryStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   completed: { label: 'Completed', color: 'text-emerald-700', bg: 'bg-emerald-100 border-emerald-200', icon: <CheckCircle2 className="h-3 w-3 text-emerald-600" /> },
   in_progress: { label: 'In Progress', color: 'text-blue-700', bg: 'bg-blue-100 border-blue-200', icon: <Clock className="h-3 w-3 text-blue-600" /> },
-  not_started: { label: 'Not Started', color: 'text-stone-600', bg: 'bg-stone-100 border-stone-200', icon: <AlertCircle className="h-3 w-3 text-stone-500" /> },
+  not_started: { label: 'Not Started', color: 'text-stone-600 dark:text-stone-300', bg: 'bg-stone-100 dark:bg-stone-700 border-stone-200 dark:border-stone-700', icon: <AlertCircle className="h-3 w-3 text-stone-500 dark:text-stone-400" /> },
   blocked: { label: 'Blocked', color: 'text-red-700', bg: 'bg-red-100 border-red-200', icon: <XCircle className="h-3 w-3 text-red-600" /> },
 };
 
@@ -248,7 +248,7 @@ export default function ManifestoTrackerPage() {
       </div>
 
       {/* Disclaimer */}
-      <Card className="border-amber-200 bg-amber-50">
+      <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950">
         <CardContent className="py-3 px-4">
           <div className="flex items-start gap-2">
             <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
@@ -261,11 +261,11 @@ export default function ManifestoTrackerPage() {
       </Card>
 
       {/* Filter */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardContent className="py-3 px-4">
           <div className="flex flex-wrap gap-2">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-9 w-40 text-xs border-stone-200"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-40 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
@@ -288,7 +288,7 @@ export default function ManifestoTrackerPage() {
       {/* Governor Cards */}
       <div className="space-y-3">
         {filteredGovernors.map((gov, idx) => (
-          <Card key={gov.county} className={`border-stone-200 bg-white ${selectedGovernor?.county === gov.county ? 'ring-2 ring-emerald-500' : ''} transition-all cursor-pointer hover:border-slate-300`} onClick={() => setSelectedGovernor(selectedGovernor?.county === gov.county ? null : gov)}>
+          <Card key={gov.county} className={`border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 ${selectedGovernor?.county === gov.county ? 'ring-2 ring-emerald-500' : ''} transition-all cursor-pointer hover:border-slate-300`} onClick={() => setSelectedGovernor(selectedGovernor?.county === gov.county ? null : gov)}>
             <CardContent className="py-4 px-4">
               <div className="flex flex-col md:flex-row md:items-center gap-3">
                 {/* Governor Info */}
@@ -296,8 +296,8 @@ export default function ManifestoTrackerPage() {
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center shrink-0">{idx + 1}</div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-800 truncate">{gov.name}</p>
-                      <p className="text-[10px] text-stone-500">{gov.county} County — {gov.party} ({gov.coalition === 'Kenya Kwanza Alliance' ? 'KK' : 'Azimio'})</p>
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{gov.name}</p>
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400">{gov.county} County — {gov.party} ({gov.coalition === 'Kenya Kwanza Alliance' ? 'KK' : 'Azimio'})</p>
                     </div>
                   </div>
                 </div>
@@ -306,8 +306,8 @@ export default function ManifestoTrackerPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-32">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] text-stone-500">Delivery</span>
-                      <span className="text-[10px] font-bold text-slate-800">{gov.overallProgress}%</span>
+                      <span className="text-[10px] text-stone-500 dark:text-stone-400">Delivery</span>
+                      <span className="text-[10px] font-bold text-slate-800 dark:text-slate-100">{gov.overallProgress}%</span>
                     </div>
                     <Progress value={gov.overallProgress} className="h-2" />
                   </div>
@@ -323,21 +323,21 @@ export default function ManifestoTrackerPage() {
 
               {/* Expanded promises */}
               {selectedGovernor?.county === gov.county && (
-                <div className="mt-4 pt-3 border-t border-stone-100 space-y-2">
-                  <p className="text-[10px] text-stone-500 mb-1">{gov.notes}</p>
+                <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 space-y-2">
+                  <p className="text-[10px] text-stone-500 dark:text-stone-400 mb-1">{gov.notes}</p>
                   {gov.promises.map((promise, i) => (
-                    <div key={i} className="p-2.5 bg-stone-50 rounded-lg border border-stone-100">
+                    <div key={i} className="p-2.5 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <Badge variant="outline" className="text-[9px] h-5 shrink-0">{promise.category}</Badge>
-                          <p className="text-[11px] text-stone-700 truncate">{promise.description}</p>
+                          <p className="text-[11px] text-stone-700 dark:text-stone-200 truncate">{promise.description}</p>
                         </div>
                         <Badge className={`text-[9px] h-5 shrink-0 ${STATUS_CONFIG[promise.status].bg}`}>
                           {STATUS_CONFIG[promise.status].icon} {STATUS_CONFIG[promise.status].label}
                         </Badge>
                       </div>
                       {promise.evidence && (
-                        <p className="text-[10px] text-stone-500 mt-1.5">{promise.evidence}</p>
+                        <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-1.5">{promise.evidence}</p>
                       )}
                       {promise.source && (
                         <p className="text-[9px] text-emerald-600 mt-0.5">Source: {promise.source}</p>
@@ -352,19 +352,19 @@ export default function ManifestoTrackerPage() {
       </div>
 
       {/* Sources */}
-      <Card className="border-stone-200 bg-stone-50">
+      <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
         <CardContent className="py-3 px-4">
           <div className="space-y-1.5">
-            <p className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">Data Sources</p>
-            <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+            <p className="text-[10px] font-bold text-stone-600 dark:text-stone-300 uppercase tracking-wider">Data Sources</p>
+            <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
               <span>CIDP Plans: County Integrated Development Plans 2023-2027 — each county&apos;s 5-year strategic plan</span>
             </div>
-            <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+            <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
               <span>CoB Budget Implementation Reviews: <a href="https://cob.go.ke/county-budget-implementation-review-reports/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">cob.go.ke</a></span>
             </div>
-            <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+            <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
               <span>OAG Audit Reports: <a href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">oagkenya.go.ke</a></span>
             </div>

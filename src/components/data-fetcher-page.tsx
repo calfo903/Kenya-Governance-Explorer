@@ -147,19 +147,19 @@ export default function DataFetcherPage() {
       </div>
 
       {/* County Search */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardContent className="py-4 px-4">
-          <p className="text-xs font-bold text-slate-800 mb-2 flex items-center gap-2">
+          <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
             <Search className="h-3.5 w-3.5 text-blue-600" />
             County-Specific Data Search
           </p>
-          <p className="text-[10px] text-stone-500 mb-3">Search for county budget, audit, and governance data across government sources</p>
+          <p className="text-[10px] text-stone-500 dark:text-stone-400 mb-3">Search for county budget, audit, and governance data across government sources</p>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
               <Input
                 placeholder="Enter county name (e.g. Nakuru, Makueni, Nairobi)..."
-                className="h-10 pl-10 text-sm border-stone-200"
+                className="h-10 pl-10 text-sm border-stone-200 dark:border-stone-700"
                 value={countySearch}
                 onChange={e => setCountySearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCountySearch()}
@@ -176,7 +176,7 @@ export default function DataFetcherPage() {
       {/* Data Sources Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {DATA_SOURCES.map((source) => (
-          <Card key={source.name} className="border-stone-200 bg-white hover:border-slate-300 transition-colors">
+          <Card key={source.name} className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-slate-300 transition-colors">
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
@@ -187,14 +187,14 @@ export default function DataFetcherPage() {
                   </div>
                 </div>
                 <a href={source.url} target="_blank" rel="noopener noreferrer"
-                  className="shrink-0 h-7 w-7 rounded-lg bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors">
-                  <ArrowUpRight className="h-3.5 w-3.5 text-stone-600" />
+                  className="shrink-0 h-7 w-7 rounded-lg bg-stone-100 dark:bg-stone-700 flex items-center justify-center hover:bg-stone-200 transition-colors">
+                  <ArrowUpRight className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" />
                 </a>
               </div>
             </CardHeader>
             <CardContent className="space-y-1.5">
               {source.reports.map((report, i) => (
-                <div key={i} className="flex items-start gap-2 text-[11px] text-stone-600">
+                <div key={i} className="flex items-start gap-2 text-[11px] text-stone-600 dark:text-stone-300">
                   <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
                   <div className="min-w-0 flex-1">
                     {report.url ? (
@@ -206,7 +206,7 @@ export default function DataFetcherPage() {
                     )}
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[9px] text-stone-400">{report.date}</span>
-                      <Badge variant="outline" className={`text-[8px] h-4 ${report.status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : report.status === 'expected' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-stone-50 text-stone-500 border-stone-200'}`}>
+                      <Badge variant="outline" className={`text-[8px] h-4 ${report.status === 'published' ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 border-emerald-200' : report.status === 'expected' ? 'bg-amber-50 dark:bg-amber-950 text-amber-700 border-amber-200' : 'bg-stone-50 dark:bg-stone-800 text-stone-500 dark:text-stone-400 border-stone-200 dark:border-stone-700'}`}>
                         {report.status === 'published' ? 'Published' : report.status === 'expected' ? 'Expected' : 'Periodic'}
                       </Badge>
                     </div>
@@ -219,13 +219,13 @@ export default function DataFetcherPage() {
       </div>
 
       {/* API Documentation */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-semibold flex items-center gap-2">
-            <FileText className="h-3.5 w-3.5 text-slate-700" />
+            <FileText className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
             API & Open Data Endpoints
           </CardTitle>
-          <CardDescription className="text-[10px] text-stone-500">Links to developer documentation and data access points</CardDescription>
+          <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">Links to developer documentation and data access points</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -240,11 +240,11 @@ export default function DataFetcherPage() {
               { name: 'KenyaLaw.org', url: 'https://kenyalaw.org/klr/', desc: 'Laws, Constitution, and legal documents' },
             ].map(endpoint => (
               <a key={endpoint.name} href={endpoint.url} target="_blank" rel="noopener noreferrer"
-                className="p-2.5 bg-stone-50 rounded-lg border border-stone-100 hover:bg-stone-100 transition-colors flex items-start gap-2 group">
+                className="p-2.5 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800 hover:bg-stone-100 dark:bg-stone-700 transition-colors flex items-start gap-2 group">
                 <ExternalLink className="h-3.5 w-3.5 text-stone-400 group-hover:text-emerald-600 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold text-emerald-700 group-hover:underline truncate">{endpoint.name}</p>
-                  <p className="text-[9px] text-stone-500 truncate">{endpoint.desc}</p>
+                  <p className="text-[9px] text-stone-500 dark:text-stone-400 truncate">{endpoint.desc}</p>
                 </div>
               </a>
             ))}
@@ -253,11 +253,11 @@ export default function DataFetcherPage() {
       </Card>
 
       {/* Sources */}
-      <Card className="border-stone-200 bg-stone-50">
+      <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
         <CardContent className="py-3 px-4">
           <div className="flex items-start gap-2">
-            <Info className="h-3.5 w-3.5 text-stone-500 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-stone-600 leading-relaxed">
+            <Info className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400 shrink-0 mt-0.5" />
+            <p className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
               <span className="font-bold">Note:</span> All links point to official Kenyan government and international organization websites.
               Kenya&apos;s government data is primarily published in PDF format. For machine-readable datasets, use the Kenya Open Data Portal (Socrata API).
               Some government websites may have intermittent availability.

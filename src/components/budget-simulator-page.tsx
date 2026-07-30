@@ -23,7 +23,7 @@ const SECTORS = [
   { id: 'roads', label: 'Roads & Transport', icon: <Wrench className="h-3.5 w-3.5" />, color: 'text-amber-600' },
   { id: 'water', label: 'Water & Environment', icon: <Droplets className="h-3.5 w-3.5" />, color: 'text-cyan-600' },
   { id: 'agriculture', label: 'Agriculture', icon: <Leaf className="h-3.5 w-3.5" />, color: 'text-green-600' },
-  { id: 'security', label: 'Security & Admin', icon: <Shield className="h-3.5 w-3.5" />, color: 'text-slate-600' },
+  { id: 'security', label: 'Security & Admin', icon: <Shield className="h-3.5 w-3.5" />, color: 'text-slate-600 dark:text-slate-300' },
   { id: 'social', label: 'Youth, Gender & Culture', icon: <Users className="h-3.5 w-3.5" />, color: 'text-purple-600' },
   { id: 'markets', label: 'Trade & Markets', icon: <Store className="h-3.5 w-3.5" />, color: 'text-orange-600' },
 ];
@@ -143,13 +143,13 @@ export default function BudgetSimulatorPage() {
       </div>
 
       {/* County Selection & Controls */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardContent className="py-4 px-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="md:w-64">
-              <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Select County</label>
+              <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Select County</label>
               <Select value={selectedCounty} onValueChange={setSelectedCounty}>
-                <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Choose county..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Choose county..." /></SelectTrigger>
                 <SelectContent className="max-h-60">
                   {all47Governors.map(g => <SelectItem key={g.county} value={g.county}>{g.county}</SelectItem>)}
                 </SelectContent>
@@ -158,11 +158,11 @@ export default function BudgetSimulatorPage() {
             {budgetData && (
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider">Development vs Recurrent Split</label>
+                  <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider">Development vs Recurrent Split</label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-emerald-600">{budgetData.devPct}%</span>
                     <span className="text-[10px] text-stone-400">Dev</span>
-                    <span className="text-xs font-bold text-slate-600">{budgetData.recPct}%</span>
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{budgetData.recPct}%</span>
                     <span className="text-[10px] text-stone-400">Rec</span>
                   </div>
                 </div>
@@ -188,7 +188,7 @@ export default function BudgetSimulatorPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Budget Overview */}
           <div className="space-y-4">
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs font-semibold flex items-center gap-2">
                   <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
@@ -203,20 +203,20 @@ export default function BudgetSimulatorPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2.5 bg-emerald-50 rounded-lg border border-emerald-100">
+                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950 rounded-lg border border-emerald-100">
                     <p className="text-[9px] text-emerald-600 uppercase tracking-wider">Development</p>
                     <p className="text-sm font-bold text-emerald-800">{formatCurrency(budgetData.devBudget)}</p>
                     <p className="text-[10px] text-emerald-600">{budgetData.devPct}% of total</p>
                   </div>
-                  <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                    <p className="text-[9px] text-slate-500 uppercase tracking-wider">Recurrent</p>
-                    <p className="text-sm font-bold text-slate-800">{formatCurrency(budgetData.recBudget)}</p>
-                    <p className="text-[10px] text-slate-500">{budgetData.recPct}% of total</p>
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">Recurrent</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{formatCurrency(budgetData.recBudget)}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">{budgetData.recPct}% of total</p>
                   </div>
                 </div>
 
                 {budgetData.actualDevPct !== budgetData.devPct && (
-                  <div className="p-2.5 bg-amber-50 rounded-lg border border-amber-100">
+                  <div className="p-2.5 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-100">
                     <p className="text-[10px] font-semibold text-amber-700 flex items-center gap-1">
                       <ArrowRightLeft className="h-3 w-3" /> vs Actual CoB Data
                     </p>
@@ -232,20 +232,20 @@ export default function BudgetSimulatorPage() {
             </Card>
 
             {/* Population & Governor */}
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardContent className="py-3 px-4 space-y-2">
                 <div className="flex items-start gap-2">
                   <Users className="h-3.5 w-3.5 text-stone-400 mt-0.5" />
                   <div>
-                    <p className="text-[10px] text-stone-500">Governor</p>
-                    <p className="text-xs font-semibold text-stone-800">{governor?.name}</p>
+                    <p className="text-[10px] text-stone-500 dark:text-stone-400">Governor</p>
+                    <p className="text-xs font-semibold text-stone-800 dark:text-stone-100">{governor?.name}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Landmark className="h-3.5 w-3.5 text-stone-400 mt-0.5" />
                   <div>
-                    <p className="text-[10px] text-stone-500">Region</p>
-                    <p className="text-xs text-stone-800">{governor?.region}</p>
+                    <p className="text-[10px] text-stone-500 dark:text-stone-400">Region</p>
+                    <p className="text-xs text-stone-800 dark:text-stone-100">{governor?.region}</p>
                   </div>
                 </div>
               </CardContent>
@@ -254,12 +254,12 @@ export default function BudgetSimulatorPage() {
 
           {/* Sector Allocations */}
           <div className="lg:col-span-2">
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-xs font-semibold">Development Sector Allocations</CardTitle>
-                    <CardDescription className="text-[10px] text-stone-500">Adjust sector weightings. Total auto-normalizes to 100%.</CardDescription>
+                    <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">Adjust sector weightings. Total auto-normalizes to 100%.</CardDescription>
                   </div>
                   <Badge variant="secondary" className="text-[10px] h-5">
                     {formatCurrency(budgetData.devBudget)} total
@@ -268,14 +268,14 @@ export default function BudgetSimulatorPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {budgetData.sectorAllocations.map(sector => (
-                  <div key={sector.id} className="p-3 bg-stone-50 rounded-lg border border-stone-100">
+                  <div key={sector.id} className="p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className={sector.color}>{sector.icon}</span>
-                        <span className="text-xs font-semibold text-stone-700">{sector.label}</span>
+                        <span className="text-xs font-semibold text-stone-700 dark:text-stone-200">{sector.label}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-stone-800">{formatCurrency(sector.amount)}</span>
+                        <span className="text-xs font-bold text-stone-800 dark:text-stone-100">{formatCurrency(sector.amount)}</span>
                         <span className="text-[10px] text-stone-400">{formatCurrency(sector.perCapita)}/capita</span>
                       </div>
                     </div>
@@ -288,7 +288,7 @@ export default function BudgetSimulatorPage() {
                         step={1}
                         className="flex-1"
                       />
-                      <span className="text-xs font-bold text-slate-700 w-10 text-right">{sector.weight}%</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200 w-10 text-right">{sector.weight}%</span>
                     </div>
                     <Progress value={sector.weight * 2} className="h-1 mt-1" />
                   </div>
@@ -297,7 +297,7 @@ export default function BudgetSimulatorPage() {
             </Card>
 
             {/* Impact Analysis */}
-            <Card className="border-stone-200 bg-white mt-4">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs font-semibold flex items-center gap-2">
                   <BarChart3 className="h-3.5 w-3.5 text-blue-600" />
@@ -306,7 +306,7 @@ export default function BudgetSimulatorPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="p-2.5 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-100">
                     <p className="text-[10px] font-bold text-blue-700 mb-1">If 10% more went to development...</p>
                     <p className="text-[11px] text-blue-600">
                       {formatCurrency(budgetData.total * 0.10)} additional funds would be available for infrastructure, health facilities, and schools.
@@ -314,7 +314,7 @@ export default function BudgetSimulatorPage() {
                       {formatCurrency(budgetData.total * (budgetData.devPct + 10) / 100 / (governor?.population || 1))}.
                     </p>
                   </div>
-                  <div className="p-2.5 bg-emerald-50 rounded-lg border border-emerald-100">
+                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950 rounded-lg border border-emerald-100">
                     <p className="text-[10px] font-bold text-emerald-700 mb-1">Top vs Bottom Performers (CoB FY 2024/25)</p>
                     <div className="grid grid-cols-2 gap-2 mt-1">
                       <div className="text-[10px] text-emerald-600">
@@ -339,21 +339,21 @@ export default function BudgetSimulatorPage() {
       )}
 
       {!selectedCounty && (
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardContent className="py-12 text-center">
             <Calculator className="h-10 w-10 text-stone-300 mx-auto mb-3" />
-            <p className="text-sm text-stone-500">Select a county to start the budget simulator</p>
+            <p className="text-sm text-stone-500 dark:text-stone-400">Select a county to start the budget simulator</p>
             <p className="text-[10px] text-stone-400 mt-1">Budget estimates based on CoB FY 2024/25 data. Combined county budget: KSh 588.38B.</p>
           </CardContent>
         </Card>
       )}
 
       {/* Sources */}
-      <Card className="border-stone-200 bg-stone-50">
+      <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
         <CardContent className="py-3 px-4">
           <div className="flex items-start gap-2">
-            <Info className="h-3.5 w-3.5 text-stone-500 shrink-0 mt-0.5" />
-            <div className="text-[10px] text-stone-600 leading-relaxed">
+            <Info className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400 shrink-0 mt-0.5" />
+            <div className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
               <span className="font-bold">Data sources:</span> Controller of Budget (CoB) County Budget Implementation Reviews, OAG Audit Reports.
               Combined county budget: KSh 588.38B FY 2024/25. Average split: 36% development, 64% recurrent.
               KSh 72 billion in unspent development funds (CoB FY 2024/25). Budget estimates shown are approximate for simulation purposes.

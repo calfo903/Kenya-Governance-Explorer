@@ -191,21 +191,21 @@ export default function DevolutionQuizPage() {
           <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
             <GraduationCap className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">Know Your Devolution Rights</h2>
+          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">Know Your Devolution Rights</h2>
           <p className="text-sm text-stone-500 dark:text-stone-400 mt-2">
             Test your knowledge of Kenya&apos;s devolved governance system, county structures, and your constitutional rights as a citizen.
           </p>
           <div className="grid grid-cols-3 gap-3 mt-6 mb-6">
             <div className="bg-stone-50 dark:bg-stone-800 rounded-lg p-3 text-center">
-              <p className="text-lg font-bold text-stone-900 dark:text-stone-100">{QUIZ_QUESTIONS.length}</p>
+              <p className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{QUIZ_QUESTIONS.length}</p>
               <p className="text-[10px] text-stone-500 dark:text-stone-400">Questions</p>
             </div>
             <div className="bg-stone-50 dark:bg-stone-800 rounded-lg p-3 text-center">
-              <p className="text-lg font-bold text-stone-900 dark:text-stone-100">6</p>
+              <p className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">6</p>
               <p className="text-[10px] text-stone-500 dark:text-stone-400">Categories</p>
             </div>
             <div className="bg-stone-50 dark:bg-stone-800 rounded-lg p-3 text-center">
-              <p className="text-lg font-bold text-stone-900 dark:text-stone-100">Constitution</p>
+              <p className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">Constitution</p>
               <p className="text-[10px] text-stone-500 dark:text-stone-400">Source</p>
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function DevolutionQuizPage() {
         <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
           <Trophy className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
         </div>
-        <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">Quiz Complete!</h2>
+        <h2 className="text-xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">Quiz Complete!</h2>
         <p className="text-4xl font-bold mt-3">
           <span className="text-emerald-600 dark:text-emerald-400">{score}</span>
           <span className="text-stone-300 dark:text-stone-600">/{QUIZ_QUESTIONS.length}</span>
@@ -233,14 +233,14 @@ export default function DevolutionQuizPage() {
         <Progress value={Math.round((score / QUIZ_QUESTIONS.length) * 100)} className="h-2 mt-4" />
         <Card className="border-stone-200 dark:border-stone-700 dark:bg-stone-900 text-left mt-6">
           <CardContent className="pt-4 space-y-2">
-            <p className="text-xs font-semibold text-stone-700 dark:text-stone-300">Summary</p>
+            <p className="text-xs font-semibold text-stone-700 dark:text-stone-200 dark:text-stone-300">Summary</p>
             <div className="space-y-1">
               {QUIZ_QUESTIONS.map((q, i) => {
                 const wasCorrect = answered[q.id] === q.correctIndex;
                 return (
                   <div key={q.id} className="flex items-center gap-2 text-xs">
                     {wasCorrect ? <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0" /> : <XCircle className="h-3 w-3 text-red-500 shrink-0" />}
-                    <span className="text-stone-600 dark:text-stone-400">Q{i + 1}: {q.question.slice(0, 50)}...</span>
+                    <span className="text-stone-600 dark:text-stone-300 dark:text-stone-400">Q{i + 1}: {q.question.slice(0, 50)}...</span>
                   </div>
                 );
               })}
@@ -266,16 +266,16 @@ export default function DevolutionQuizPage() {
       {/* Question */}
       <Card className="border-stone-200 dark:border-stone-700 dark:bg-stone-900">
         <CardContent className="pt-5">
-          <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 leading-relaxed">{question.question}</h3>
+          <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-50 dark:text-stone-100 leading-relaxed">{question.question}</h3>
 
           <div className="space-y-2 mt-4">
             {question.options.map((option, i) => {
               const isSelected = selectedAnswer === i;
               const isCorrect = i === question.correctIndex;
-              let btnClass = 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300';
+              let btnClass = 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 dark:text-stone-300';
               if (showExplanation) {
                 if (isCorrect) btnClass = 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20 text-green-800 dark:text-green-200';
-                else if (isSelected && !isCorrect) btnClass = 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20 text-red-800 dark:text-red-200';
+                else if (isSelected && !isCorrect) btnClass = 'border-red-300 bg-red-50 dark:bg-red-950 dark:border-red-700 dark:bg-red-900/20 text-red-800 dark:text-red-200';
               }
 
               return (
@@ -299,7 +299,7 @@ export default function DevolutionQuizPage() {
 
           {/* Explanation */}
           {showExplanation && (
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
               <div className="flex items-start gap-2">
                 <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                 <div>

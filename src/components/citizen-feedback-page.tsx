@@ -150,7 +150,7 @@ export default function CitizenFeedbackPage() {
       </div>
 
       {/* Disclaimer */}
-      <Card className="border-amber-200 bg-amber-50">
+      <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950">
         <CardContent className="py-3 px-4">
           <div className="flex items-start gap-2">
             <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
@@ -163,11 +163,11 @@ export default function CitizenFeedbackPage() {
       </Card>
 
       {/* Tab Navigation */}
-      <div className="flex gap-1 bg-white rounded-xl border border-stone-200 p-1">
-        <button onClick={() => setViewMode('rate')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${viewMode === 'rate' ? 'bg-blue-700 text-white' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}>
+      <div className="flex gap-1 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-1">
+        <button onClick={() => setViewMode('rate')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${viewMode === 'rate' ? 'bg-blue-700 text-white' : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'}`}>
           <Star className="h-3.5 w-3.5" /> Rate Services
         </button>
-        <button onClick={() => setViewMode('view')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${viewMode === 'view' ? 'bg-blue-700 text-white' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}>
+        <button onClick={() => setViewMode('view')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${viewMode === 'view' ? 'bg-blue-700 text-white' : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'}`}>
           <BarChart3 className="h-3.5 w-3.5" /> View Ratings ({savedRatings.length})
         </button>
       </div>
@@ -176,19 +176,19 @@ export default function CitizenFeedbackPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Rating Form */}
           <div className="lg:col-span-2">
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs font-semibold flex items-center gap-2">
                   <Star className="h-3.5 w-3.5 text-blue-600" />
                   Rate Your County&apos;s Services
                 </CardTitle>
-                <CardDescription className="text-[10px] text-stone-500">Select your county, then rate each service category from 1 (poor) to 5 (excellent)</CardDescription>
+                <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">Select your county, then rate each service category from 1 (poor) to 5 (excellent)</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Select County *</label>
+                  <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Select County *</label>
                   <Select value={selectedCounty} onValueChange={setSelectedCounty}>
-                    <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select your county..." /></SelectTrigger>
+                    <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select your county..." /></SelectTrigger>
                     <SelectContent className="max-h-60">
                       {all47Governors.map(g => <SelectItem key={g.county} value={g.county}>{g.county}</SelectItem>)}
                     </SelectContent>
@@ -197,11 +197,11 @@ export default function CitizenFeedbackPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {SERVICE_CATEGORIES.map(cat => (
-                    <div key={cat.id} className="p-3 bg-stone-50 rounded-lg border border-stone-100">
+                    <div key={cat.id} className="p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className="text-stone-500">{cat.icon}</div>
-                          <span className="text-xs font-semibold text-stone-700">{cat.label}</span>
+                          <div className="text-stone-500 dark:text-stone-400">{cat.icon}</div>
+                          <span className="text-xs font-semibold text-stone-700 dark:text-stone-200">{cat.label}</span>
                         </div>
                         {ratings[cat.id] > 0 && (
                           <Badge variant="outline" className="text-[9px] h-5">{ratings[cat.id]}/5</Badge>
@@ -217,17 +217,17 @@ export default function CitizenFeedbackPage() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Comment (optional)</label>
+                  <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Comment (optional)</label>
                   <Textarea
                     placeholder="Share your experience with service delivery in your county..."
-                    className="text-xs border-stone-200 min-h-[80px]"
+                    className="text-xs border-stone-200 dark:border-stone-700 min-h-[80px]"
                     value={comment}
                     onChange={e => setComment(e.target.value)}
                   />
                 </div>
 
                 {submitted ? (
-                  <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200 text-center">
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950 rounded-lg border border-emerald-200 text-center">
                     <p className="text-xs font-semibold text-emerald-700">Rating submitted successfully!</p>
                   </div>
                 ) : (
@@ -242,9 +242,9 @@ export default function CitizenFeedbackPage() {
 
           {/* Rating Guide */}
           <div className="space-y-4">
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardContent className="py-3 px-4 space-y-3">
-                <p className="text-xs font-bold text-slate-800">Rating Guide</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-100">Rating Guide</p>
                 {[
                   { stars: 5, label: 'Excellent', desc: 'Service is reliable, accessible, and of high quality' },
                   { stars: 4, label: 'Good', desc: 'Service is generally adequate with minor issues' },
@@ -255,19 +255,19 @@ export default function CitizenFeedbackPage() {
                   <div key={r.stars} className="flex items-start gap-2">
                     <StarRating value={r.stars} />
                     <div>
-                      <p className="text-[10px] font-bold text-stone-800">{r.stars} — {r.label}</p>
-                      <p className="text-[9px] text-stone-500">{r.desc}</p>
+                      <p className="text-[10px] font-bold text-stone-800 dark:text-stone-100">{r.stars} — {r.label}</p>
+                      <p className="text-[9px] text-stone-500 dark:text-stone-400">{r.desc}</p>
                     </div>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            <Card className="border-stone-200 bg-stone-50">
+            <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
               <CardContent className="py-3 px-4">
                 <div className="flex items-start gap-2">
-                  <Info className="h-3.5 w-3.5 text-stone-500 shrink-0 mt-0.5" />
-                  <p className="text-[10px] text-stone-600 leading-relaxed">
+                  <Info className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400 shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
                     Your ratings help build a community view of service delivery quality across Kenya&apos;s 47 counties.
                     Rate honestly based on your personal experience.
                   </p>
@@ -280,16 +280,16 @@ export default function CitizenFeedbackPage() {
         /* View Ratings */
         <div className="space-y-4">
           {countyCounties.length === 0 ? (
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardContent className="py-12 text-center">
                 <BarChart3 className="h-10 w-10 text-stone-300 mx-auto mb-3" />
-                <p className="text-sm text-stone-500">No ratings submitted yet</p>
+                <p className="text-sm text-stone-500 dark:text-stone-400">No ratings submitted yet</p>
                 <p className="text-[10px] text-stone-400 mt-1">Rate your county&apos;s services to see aggregated results here</p>
               </CardContent>
             </Card>
           ) : (
             countyCounties.map(county => (
-              <Card key={county} className="border-stone-200 bg-white">
+              <Card key={county} className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xs font-semibold flex items-center gap-2">
@@ -308,7 +308,7 @@ export default function CitizenFeedbackPage() {
                       if (!data) return null;
                       return (
                         <div key={cat.id} className="flex items-center gap-3">
-                          <div className="w-24 flex items-center gap-1.5 text-[11px] text-stone-600 shrink-0">
+                          <div className="w-24 flex items-center gap-1.5 text-[11px] text-stone-600 dark:text-stone-300 shrink-0">
                             <span className="text-stone-400">{cat.icon}</span>
                             <span className="font-medium truncate">{cat.label}</span>
                           </div>
@@ -316,7 +316,7 @@ export default function CitizenFeedbackPage() {
                             <Progress value={data.avg * 20} className="h-2" />
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            <span className="text-xs font-bold text-stone-800">{data.avg.toFixed(1)}</span>
+                            <span className="text-xs font-bold text-stone-800 dark:text-stone-100">{data.avg.toFixed(1)}</span>
                             <span className="text-[9px] text-stone-400">/5</span>
                             <span className="text-[9px] text-stone-400">({data.count})</span>
                           </div>

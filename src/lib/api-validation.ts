@@ -149,6 +149,56 @@ export const WeatherQuerySchema = z.object({
   location: z.string().max(100).default('Nairobi'),
 });
 
+/** GET /api/tips query params */
+export const TipQuerySchema = z.object({
+  county: CountyNameSchema.optional(),
+  category: TipCategorySchema.optional(),
+  status: z.string().trim().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+/** Story status workflow */
+export const STORY_STATUSES = ['pending', 'reviewed', 'actioned', 'dismissed'] as const;
+export const StoryStatusSchema = z.enum(STORY_STATUSES);
+
+/** Tip status workflow */
+export const TIP_STATUSES = ['pending', 'investigating', 'resolved', 'dismissed'] as const;
+export const TipStatusSchema = z.enum(TIP_STATUSES);
+
+/** PATCH /api/db/stories/[id]/status — Status update body */
+export const StoryStatusUpdateSchema = z.object({
+  status: StoryStatusSchema,
+});
+
+/** PATCH /api/db/tips/[id]/status — Status update body */
+export const TipStatusUpdateSchema = z.object({
+  status: TipStatusSchema,
+  adminNotes: z.string().max(2000).trim().optional(),
+});
+
+/** GET /api/db/stories query params (extends base with status + date range) */
+export const DbStoryQuerySchema = z.object({
+  county: CountyNameSchema.optional(),
+  sector: SectorSchema.optional(),
+  status: StoryStatusSchema.optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+/** GET /api/db/tips query params */
+export const DbTipQuerySchema = z.object({
+  county: CountyNameSchema.optional(),
+  category: TipCategorySchema.optional(),
+  status: TipStatusSchema.optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
 // ─── Validation Helpers ────────────────────────────────────────────
 
 /**

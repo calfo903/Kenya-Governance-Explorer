@@ -74,10 +74,10 @@ function getStatusBadgeStyle(status: ProjectRecord['status']): string {
   switch (status) {
     case 'completed': return 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200';
     case 'active': return 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200';
-    case 'planning': return 'bg-stone-100 text-stone-700 border-stone-300 hover:bg-stone-200';
+    case 'planning': return 'bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-200 border-stone-300 hover:bg-stone-200';
     case 'stalled': return 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200';
     case 'suspended': return 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200';
-    default: return 'bg-stone-100 text-stone-700 border-stone-300';
+    default: return 'bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-200 border-stone-300';
   }
 }
 
@@ -98,7 +98,7 @@ function formatDate(dateStr: string): string {
 }
 
 function getRiskLevel(score: number | undefined): { label: string; color: string; textColor: string } {
-  if (score === undefined) return { label: 'N/A', color: 'bg-stone-200', textColor: 'text-stone-600' };
+  if (score === undefined) return { label: 'N/A', color: 'bg-stone-200', textColor: 'text-stone-600 dark:text-stone-300' };
   if (score >= 75) return { label: 'High', color: 'bg-red-500', textColor: 'text-red-600' };
   if (score >= 50) return { label: 'Medium', color: 'bg-amber-500', textColor: 'text-amber-600' };
   return { label: 'Low', color: 'bg-emerald-500', textColor: 'text-emerald-600' };
@@ -144,7 +144,7 @@ function RiskScoreGauge({ score }: { score: number | undefined }) {
           <span className={`text-xl font-bold ${risk.textColor}`}>
             {score !== undefined ? score : '—'}
           </span>
-          <span className="text-[10px] text-stone-500">/ 100</span>
+          <span className="text-[10px] text-stone-500 dark:text-stone-400">/ 100</span>
         </div>
       </div>
       <span className={`text-xs font-semibold ${risk.textColor}`}>{risk.label} Risk</span>
@@ -178,7 +178,7 @@ function TimelineEventItem({ event, isFirstLifecycleStart, isLastLifecycleEnd }:
       <div className={`flex-1 pb-6 ${isSpecial ? '-mt-0.5' : '-mt-0.5'}`}>
         {/* Date & verification row */}
         <div className="flex items-center gap-2 mb-1">
-          <span className={`text-xs font-medium ${isSpecial ? 'text-stone-800 text-sm' : 'text-stone-500'}`}>
+          <span className={`text-xs font-medium ${isSpecial ? 'text-stone-800 dark:text-stone-100 text-sm' : 'text-stone-500 dark:text-stone-400'}`}>
             {formatDate(event.date)}
           </span>
 
@@ -214,12 +214,12 @@ function TimelineEventItem({ event, isFirstLifecycleStart, isLastLifecycleEnd }:
         </div>
 
         {/* Title */}
-        <h4 className={`font-semibold leading-tight ${isSpecial ? 'text-base' : 'text-sm'} text-stone-900`}>
+        <h4 className={`font-semibold leading-tight ${isSpecial ? 'text-base' : 'text-sm'} text-stone-900 dark:text-stone-50`}>
           {event.title}
         </h4>
 
         {/* Description */}
-        <p className="text-xs text-stone-600 mt-1 leading-relaxed max-w-lg">
+        <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 leading-relaxed max-w-lg">
           {event.description}
         </p>
 
@@ -234,7 +234,7 @@ function TimelineEventItem({ event, isFirstLifecycleStart, isLastLifecycleEnd }:
                   href={event.source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ml-1 inline-flex items-center gap-0.5 text-stone-500 hover:text-stone-700 transition-colors"
+                  className="ml-1 inline-flex items-center gap-0.5 text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200 transition-colors"
                 >
                   <ExternalLink className="h-2.5 w-2.5" />
                 </a>
@@ -254,8 +254,8 @@ function BudgetProgressBar({ allocated, spent }: { allocated: number; spent: num
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-stone-500">Budget Utilization</span>
-        <span className={`font-medium ${isOverBudget ? 'text-red-600' : 'text-stone-700'}`}>
+        <span className="text-stone-500 dark:text-stone-400">Budget Utilization</span>
+        <span className={`font-medium ${isOverBudget ? 'text-red-600' : 'text-stone-700 dark:text-stone-200'}`}>
           {percentage.toFixed(1)}%
         </span>
       </div>
@@ -263,7 +263,7 @@ function BudgetProgressBar({ allocated, spent }: { allocated: number; spent: num
         value={percentage}
         className={`h-2.5 ${isOverBudget ? '[&>div]:bg-red-500' : '[&>div]:bg-emerald-500'}`}
       />
-      <div className="flex items-center justify-between text-[11px] text-stone-500">
+      <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
         <span>Spent: {formatCurrency(spent)}</span>
         <span>Allocated: {formatCurrency(allocated)}</span>
       </div>
@@ -299,9 +299,9 @@ function ProjectVelocityChart({ timeline }: { timeline: AuditTimelineEvent[] }) 
   const maxEvents = Math.max(...chartData.map((d) => d.events), 1);
 
   return (
-    <Card className="border-stone-200 bg-white">
+    <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
       <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
+        <CardTitle className="text-xs font-semibold text-stone-700 dark:text-stone-200 flex items-center gap-1.5">
           <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
           Audit Velocity
         </CardTitle>
@@ -353,10 +353,10 @@ function ProjectVelocityChart({ timeline }: { timeline: AuditTimelineEvent[] }) 
 
 function WeatherWidgetPlaceholder({ locationName }: { locationName: string }) {
   return (
-    <Card className="border-stone-200 bg-gradient-to-br from-stone-50 to-white">
+    <Card className="border-stone-200 dark:border-stone-700 bg-gradient-to-br from-stone-50 to-white">
       <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
-          <MapPin className="h-3.5 w-3.5 text-stone-500" />
+        <CardTitle className="text-xs font-semibold text-stone-700 dark:text-stone-200 flex items-center gap-1.5">
+          <MapPin className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" />
           {locationName}
         </CardTitle>
         <CardDescription className="text-[10px]">Weather at project site</CardDescription>
@@ -364,12 +364,12 @@ function WeatherWidgetPlaceholder({ locationName }: { locationName: string }) {
       <CardContent className="px-4 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-stone-100 dark:bg-stone-700 border border-stone-200 dark:border-stone-700 flex items-center justify-center">
               <Cloud className="h-5 w-5 text-stone-400" />
             </div>
             <div>
-              <div className="text-lg font-semibold text-stone-800">—°C</div>
-              <div className="text-[10px] text-stone-500">Conditions unavailable</div>
+              <div className="text-lg font-semibold text-stone-800 dark:text-stone-100">—°C</div>
+              <div className="text-[10px] text-stone-500 dark:text-stone-400">Conditions unavailable</div>
             </div>
           </div>
           <div className="text-right space-y-0.5">
@@ -447,9 +447,9 @@ function RiskForecastPanel({ project }: { project: ProjectRecord }) {
       : 'bg-emerald-500';
 
   return (
-    <Card className="border-stone-200 bg-white">
+    <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
       <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
+        <CardTitle className="text-xs font-semibold text-stone-700 dark:text-stone-200 flex items-center gap-1.5">
           <Gauge className="h-3.5 w-3.5 text-amber-600" />
           Risk Forecast
         </CardTitle>
@@ -460,12 +460,12 @@ function RiskForecastPanel({ project }: { project: ProjectRecord }) {
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <div className="flex justify-between text-[11px] mb-1">
-              <span className="text-stone-600">Stalling Probability</span>
+              <span className="text-stone-600 dark:text-stone-300">Stalling Probability</span>
               <span className={`font-bold ${stallingColor}`}>
                 {forecast.stallingProbability}%
               </span>
             </div>
-            <div className="h-1.5 rounded-full bg-stone-100 overflow-hidden">
+            <div className="h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${stallingBarColor}`}
                 style={{ width: `${forecast.stallingProbability}%` }}
@@ -478,15 +478,15 @@ function RiskForecastPanel({ project }: { project: ProjectRecord }) {
         <div className="space-y-1.5">
           {forecast.factors.map((factor) => (
             <div key={factor.name} className="flex items-center justify-between text-[11px]">
-              <span className="text-stone-500">{factor.name}</span>
+              <span className="text-stone-500 dark:text-stone-400">{factor.name}</span>
               <Badge
                 variant="outline"
                 className={`text-[9px] px-1.5 py-0 h-4 border ${
                   factor.status === 'critical'
-                    ? 'bg-red-50 text-red-600 border-red-200'
+                    ? 'bg-red-50 dark:bg-red-950 text-red-600 border-red-200'
                     : factor.status === 'concerning'
-                    ? 'bg-amber-50 text-amber-600 border-amber-200'
-                    : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                    ? 'bg-amber-50 dark:bg-amber-950 text-amber-600 border-amber-200'
+                    : 'bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border-emerald-200'
                 }`}
               >
                 {(factor.weight * 100).toFixed(0)}% weight
@@ -496,9 +496,9 @@ function RiskForecastPanel({ project }: { project: ProjectRecord }) {
         </div>
 
         {/* Recommendation */}
-        <div className="mt-2 p-2 rounded-md bg-stone-50 border border-stone-200">
-          <p className="text-[10px] text-stone-600 leading-relaxed">
-            <span className="font-semibold text-stone-700">AI Recommendation: </span>
+        <div className="mt-2 p-2 rounded-md bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+          <p className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
+            <span className="font-semibold text-stone-700 dark:text-stone-200">AI Recommendation: </span>
             {forecast.recommendation}
           </p>
         </div>
@@ -525,9 +525,9 @@ function CitizenAuditorWidget({ project }: { project: ProjectRecord }) {
   }), [project]);
 
   return (
-    <Card className="border-stone-200 bg-white">
+    <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
       <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
+        <CardTitle className="text-xs font-semibold text-stone-700 dark:text-stone-200 flex items-center gap-1.5">
           <Users className="h-3.5 w-3.5 text-blue-600" />
           Citizen Auditor Stats
         </CardTitle>
@@ -535,15 +535,15 @@ function CitizenAuditorWidget({ project }: { project: ProjectRecord }) {
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-3">
         <div className="grid grid-cols-2 gap-2">
-          <div className="p-2 rounded-md bg-stone-50 border border-stone-100 text-center">
-            <div className="text-lg font-bold text-stone-800">{stats.photosVerified}</div>
-            <div className="text-[10px] text-stone-500">Photos Verified</div>
+          <div className="p-2 rounded-md bg-stone-50 dark:bg-stone-800 border border-stone-100 dark:border-stone-800 text-center">
+            <div className="text-lg font-bold text-stone-800 dark:text-stone-100">{stats.photosVerified}</div>
+            <div className="text-[10px] text-stone-500 dark:text-stone-400">Photos Verified</div>
           </div>
-          <div className="p-2 rounded-md bg-stone-50 border border-stone-100 text-center">
-            <div className="text-lg font-bold text-stone-800">
+          <div className="p-2 rounded-md bg-stone-50 dark:bg-stone-800 border border-stone-100 dark:border-stone-800 text-center">
+            <div className="text-lg font-bold text-stone-800 dark:text-stone-100">
               #{stats.rank}
             </div>
-            <div className="text-[10px] text-stone-500">
+            <div className="text-[10px] text-stone-500 dark:text-stone-400">
               of {stats.totalParticipants}
             </div>
           </div>
@@ -555,7 +555,7 @@ function CitizenAuditorWidget({ project }: { project: ProjectRecord }) {
             <Badge
               key={badge}
               variant="outline"
-              className="text-[9px] px-1.5 py-0 h-4 border-blue-200 bg-blue-50 text-blue-700"
+              className="text-[9px] px-1.5 py-0 h-4 border-blue-200 bg-blue-50 dark:bg-blue-950 text-blue-700"
             >
               <Shield className="h-2.5 w-2.5 mr-0.5" />
               {badge}
@@ -564,10 +564,10 @@ function CitizenAuditorWidget({ project }: { project: ProjectRecord }) {
         </div>
 
         {/* Recent activity */}
-        <div className="text-[10px] text-stone-500 flex items-start gap-1.5">
+        <div className="text-[10px] text-stone-500 dark:text-stone-400 flex items-start gap-1.5">
           <div className="h-1.5 w-1.5 rounded-full bg-blue-400 mt-1 shrink-0" />
           <span>
-            <span className="text-stone-700">{stats.recentActivity[0]?.action ?? 'No recent activity'}</span>
+            <span className="text-stone-700 dark:text-stone-200">{stats.recentActivity[0]?.action ?? 'No recent activity'}</span>
             {' — '}
             {formatDate(stats.recentActivity[0]?.date ?? '')}
           </span>
@@ -631,7 +631,7 @@ function OversightActionHub({ project }: { project: ProjectRecord }) {
       label: 'Flag for OAG Priority Review',
       icon: Flag,
       variant: 'outline' as const,
-      className: 'border-amber-300 text-amber-700 hover:bg-amber-50',
+      className: 'border-amber-300 text-amber-700 hover:bg-amber-50 dark:bg-amber-950',
       onClick: () => {
         window.open('https://oagkenya.go.ke', '_blank', 'noopener,noreferrer');
       },
@@ -641,7 +641,7 @@ function OversightActionHub({ project }: { project: ProjectRecord }) {
       label: 'Request RTI Information',
       icon: Eye,
       variant: 'outline' as const,
-      className: 'border-blue-300 text-blue-700 hover:bg-blue-50',
+      className: 'border-blue-300 text-blue-700 hover:bg-blue-50 dark:bg-blue-950',
       onClick: () => {
         toast.info('Redirecting to RTI Request tab...');
       },
@@ -652,8 +652,8 @@ function OversightActionHub({ project }: { project: ProjectRecord }) {
       icon: Bell,
       variant: tracked ? ('secondary' as const) : ('outline' as const),
       className: tracked
-        ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
-        : 'border-stone-300 text-stone-700 hover:bg-stone-50',
+        ? 'border-emerald-300 text-emerald-700 bg-emerald-50 dark:bg-emerald-950'
+        : 'border-stone-300 text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800',
       onClick: handleTrackProject,
       disabled: tracked,
       tooltip: 'Subscribe to notifications for this project',
@@ -663,21 +663,21 @@ function OversightActionHub({ project }: { project: ProjectRecord }) {
       icon: copied ? CheckCircle2 : Share2,
       variant: copied ? ('secondary' as const) : ('outline' as const),
       className: copied
-        ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
-        : 'border-stone-300 text-stone-700 hover:bg-stone-50',
+        ? 'border-emerald-300 text-emerald-700 bg-emerald-50 dark:bg-emerald-950'
+        : 'border-stone-300 text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800',
       onClick: handleShareReport,
       tooltip: 'Copy a summary report to clipboard',
     },
   ];
 
   return (
-    <Card className="border-stone-200 bg-gradient-to-r from-stone-50 to-white">
+    <Card className="border-stone-200 dark:border-stone-700 bg-gradient-to-r from-stone-50 to-white">
       <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-sm font-semibold text-stone-800 flex items-center gap-2">
-          <Shield className="h-4 w-4 text-stone-600" />
+        <CardTitle className="text-sm font-semibold text-stone-800 dark:text-stone-100 flex items-center gap-2">
+          <Shield className="h-4 w-4 text-stone-600 dark:text-stone-300" />
           Oversight Action Hub
         </CardTitle>
-        <CardDescription className="text-xs text-stone-500">
+        <CardDescription className="text-xs text-stone-500 dark:text-stone-400">
           Civic oversight tools for community accountability
         </CardDescription>
       </CardHeader>
@@ -759,7 +759,7 @@ export default function ProjectDetailDrawer({
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="text-stone-500 hover:text-stone-700 hover:bg-stone-200 rounded-full h-8 w-8 p-0"
+                className="text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200 hover:bg-stone-200 rounded-full h-8 w-8 p-0"
                 aria-label="Close project detail"
               >
                 <XCircle className="h-4 w-4" />
@@ -769,14 +769,14 @@ export default function ProjectDetailDrawer({
 
           <div className="max-w-7xl mx-auto px-4 pb-8 space-y-6">
             {/* ─── Project Header ─────────────────────────────────── */}
-            <Card className="border-stone-200 bg-white shadow-sm">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 shadow-sm">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Left: Title, status, agency */}
                   <div className="flex-1 space-y-3">
                     {/* Name & Status */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <h2 className="text-xl sm:text-2xl font-bold text-stone-900 leading-tight">
+                      <h2 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-50 leading-tight">
                         {project.name}
                       </h2>
                       <Badge
@@ -788,7 +788,7 @@ export default function ProjectDetailDrawer({
                     </div>
 
                     {/* County & Agency */}
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-stone-600">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-stone-600 dark:text-stone-300">
                       <span className="inline-flex items-center gap-1">
                         <MapPin className="h-3.5 w-3.5 text-stone-400" />
                         {project.countyCode}
@@ -806,7 +806,7 @@ export default function ProjectDetailDrawer({
                     </div>
 
                     {/* Date range */}
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
                       <Clock className="h-3 w-3" />
                       <span>
                         {formatDate(project.startDate)}
@@ -822,17 +822,17 @@ export default function ProjectDetailDrawer({
                   </div>
 
                   {/* Right: Risk Score Gauge */}
-                  <div className="flex flex-col items-center gap-1 lg:border-l lg:border-stone-200 lg:pl-6">
+                  <div className="flex flex-col items-center gap-1 lg:border-l lg:border-stone-200 dark:border-stone-700 lg:pl-6">
                     <RiskScoreGauge score={project.riskScore} />
                     {project.riskFactors && project.riskFactors.length > 0 && (
                       <div className="mt-2 max-w-48">
-                        <p className="text-[10px] font-medium text-stone-500 mb-1">Risk Factors:</p>
+                        <p className="text-[10px] font-medium text-stone-500 dark:text-stone-400 mb-1">Risk Factors:</p>
                         <div className="flex flex-wrap gap-1">
                           {project.riskFactors.map((factor) => (
                             <Badge
                               key={factor}
                               variant="outline"
-                              className="text-[9px] px-1.5 py-0 h-4 border-stone-200 text-stone-600"
+                              className="text-[9px] px-1.5 py-0 h-4 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300"
                             >
                               {factor}
                             </Badge>
@@ -849,13 +849,13 @@ export default function ProjectDetailDrawer({
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Left: Audit Timeline (70%) */}
               <div className="w-full lg:w-[70%] space-y-4">
-                <Card className="border-stone-200 bg-white shadow-sm">
+                <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 shadow-sm">
                   <CardHeader className="pb-3 pt-4 px-4 sm:px-6">
-                    <CardTitle className="text-sm font-semibold text-stone-800 flex items-center gap-2">
+                    <CardTitle className="text-sm font-semibold text-stone-800 dark:text-stone-100 flex items-center gap-2">
                       <Clock className="h-4 w-4 text-emerald-600" />
                       Audit Timeline
                     </CardTitle>
-                    <CardDescription className="text-xs text-stone-500">
+                    <CardDescription className="text-xs text-stone-500 dark:text-stone-400">
                       Chronological record of audits, milestones, and findings
                       {timeline.length > 0 && (
                         <span className="ml-2 text-stone-400">

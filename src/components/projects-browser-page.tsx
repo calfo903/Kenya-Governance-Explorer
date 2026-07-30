@@ -35,7 +35,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   planning: { label: 'Planning', color: 'bg-blue-100 text-blue-800 border-blue-300', icon: Layers },
   active: { label: 'Active', color: 'bg-green-100 text-green-800 border-green-300', icon: Activity },
   stalled: { label: 'Stalled', color: 'bg-red-100 text-red-800 border-red-300', icon: AlertTriangle },
-  completed: { label: 'Completed', color: 'bg-gray-100 text-gray-700 border-gray-300', icon: CheckCircle2 },
+  completed: { label: 'Completed', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600', icon: CheckCircle2 },
   suspended: { label: 'Suspended', color: 'bg-amber-100 text-amber-800 border-amber-300', icon: Clock },
 };
 
@@ -54,11 +54,11 @@ function getCategoryColor(category: string): string {
   if (cat.includes('health')) return 'bg-rose-100 text-rose-800 border-rose-200';
   if (cat.includes('education')) return 'bg-violet-100 text-violet-800 border-violet-200';
   if (cat.includes('agriculture') || cat.includes('livestock')) return 'bg-lime-100 text-lime-800 border-lime-200';
-  return 'bg-stone-100 text-stone-700 border-stone-200';
+  return 'bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-200 border-stone-200 dark:border-stone-700';
 }
 
 function getRiskConfig(score: number | undefined): { label: string; color: string; textColor: string; borderColor: string } {
-  if (score === undefined) return { label: 'N/A', color: 'bg-gray-200', textColor: 'text-gray-500', borderColor: 'border-gray-300' };
+  if (score === undefined) return { label: 'N/A', color: 'bg-gray-200 dark:bg-gray-700', textColor: 'text-gray-500 dark:text-gray-400', borderColor: 'border-gray-300 dark:border-gray-600' };
   if (score < 25) return { label: 'Low', color: 'bg-green-500', textColor: 'text-green-800', borderColor: 'border-green-300' };
   if (score <= 60) return { label: 'Medium', color: 'bg-amber-500', textColor: 'text-amber-800', borderColor: 'border-amber-300' };
   return { label: 'High', color: 'bg-red-500', textColor: 'text-red-800', borderColor: 'border-red-300' };
@@ -176,63 +176,63 @@ export default function ProjectsBrowserPage() {
     <div className="space-y-6">
       {/* Summary Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="border-stone-200 shadow-sm">
+        <Card className="border-stone-200 dark:border-stone-700 shadow-sm">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-stone-100 flex items-center justify-center">
-              <Layers className="h-5 w-5 text-stone-600" />
+            <div className="h-10 w-10 rounded-lg bg-stone-100 dark:bg-stone-700 flex items-center justify-center">
+              <Layers className="h-5 w-5 text-stone-600 dark:text-stone-300" />
             </div>
             <div>
-              <p className="text-xs text-stone-500 font-medium">Total Projects</p>
-              <p className="text-xl font-bold text-stone-800">{stats.total}</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">Total Projects</p>
+              <p className="text-xl font-bold text-stone-800 dark:text-stone-100">{stats.total}</p>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-stone-200 shadow-sm">
+        <Card className="border-stone-200 dark:border-stone-700 shadow-sm">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
               <Activity className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-stone-500 font-medium">Active Projects</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">Active Projects</p>
               <p className="text-xl font-bold text-green-700">{stats.active}</p>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-stone-200 shadow-sm">
+        <Card className="border-stone-200 dark:border-stone-700 shadow-sm">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
               <AlertTriangle className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <p className="text-xs text-stone-500 font-medium">Stalled Projects</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">Stalled Projects</p>
               <p className="text-xl font-bold text-red-700">{stats.stalled}</p>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-stone-200 shadow-sm">
+        <Card className="border-stone-200 dark:border-stone-700 shadow-sm">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
               <DollarSign className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-xs text-stone-500 font-medium">Total Budget</p>
-              <p className="text-xl font-bold text-stone-800">{formatBudgetBillion(stats.totalBudget)}B <span className="text-xs font-normal text-stone-500">KSh</span></p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">Total Budget</p>
+              <p className="text-xl font-bold text-stone-800 dark:text-stone-100">{formatBudgetBillion(stats.totalBudget)}B <span className="text-xs font-normal text-stone-500 dark:text-stone-400">KSh</span></p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters Bar */}
-      <Card className="border-stone-200 shadow-sm">
+      <Card className="border-stone-200 dark:border-stone-700 shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Filter className="h-4 w-4 text-stone-500" />
-            <span className="text-sm font-semibold text-stone-700">Filters</span>
+            <Filter className="h-4 w-4 text-stone-500 dark:text-stone-400" />
+            <span className="text-sm font-semibold text-stone-700 dark:text-stone-200">Filters</span>
             {(searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || riskFilter !== 'all') && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-auto h-7 text-xs text-stone-500"
+                className="ml-auto h-7 text-xs text-stone-500 dark:text-stone-400"
                 onClick={() => {
                   setSearchQuery('');
                   setStatusFilter('all');
@@ -253,12 +253,12 @@ export default function ProjectsBrowserPage() {
                 placeholder="Search project or county..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-sm bg-stone-50 border-stone-200"
+                className="pl-9 h-9 text-sm bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700"
               />
             </div>
             {/* Status */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-9 text-sm bg-stone-50 border-stone-200">
+              <SelectTrigger className="h-9 text-sm bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -272,7 +272,7 @@ export default function ProjectsBrowserPage() {
             </Select>
             {/* Category */}
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="h-9 text-sm bg-stone-50 border-stone-200">
+              <SelectTrigger className="h-9 text-sm bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -286,7 +286,7 @@ export default function ProjectsBrowserPage() {
             </Select>
             {/* Sort */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="h-9 text-sm bg-stone-50 border-stone-200">
+              <SelectTrigger className="h-9 text-sm bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700">
                 <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-stone-400" />
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -299,7 +299,7 @@ export default function ProjectsBrowserPage() {
           </div>
           {/* Risk filter chips */}
           <div className="flex items-center gap-2 mt-3">
-            <span className="text-xs text-stone-500 font-medium">Risk:</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Risk:</span>
             {[
               { value: 'all', label: 'All' },
               { value: 'low', label: 'Low' },
@@ -313,7 +313,7 @@ export default function ProjectsBrowserPage() {
                 className={`h-7 text-xs px-3 ${
                   riskFilter === opt.value
                     ? ''
-                    : 'border-stone-200 text-stone-600 hover:bg-stone-50'
+                    : 'border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'
                 } ${
                   riskFilter === opt.value && opt.value === 'low' ? 'bg-green-600 hover:bg-green-700' : ''
                 } ${
@@ -335,7 +335,7 @@ export default function ProjectsBrowserPage() {
         {filteredProjects.length === 0 ? (
           <div className="col-span-full py-16 text-center">
             <Search className="h-10 w-10 text-stone-300 mx-auto mb-3" />
-            <p className="text-sm font-medium text-stone-500">No projects match your filters</p>
+            <p className="text-sm font-medium text-stone-500 dark:text-stone-400">No projects match your filters</p>
             <p className="text-xs text-stone-400 mt-1">Try adjusting your search or filter criteria</p>
           </div>
         ) : (
@@ -351,17 +351,17 @@ export default function ProjectsBrowserPage() {
             return (
               <Card
                 key={project.id}
-                className="border-stone-200 shadow-sm hover:shadow-md hover:border-stone-300 transition-all cursor-pointer group"
+                className="border-stone-200 dark:border-stone-700 shadow-sm hover:shadow-md hover:border-stone-300 transition-all cursor-pointer group"
                 onClick={() => openDrawer(project)}
               >
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-sm font-bold text-stone-800 leading-snug group-hover:text-stone-900 line-clamp-2">
+                      <CardTitle className="text-sm font-bold text-stone-800 dark:text-stone-100 leading-snug group-hover:text-stone-900 dark:text-stone-50 line-clamp-2">
                         {project.name}
                       </CardTitle>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-stone-300 group-hover:text-stone-500 flex-shrink-0 mt-0.5 transition-colors" />
+                    <ChevronRight className="h-4 w-4 text-stone-300 group-hover:text-stone-500 dark:text-stone-400 flex-shrink-0 mt-0.5 transition-colors" />
                   </div>
                   <div className="flex items-center gap-2 flex-wrap mt-1.5">
                     <Badge
@@ -382,9 +382,9 @@ export default function ProjectsBrowserPage() {
                 </CardHeader>
                 <CardContent className="p-4 pt-2 space-y-3">
                   {/* County + Location */}
-                  <div className="flex items-center gap-1.5 text-xs text-stone-500">
+                  <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
                     <MapPin className="h-3 w-3 text-stone-400 flex-shrink-0" />
-                    <span className="font-medium text-stone-600">{getCountyName(project.countyCode)}</span>
+                    <span className="font-medium text-stone-600 dark:text-stone-300">{getCountyName(project.countyCode)}</span>
                     <span className="text-stone-300">·</span>
                     <span className="truncate">{project.location.name}</span>
                   </div>
@@ -392,10 +392,10 @@ export default function ProjectsBrowserPage() {
                   {/* Budget Progress */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-stone-500 font-medium">Budget Utilization</span>
-                      <span className="text-stone-600 font-semibold">{budgetPercent}%</span>
+                      <span className="text-stone-500 dark:text-stone-400 font-medium">Budget Utilization</span>
+                      <span className="text-stone-600 dark:text-stone-300 font-semibold">{budgetPercent}%</span>
                     </div>
-                    <Progress value={budgetPercent} className="h-1.5 bg-stone-100" />
+                    <Progress value={budgetPercent} className="h-1.5 bg-stone-100 dark:bg-stone-700" />
                     <div className="flex items-center justify-between text-[10px] text-stone-400">
                       <span>Spent: {formatBudget(project.budgetSpent)}</span>
                       <span>Allocated: {formatBudget(project.budgetAllocated)}</span>
@@ -452,9 +452,9 @@ export default function ProjectsBrowserPage() {
       {selectedProject && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/50" onClick={closeDrawer} />
-          <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[70%] lg:w-[60%] bg-white shadow-2xl overflow-y-auto">
-            <div className="sticky top-0 z-10 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-stone-800">Project Details</h2>
+          <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[70%] lg:w-[60%] bg-white dark:bg-stone-900 shadow-2xl overflow-y-auto">
+            <div className="sticky top-0 z-10 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 px-4 py-3 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-stone-800 dark:text-stone-100">Project Details</h2>
               <Button variant="ghost" size="sm" onClick={closeDrawer}>
                 <X className="h-4 w-4" />
               </Button>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import {
   nationalSummary, getLatestAuditSummary, getLatestBudgetSummary,
   governorCoalitionDistribution,
@@ -17,6 +18,7 @@ import type { TabId } from './tab-types';
 // NATIONAL SUMMARY DASHBOARD
 // ══════════════════════════════════════════════════════════════════
 export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
+  const t = useTranslations();
   const latestAudit = getLatestAuditSummary();
   const prevAudit = nationalSummary.auditSummaries[1];
   const latestBudget = getLatestBudgetSummary();
@@ -26,14 +28,14 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
       {/* Top Actions Bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">National Dashboard</h2>
-          <p className="text-xs text-stone-500">Evidence-based overview of Kenya's 47 county governments</p>
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">{t('dashboard.nationalDashboard')}</h2>
+          <p className="text-xs text-stone-500">{t('dashboard.dashboardSubtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <ExportButton
             variant="outline"
             size="sm"
-            label="Export CSV"
+            label={t('common.exportCsv')}
             onClick={() => exportCountiesToCSV()}
           />
           <button
@@ -41,7 +43,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
             className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
           >
             <GitCompare className="h-3.5 w-3.5" />
-            Compare Counties
+            {t('common.compareCounties')}
           </button>
         </div>
       </div>
@@ -49,10 +51,10 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
       {/* Quick Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Counties', value: '47', sub: 'Devolved Units', icon: MapPin, color: 'text-emerald-600 bg-emerald-50' },
-          { label: 'Clean Audits (Exec)', value: latestAudit.countyExecutive.unmodified.toString(), sub: `of 47 (${latestAudit.financialYear})`, icon: CheckCircle2, color: 'text-green-600 bg-green-50' },
-          { label: 'Avg Dev Absorption', value: `${latestBudget.avgDevelopmentAbsorption}%`, sub: latestBudget.period, icon: TrendingDown, color: 'text-red-600 bg-red-50' },
-          { label: 'Unspent Funds', value: latestBudget.totalUnspentAmount || '—', sub: 'Development Budget', icon: AlertTriangle, color: 'text-amber-600 bg-amber-50' },
+          { label: t('sidebar.counties'), value: '47', sub: t('budget.devolvedUnits'), icon: MapPin, color: 'text-emerald-600 bg-emerald-50' },
+          { label: t('budget.cleanAuditsExec'), value: latestAudit.countyExecutive.unmodified.toString(), sub: `of 47 (${latestAudit.financialYear})`, icon: CheckCircle2, color: 'text-green-600 bg-green-50' },
+          { label: t('budget.avgDevAbsorption'), value: `${latestBudget.avgDevelopmentAbsorption}%`, sub: latestBudget.period, icon: TrendingDown, color: 'text-red-600 bg-red-50' },
+          { label: t('budget.unspentFunds'), value: latestBudget.totalUnspentAmount || '—', sub: t('budget.developmentBudget'), icon: AlertTriangle, color: 'text-amber-600 bg-amber-50' },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-stone-200 p-4">
             <div className="flex items-center gap-2.5 mb-2">
@@ -73,21 +75,21 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Scale className="h-4 w-4 text-emerald-600" /> OAG Audit Opinions — {latestAudit.financialYear}
+                <Scale className="h-4 w-4 text-emerald-600" /> {t('audit.oagAuditOpinions')} — {latestAudit.financialYear}
               </CardTitle>
-              <Badge variant="outline" className="text-[10px] font-normal">Latest</Badge>
+              <Badge variant="outline" className="text-[10px] font-normal">{t('common.latest')}</Badge>
             </div>
             <CardDescription className="text-xs">{latestAudit.source.source} — {latestAudit.source.reportTitle}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div>
-              <p className="text-xs font-semibold text-stone-600 mb-2.5">County Executives</p>
+              <p className="text-xs font-semibold text-stone-600 mb-2.5">{t('audit.countyExecutives')}</p>
               <div className="space-y-2">
                 {[
-                  { label: 'Unmodified', count: latestAudit.countyExecutive.unmodified, color: 'bg-green-500' },
-                  { label: 'Qualified', count: latestAudit.countyExecutive.qualified, color: 'bg-yellow-500' },
-                  { label: 'Adverse', count: latestAudit.countyExecutive.adverse, color: 'bg-orange-500' },
-                  { label: 'Disclaimer', count: latestAudit.countyExecutive.disclaimer, color: 'bg-red-500' },
+                  { label: t('audit.unmodified'), count: latestAudit.countyExecutive.unmodified, color: 'bg-green-500' },
+                  { label: t('audit.qualified'), count: latestAudit.countyExecutive.qualified, color: 'bg-yellow-500' },
+                  { label: t('audit.adverse'), count: latestAudit.countyExecutive.adverse, color: 'bg-orange-500' },
+                  { label: t('audit.disclaimer'), count: latestAudit.countyExecutive.disclaimer, color: 'bg-red-500' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-2.5">
                     <span className="text-xs w-24 text-stone-600">{item.label}</span>
@@ -103,13 +105,13 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold text-stone-600 mb-2.5">County Assemblies</p>
+              <p className="text-xs font-semibold text-stone-600 mb-2.5">{t('audit.countyAssemblies')}</p>
               <div className="space-y-2">
                 {[
-                  { label: 'Unmodified', count: latestAudit.countyAssembly.unmodified, color: 'bg-green-500' },
-                  { label: 'Qualified', count: latestAudit.countyAssembly.qualified, color: 'bg-yellow-500' },
-                  { label: 'Adverse', count: latestAudit.countyAssembly.adverse, color: 'bg-orange-500' },
-                  { label: 'Disclaimer', count: latestAudit.countyAssembly.disclaimer, color: 'bg-red-500' },
+                  { label: t('audit.unmodified'), count: latestAudit.countyAssembly.unmodified, color: 'bg-green-500' },
+                  { label: t('audit.qualified'), count: latestAudit.countyAssembly.qualified, color: 'bg-yellow-500' },
+                  { label: t('audit.adverse'), count: latestAudit.countyAssembly.adverse, color: 'bg-orange-500' },
+                  { label: t('audit.disclaimer'), count: latestAudit.countyAssembly.disclaimer, color: 'bg-red-500' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-2.5">
                     <span className="text-xs w-24 text-stone-600">{item.label}</span>
@@ -126,7 +128,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
             </div>
             {latestAudit.source.url && (
               <a href={latestAudit.source.url} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 hover:underline flex items-center gap-1">
-                <ExternalLink className="h-3 w-3" /> View full report
+                <ExternalLink className="h-3 w-3" /> {t('common.viewFullReport')}
               </a>
             )}
           </CardContent>
@@ -137,7 +139,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-red-600" /> CoB Budget Absorption — {latestBudget.financialYear}
+                <BarChart3 className="h-4 w-4 text-red-600" /> {t('budget.cobBudgetAbsorption')} — {latestBudget.financialYear}
               </CardTitle>
               <Badge variant="outline" className="text-[10px] font-normal">{latestBudget.period}</Badge>
             </div>
@@ -146,22 +148,22 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
           <CardContent className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 bg-red-50 rounded-xl text-center border border-red-100">
-                <p className="text-[10px] font-medium text-red-600 uppercase tracking-wider">Development</p>
+                <p className="text-[10px] font-medium text-red-600 uppercase tracking-wider">{t('budget.development')}</p>
                 <p className="text-3xl font-bold text-red-700 mt-0.5">{latestBudget.avgDevelopmentAbsorption}%</p>
               </div>
               <div className="p-3 bg-emerald-50 rounded-xl text-center border border-emerald-100">
-                <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wider">Recurrent</p>
+                <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wider">{t('budget.recurrent')}</p>
                 <p className="text-3xl font-bold text-emerald-700 mt-0.5">{latestBudget.avgRecurrentAbsorption}%</p>
               </div>
             </div>
             {latestBudget.totalUnspentAmount && (
               <div className="p-3 bg-amber-50 rounded-xl text-center border border-amber-100">
-                <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wider">Total Unspent</p>
+                <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wider">{t('budget.totalUnspent')}</p>
                 <p className="text-xl font-bold text-amber-800 mt-0.5">{latestBudget.totalUnspentAmount}</p>
               </div>
             )}
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-green-700 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Top Performers</p>
+              <p className="text-xs font-semibold text-green-700 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {t('budget.topPerformers')}</p>
               {latestBudget.topPerformers.map(c => (
                 <div key={c.county} className="flex justify-between items-center px-3 py-1.5 bg-green-50 rounded-lg text-xs">
                   <span className="font-medium">{c.county}</span>
@@ -170,7 +172,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
               ))}
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Bottom Performers</p>
+              <p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {t('budget.bottomPerformers')}</p>
               {latestBudget.bottomPerformers.map(c => (
                 <div key={c.county} className="flex justify-between items-center px-3 py-1.5 bg-red-50 rounded-lg text-xs">
                   <span className="font-medium">{c.county}</span>
@@ -187,7 +189,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
         {prevAudit && (
           <Card className="border-stone-200 bg-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Year-over-Year Trend</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t('dashboard.yearOverYearTrend')}</CardTitle>
               <CardDescription className="text-xs">FY {prevAudit.financialYear} → {latestAudit.financialYear}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -213,7 +215,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
         )}
         <Card className="border-stone-200 bg-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Governor Coalition Split</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t('dashboard.governorCoalitionSplit')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {Object.entries(governorCoalitionDistribution).map(([coal, count]) => (
@@ -237,14 +239,14 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
         </Card>
         <Card className="border-stone-200 bg-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Score Legend</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t('dashboard.scoreLegend')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5">
             {[
-              { color: 'bg-green-500', label: '80–100', desc: 'Strong performance', text: 'text-green-700' },
-              { color: 'bg-yellow-500', label: '50–79', desc: 'Moderate', text: 'text-yellow-700' },
-              { color: 'bg-red-500', label: '< 50', desc: 'Weak performance', text: 'text-red-700' },
-              { color: 'bg-stone-300', label: 'N/A', desc: 'Data not available', text: 'text-stone-500' },
+              { color: 'bg-green-500', label: '80–100', desc: t('dashboard.strongPerformance'), text: 'text-green-700' },
+              { color: 'bg-yellow-500', label: '50–79', desc: t('dashboard.moderate'), text: 'text-yellow-700' },
+              { color: 'bg-red-500', label: '< 50', desc: t('dashboard.weakPerformance'), text: 'text-red-700' },
+              { color: 'bg-stone-300', label: 'N/A', desc: t('dashboard.dataNotAvailable'), text: 'text-stone-500' },
             ].map((item) => (
               <div key={item.label} className="flex items-center gap-3 text-xs">
                 <span className={`w-6 h-6 rounded ${item.color}`} />

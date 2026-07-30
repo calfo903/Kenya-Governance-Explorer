@@ -51,8 +51,8 @@ export function DataFreshnessIndicator({ source, compact }: DataFreshnessProps) 
         return (
           <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer"
             className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-md border transition-colors ${
-              isStale ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/30'
-              : 'border-stone-200 bg-stone-50 text-stone-500 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700'
+              isStale ? 'border-amber-200 bg-amber-50 dark:bg-amber-950 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/30'
+              : 'border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:bg-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700'
             }`}>
             {isStale ? <AlertTriangle className="h-2.5 w-2.5" /> : <CheckCircle2 className="h-2.5 w-2.5 text-green-500" />}
             <span>{s.name}: {s.verified}</span>

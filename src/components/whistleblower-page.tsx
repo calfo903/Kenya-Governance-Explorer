@@ -67,7 +67,7 @@ export default function WhistleblowerPage() {
       </div>
 
       {/* Section Navigation */}
-      <div className="flex gap-1 bg-white rounded-xl border border-stone-200 p-1">
+      <div className="flex gap-1 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-1">
         {[
           { id: 'channels', label: 'Reporting Channels', icon: Phone, count: reportingChannels.length },
           { id: 'protections', label: 'Legal Protections', icon: Scale, count: legalProtections.length },
@@ -79,7 +79,7 @@ export default function WhistleblowerPage() {
             className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
               activeSection === section.id
                 ? 'bg-slate-800 text-white'
-                : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800'
             }`}
           >
             <section.icon className="h-3.5 w-3.5" />
@@ -96,14 +96,14 @@ export default function WhistleblowerPage() {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
             <Input
               placeholder="Search reporting channels (e.g. &quot;EACC&quot;, &quot;corruption&quot;, &quot;procurement&quot;)..."
-              className="h-10 pl-10 text-sm border-stone-200 bg-white"
+              className="h-10 pl-10 text-sm border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
 
           {/* Emergency - Always visible */}
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-red-200 bg-red-50 dark:bg-red-950">
             <CardContent className="py-4 px-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
@@ -119,7 +119,7 @@ export default function WhistleblowerPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filteredChannels.map(channel => (
-              <Card key={channel.id} className="border-stone-200 bg-white hover:border-slate-300 transition-colors">
+              <Card key={channel.id} className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-slate-300 transition-colors">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -133,7 +133,7 @@ export default function WhistleblowerPage() {
                       </div>
                       <div>
                         <CardTitle className="text-xs font-semibold">{channel.name}</CardTitle>
-                        <p className="text-[10px] text-stone-500">{channel.agency}</p>
+                        <p className="text-[10px] text-stone-500 dark:text-stone-400">{channel.agency}</p>
                       </div>
                     </div>
                     <div className="flex gap-1 shrink-0">
@@ -143,16 +143,16 @@ export default function WhistleblowerPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <p className="text-[11px] text-stone-600 leading-relaxed">{channel.description}</p>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed">{channel.description}</p>
                   <div className="space-y-1">
                     {channel.phone && (
-                      <div className="flex items-center gap-2 text-[11px] text-stone-500">
+                      <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400">
                         <Phone className="h-3 w-3" />
                         <span className="font-medium text-red-600">{channel.phone}</span>
                       </div>
                     )}
                     {channel.email && (
-                      <div className="flex items-center gap-2 text-[11px] text-stone-500">
+                      <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400">
                         <Mail className="h-3 w-3" />
                         <span className="text-blue-600">{channel.email}</span>
                       </div>
@@ -164,7 +164,7 @@ export default function WhistleblowerPage() {
                       </a>
                     )}
                     {channel.address && (
-                      <div className="flex items-center gap-2 text-[11px] text-stone-500">
+                      <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400">
                         <MapPin className="h-3 w-3" />
                         <span>{channel.address}</span>
                       </div>
@@ -181,36 +181,36 @@ export default function WhistleblowerPage() {
       {/* Legal Protections Section */}
       {activeSection === 'protections' && (
         <div className="space-y-3">
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardContent className="py-3 px-4">
               <div className="flex items-center gap-2">
-                <Scale className="h-4 w-4 text-slate-700" />
-                <p className="text-xs text-stone-600">
-                  Kenya&apos;s legal framework provides <span className="font-bold text-slate-800">9 distinct protections</span> for whistleblowers, from constitutional rights to specific statutory provisions.
+                <Scale className="h-4 w-4 text-slate-700 dark:text-slate-200" />
+                <p className="text-xs text-stone-600 dark:text-stone-300">
+                  Kenya&apos;s legal framework provides <span className="font-bold text-slate-800 dark:text-slate-100">9 distinct protections</span> for whistleblowers, from constitutional rights to specific statutory provisions.
                 </p>
               </div>
             </CardContent>
           </Card>
           <Accordion type="multiple" className="space-y-2">
             {legalProtections.map((protection, i) => (
-              <AccordionItem key={i} value={`prot-${i}`} className="border border-stone-200 rounded-xl bg-white overflow-hidden px-1">
+              <AccordionItem key={i} value={`prot-${i}`} className="border border-stone-200 dark:border-stone-700 rounded-xl bg-white dark:bg-stone-900 overflow-hidden px-1">
                 <AccordionTrigger className="py-3 px-3 hover:no-underline">
                   <div className="flex items-start gap-3 text-left">
                     <div className="h-7 w-7 rounded-lg bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                       <Scale className="h-3.5 w-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-800">{protection.article}</p>
-                      <p className="text-[11px] text-stone-500 mt-0.5">{protection.title}</p>
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{protection.article}</p>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">{protection.title}</p>
                     </div>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-3 pb-3">
-                  <p className="text-xs text-stone-600 leading-relaxed mb-3">{protection.description}</p>
+                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed mb-3">{protection.description}</p>
                   <div className="space-y-1.5">
-                    <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">Key Provisions</p>
+                    <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Key Provisions</p>
                     {protection.keyProvisions.map((prov, j) => (
-                      <div key={j} className="flex items-start gap-2 text-[11px] text-stone-600">
+                      <div key={j} className="flex items-start gap-2 text-[11px] text-stone-600 dark:text-stone-300">
                         <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0 mt-0.5" />
                         <span>{prov}</span>
                       </div>
@@ -226,11 +226,11 @@ export default function WhistleblowerPage() {
       {/* FAQ Section */}
       {activeSection === 'faq' && (
         <div className="space-y-3">
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardContent className="py-3 px-4">
               <div className="flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-slate-700" />
-                <p className="text-xs text-stone-600">
+                <HelpCircle className="h-4 w-4 text-slate-700 dark:text-slate-200" />
+                <p className="text-xs text-stone-600 dark:text-stone-300">
                   Frequently asked questions about whistleblowing in Kenya. <span className="font-bold">All answers are based on Kenyan law.</span>
                 </p>
               </div>
@@ -238,15 +238,15 @@ export default function WhistleblowerPage() {
           </Card>
           <Accordion type="multiple" className="space-y-2">
             {faqItems.map((faq, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="border border-stone-200 rounded-xl bg-white overflow-hidden px-1">
+              <AccordionItem key={i} value={`faq-${i}`} className="border border-stone-200 dark:border-stone-700 rounded-xl bg-white dark:bg-stone-900 overflow-hidden px-1">
                 <AccordionTrigger className="py-3 px-3 hover:no-underline text-left">
                   <div className="flex items-start gap-2">
-                    <span className="text-sm font-bold text-slate-800 shrink-0">{i + 1}</span>
-                    <p className="text-xs font-semibold text-stone-700">{faq.question}</p>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-100 shrink-0">{i + 1}</span>
+                    <p className="text-xs font-semibold text-stone-700 dark:text-stone-200">{faq.question}</p>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-3 pb-3">
-                  <p className="text-xs text-stone-600 leading-relaxed pl-6">{faq.answer}</p>
+                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed pl-6">{faq.answer}</p>
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -255,11 +255,11 @@ export default function WhistleblowerPage() {
       )}
 
       {/* Bottom CTA */}
-      <Card className="border-slate-200 bg-slate-50">
+      <Card className="border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
         <CardContent className="py-4 px-4">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
-            <p className="text-[11px] text-stone-600 leading-relaxed">
+            <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed">
               <span className="font-bold">Safety note:</span> If you face any threats, intimidation, or retaliation after reporting, immediately contact EACC (1512), the police, or a lawyer. Your protection is backed by the Constitution.
             </p>
           </div>

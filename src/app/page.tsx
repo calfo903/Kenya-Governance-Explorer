@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
+import { I18nProvider } from '@/i18n/i18n-provider';
+import { LanguageToggle } from '@/components/language-toggle';
+import { useLocaleStore } from '@/i18n/locale-store';
 import {
   all47Governors, getPlaceholderCounties,
 } from '@/data/governors';
@@ -34,6 +38,7 @@ import CoalitionComparisonPage from '@/components/coalition-comparison-page';
 import DevolutionQuizPage from '@/components/devolution-quiz-page';
 import ServiceDeliveryPage from '@/components/service-delivery-page';
 import CitizenStoriesPage from '@/components/citizen-stories-page';
+import CitizenReportDashboard from '@/components/citizen-report-dashboard';
 import CBEFMeetingPage from '@/components/cbef-meeting-page';
 import ProcurementRedFlagsPage from '@/components/procurement-redflags-page';
 import EmbedWidgetPage from '@/components/embed-widget-page';
@@ -60,6 +65,8 @@ import { CountyExplorer } from '@/components/county-explorer';
 import SourcesHub from '@/components/sources-hub';
 import ComparisonView from '@/components/comparison-view';
 import JsonSchemaView from '@/components/json-schema-view';
+import AssemblyHansardPage from '@/components/assembly-hansard-page';
+import CECMPerformancePage from '@/components/cecm-performance-page';
 
 // ─── ICONS ────────────────────────────────────────────────────────
 import {
@@ -81,7 +88,7 @@ import {
   Keyboard, GraduationCap,
   AlertOctagon, Calendar, Code2, Zap,
   Network, FolderOpen, Vote, ShieldCheck, Lock,
-  Trophy, Flag,
+  Trophy, Flag, FileBarChart, Award,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -89,68 +96,81 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// ─── SIDEBAR NAV ITEMS ───────────────────────────────────────────
+// ─── SIDEBAR NAV ITEMS (keys for i18n) ───────────────────────
 interface NavItem {
   id: TabId;
-  label: string;
+  labelKey: string;
   icon: React.ElementType;
-  section?: string;
+  sectionKey: string;
 }
 
-const navItems: NavItem[] = [
+const navItemDefs: NavItem[] = [
   // ── Governance ──
-  { id: 'summary', label: 'National Summary', icon: BarChart3, section: 'Governance' },
-  { id: 'tree', label: '47 Counties', icon: TreePine, section: 'Governance' },
-  { id: 'countymap', label: 'County Map', icon: Map, section: 'Governance' },
-  { id: 'county', label: 'County Deep-Dive', icon: MapPin, section: 'Governance' },
-  { id: 'compare', label: 'Compare', icon: GitCompare, section: 'Governance' },
-  { id: 'heatmap', label: 'Risk Heatmap', icon: Thermometer, section: 'Governance' },
-  { id: 'sources', label: 'Sources Hub', icon: Library, section: 'Governance' },
-  { id: 'schema', label: 'JSON Schema', icon: Database, section: 'Governance' },
-  { id: 'timeline', label: 'Timeline', icon: Clock, section: 'Governance' },
-  { id: 'budgetsim', label: 'Budget Simulator', icon: PieChart, section: 'Governance' },
-  { id: 'manifesto', label: 'Manifesto Tracker', icon: Target, section: 'Governance' },
+  { id: 'summary', labelKey: 'nav.items.summary', icon: BarChart3, sectionKey: 'nav.sections.governance' },
+  { id: 'tree', labelKey: 'nav.items.tree', icon: TreePine, sectionKey: 'nav.sections.governance' },
+  { id: 'countymap', labelKey: 'nav.items.countymap', icon: Map, sectionKey: 'nav.sections.governance' },
+  { id: 'county', labelKey: 'nav.items.county', icon: MapPin, sectionKey: 'nav.sections.governance' },
+  { id: 'compare', labelKey: 'nav.items.compare', icon: GitCompare, sectionKey: 'nav.sections.governance' },
+  { id: 'heatmap', labelKey: 'nav.items.heatmap', icon: Thermometer, sectionKey: 'nav.sections.governance' },
+  { id: 'sources', labelKey: 'nav.items.sources', icon: Library, sectionKey: 'nav.sections.governance' },
+  { id: 'schema', labelKey: 'nav.items.schema', icon: Database, sectionKey: 'nav.sections.governance' },
+  { id: 'timeline', labelKey: 'nav.items.timeline', icon: Clock, sectionKey: 'nav.sections.governance' },
+  { id: 'budgetsim', labelKey: 'nav.items.budgetsim', icon: PieChart, sectionKey: 'nav.sections.governance' },
+  { id: 'manifesto', labelKey: 'nav.items.manifesto', icon: Target, sectionKey: 'nav.sections.governance' },
   // ── Civic Tools ──
-  { id: 'whistleblower', label: 'Whistleblower', icon: Eye, section: 'Civic Tools' },
-  { id: 'tiptsubmit', label: 'Submit Tip', icon: Send, section: 'Civic Tools' },
-  { id: 'constitution', label: 'Constitution', icon: BookMarked, section: 'Civic Tools' },
-  { id: 'xposts', label: 'Political X Posts', icon: Volume2, section: 'Civic Tools' },
+  { id: 'whistleblower', labelKey: 'nav.items.whistleblower', icon: Eye, sectionKey: 'nav.sections.civicTools' },
+  { id: 'tiptsubmit', labelKey: 'nav.items.tiptsubmit', icon: Send, sectionKey: 'nav.sections.civicTools' },
+  { id: 'constitution', labelKey: 'nav.items.constitution', icon: BookMarked, sectionKey: 'nav.sections.civicTools' },
+  { id: 'xposts', labelKey: 'nav.items.xposts', icon: Volume2, sectionKey: 'nav.sections.civicTools' },
   // ── Citizen Action ──
-  { id: 'rti', label: 'RTI Generator', icon: FileCheck, section: 'Citizen Action' },
-  { id: 'petition', label: 'Petition Builder', icon: ClipboardList, section: 'Citizen Action' },
-  { id: 'feedback', label: 'Rate Services', icon: MessageSquare, section: 'Citizen Action' },
-  { id: 'procurement', label: 'Procurement Watch', icon: ShoppingCart, section: 'Citizen Action' },
-  { id: 'reportcard', label: 'Report Card', icon: Star, section: 'Citizen Action' },
-  { id: 'quiz', label: 'Devolution Quiz', icon: GraduationCap, section: 'Citizen Action' },
-  { id: 'stories', label: 'Experience Stories', icon: MessageSquare, section: 'Citizen Action' },
-  { id: 'cbef', label: 'CBEF Meetings', icon: Calendar, section: 'Citizen Action' },
+  { id: 'rti', labelKey: 'nav.items.rti', icon: FileCheck, sectionKey: 'nav.sections.citizenAction' },
+  { id: 'petition', labelKey: 'nav.items.petition', icon: ClipboardList, sectionKey: 'nav.sections.citizenAction' },
+  { id: 'feedback', labelKey: 'nav.items.feedback', icon: MessageSquare, sectionKey: 'nav.sections.citizenAction' },
+  { id: 'procurement', labelKey: 'nav.items.procurement', icon: ShoppingCart, sectionKey: 'nav.sections.citizenAction' },
+  { id: 'reportcard', labelKey: 'nav.items.reportcard', icon: Star, sectionKey: 'nav.sections.citizenAction' },
+  { id: 'quiz', labelKey: 'nav.items.quiz', icon: GraduationCap, sectionKey: 'nav.sections.citizenAction' },
+  { id: 'stories', labelKey: 'nav.items.stories', icon: MessageSquare, sectionKey: 'nav.sections.citizenAction' },
+  { id: 'reports', labelKey: 'nav.items.reports', icon: FileBarChart, sectionKey: 'nav.sections.citizenAction' },
+  { id: 'cbef', labelKey: 'nav.items.cbef', icon: Calendar, sectionKey: 'nav.sections.citizenAction' },
   // ── Data & Alerts ──
-  { id: 'datafetcher', label: 'Live Data', icon: FolderSearch, section: 'Data & Alerts' },
-  { id: 'alerts', label: 'Alerts', icon: Bell, section: 'Data & Alerts' },
+  { id: 'datafetcher', labelKey: 'nav.items.datafetcher', icon: FolderSearch, sectionKey: 'nav.sections.dataAlerts' },
+  { id: 'alerts', labelKey: 'nav.items.alerts', icon: Bell, sectionKey: 'nav.sections.dataAlerts' },
   // ── Analytics ──
-  { id: 'audittrends', label: 'Audit Trends', icon: Zap, section: 'Analytics' },
-  { id: 'budgetscatter', label: 'Budget Scatter', icon: PieChart, section: 'Analytics' },
-  { id: 'coalition', label: 'Coalition Compare', icon: GitCompare, section: 'Analytics' },
-  { id: 'servicedelivery', label: 'Service Delivery', icon: Building2, section: 'Analytics' },
-  { id: 'redflags', label: 'Red Flags', icon: AlertOctagon, section: 'Analytics' },
-  { id: 'embed', label: 'Embed Widgets', icon: Code2, section: 'Analytics' },
+  { id: 'audittrends', labelKey: 'nav.items.audittrends', icon: Zap, sectionKey: 'nav.sections.analytics' },
+  { id: 'budgetscatter', labelKey: 'nav.items.budgetscatter', icon: PieChart, sectionKey: 'nav.sections.analytics' },
+  { id: 'coalition', labelKey: 'nav.items.coalition', icon: GitCompare, sectionKey: 'nav.sections.analytics' },
+  { id: 'servicedelivery', labelKey: 'nav.items.servicedelivery', icon: Building2, sectionKey: 'nav.sections.analytics' },
+  { id: 'redflags', labelKey: 'nav.items.redflags', icon: AlertOctagon, sectionKey: 'nav.sections.analytics' },
+  { id: 'embed', labelKey: 'nav.items.embed', icon: Code2, sectionKey: 'nav.sections.analytics' },
   // ── Leadership & Projects ──
-  { id: 'leadership', label: 'Leadership Tree', icon: Network, section: 'Leadership & Projects' },
-  { id: 'projects', label: 'Projects & Audits', icon: FolderOpen, section: 'Leadership & Projects' },
-  { id: 'representatives', label: 'Representative Profiles', icon: Users, section: 'Leadership & Projects' },
-  { id: 'mzalendo', label: 'Mzalendo Profiles', icon: Vote, section: 'Leadership & Projects' },
-  { id: 'securetip', label: 'Secure Whistleblower', icon: ShieldCheck, section: 'Leadership & Projects' },
-  { id: 'compareEnhanced', label: 'Comparison Matrix', icon: GitCompare, section: 'Analytics' },
+  { id: 'leadership', labelKey: 'nav.items.leadership', icon: Network, sectionKey: 'nav.sections.leadershipProjects' },
+  { id: 'projects', labelKey: 'nav.items.projects', icon: FolderOpen, sectionKey: 'nav.sections.leadershipProjects' },
+  { id: 'representatives', labelKey: 'nav.items.representatives', icon: Users, sectionKey: 'nav.sections.leadershipProjects' },
+  { id: 'mzalendo', labelKey: 'nav.items.mzalendo', icon: Vote, sectionKey: 'nav.sections.leadershipProjects' },
+  { id: 'securetip', labelKey: 'nav.items.securetip', icon: ShieldCheck, sectionKey: 'nav.sections.leadershipProjects' },
+  { id: 'hansard', labelKey: 'nav.items.hansard', icon: BookOpen, sectionKey: 'nav.sections.leadershipProjects' },
+  { id: 'compareEnhanced', labelKey: 'nav.items.compareEnhanced', icon: GitCompare, sectionKey: 'nav.sections.analytics' },
   // ── Insights ──
-  { id: 'rankings', label: 'County Rankings', icon: Trophy, section: 'Insights' },
-  { id: 'milestones', label: 'Devolution Timeline', icon: Flag, section: 'Insights' },
-  { id: 'fycomparison', label: 'FY Comparison', icon: BarChart3, section: 'Insights' },
+  { id: 'rankings', labelKey: 'nav.items.rankings', icon: Trophy, sectionKey: 'nav.sections.insights' },
+  { id: 'milestones', labelKey: 'nav.items.milestones', icon: Flag, sectionKey: 'nav.sections.insights' },
+  { id: 'fycomparison', labelKey: 'nav.items.fycomparison', icon: BarChart3, sectionKey: 'nav.sections.insights' },
+  { id: 'cecm', labelKey: 'nav.items.cecm', icon: Award, sectionKey: 'nav.sections.insights' },
 ];
 
 // ══════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ══════════════════════════════════════════════════════════════════
 export default function KenyaGovernancePage() {
+  return (
+    <I18nProvider>
+      <PageContent />
+    </I18nProvider>
+  );
+}
+
+function PageContent() {
+  const t = useTranslations();
+  const locale = useLocaleStore((s) => s.locale);
   const [activeTab, setActiveTab] = useState<TabId>('summary');
   const [selectedCounty, setSelectedCounty] = useState<string>('034');
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
@@ -158,6 +178,12 @@ export default function KenyaGovernancePage() {
   const [filters, setFilters] = useState<FilterState>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const commandPaletteRef = React.useRef<{ open: () => void; close: () => void }>(null);
+
+  // Localized nav items
+  const navItems = useMemo(() => navItemDefs.map(def => ({
+    ...def,
+    label: t(def.labelKey),
+  })), [t]);
 
   const allCounties = useMemo((): County[] => {
     const placeholders = getPlaceholderCounties();
@@ -215,13 +241,74 @@ export default function KenyaGovernancePage() {
   }, [filters]);
 
   // Group nav items by section
-  const governanceItems = navItems.filter(n => n.section === 'Governance');
-  const civicItems = navItems.filter(n => n.section === 'Civic Tools');
-  const citizenItems = navItems.filter(n => n.section === 'Citizen Action');
-  const dataItems = navItems.filter(n => n.section === 'Data & Alerts');
-  const analyticsItems = navItems.filter(n => n.section === 'Analytics');
-  const leadershipItems = navItems.filter(n => n.section === 'Leadership & Projects');
-  const insightItems = navItems.filter(n => n.section === 'Insights');
+  const governanceItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.governance');
+  const civicItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.civicTools');
+  const citizenItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.citizenAction');
+  const dataItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.dataAlerts');
+  const analyticsItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.analytics');
+  const leadershipItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.leadershipProjects');
+  const insightItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.insights');
+
+  // Section labels lookup
+  const sectionLabels = useMemo(() => ({
+    'nav.sections.governance': t('nav.sections.governance'),
+    'nav.sections.civicTools': t('nav.sections.civicTools'),
+    'nav.sections.citizenAction': t('nav.sections.citizenAction'),
+    'nav.sections.dataAlerts': t('nav.sections.dataAlerts'),
+    'nav.sections.analytics': t('nav.sections.analytics'),
+    'nav.sections.leadershipProjects': t('nav.sections.leadershipProjects'),
+    'nav.sections.insights': t('nav.sections.insights'),
+  }), [t]);
+
+  // Helper to get localized label for a nav item
+  const getItemLabel = (id: TabId) => navItems.find(n => n.id === id)?.label ?? id;
+
+  // Helper to get localized section label
+  const getSectionLabel = (sectionKey: string) => sectionLabels[sectionKey] ?? sectionKey;
+
+  // Sidebar section renderer helper
+  const renderSidebarSection = (items: NavItem[], sectionKey: string, activeColor: string) => (
+    <div>
+      <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</p>
+      {items.map((item) => (
+        <button
+          key={item.id}
+          onClick={() => setActiveTab(item.id)}
+          aria-current={activeTab === item.id ? 'page' : undefined}
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+            activeTab === item.id
+              ? `${activeColor} text-white shadow-sm`
+              : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
+          }`}
+        >
+          <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span>{getItemLabel(item.id)}</span>
+        </button>
+      ))}
+    </div>
+  );
+
+  // Mobile sidebar section renderer helper
+  const renderMobileSidebarSection = (items: NavItem[], sectionKey: string, activeColor: string) => (
+    <div>
+      <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</p>
+      {items.map((item) => (
+        <button
+          key={item.id}
+          onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+          aria-current={activeTab === item.id ? 'page' : undefined}
+          className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+            activeTab === item.id
+              ? `${activeColor} text-white`
+              : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
+          }`}
+        >
+          <item.icon className="h-4 w-4" aria-hidden="true" />
+          <span>{getItemLabel(item.id)}</span>
+        </button>
+      ))}
+    </div>
+  );
 
   const { theme, setTheme } = useTheme();
 
@@ -242,6 +329,11 @@ export default function KenyaGovernancePage() {
   return (
     <TooltipProvider>
       <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950">
+        {/* ══════════ SKIP NAVIGATION ══════════ */}
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
+
         {/* ══════════ HEADER ══════════ */}
         <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -249,44 +341,46 @@ export default function KenyaGovernancePage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="lg:hidden h-9 w-9 rounded-lg border border-stone-200 flex items-center justify-center hover:bg-stone-50 transition-colors"
+                  aria-label="Open navigation menu"
+                  className="lg:hidden h-9 w-9 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 dark:bg-stone-800 transition-colors"
                 >
-                  <Menu className="h-4 w-4 text-stone-600" />
+                  <Menu className="h-4 w-4 text-stone-600 dark:text-stone-300" aria-hidden="true" />
                 </button>
-                <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+                <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0" aria-hidden="true">
                   <Shield className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <h1 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
-                    Kenya Governance Explorer
+                    {t('app.title')}
                   </h1>
                   <p className="text-[10px] sm:text-xs text-stone-500">
-                    2022–2027 · 47 Counties · Evidence-Based
+                    {t('app.subtitle')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {comparisonList.length > 0 && (
                   <Badge variant="secondary" className="text-[10px] h-6 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                    {comparisonList.length}/4 compare
+                    {t('app.headerCompare', { count: comparisonList.length })}
                   </Badge>
                 )}
                 <button
                   onClick={() => commandPaletteRef.current?.open()}
-                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
-                  title="Search (Ctrl+K)"
+                  aria-label={t('app.searchShortcut')}
+                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
                 >
-                  <Keyboard className="h-3.5 w-3.5 text-stone-600" />
+                  <Keyboard className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
-                  title="Toggle Dark Mode (Ctrl+D)"
+                  aria-label={t('app.darkModeShortcut')}
+                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
                 >
-                  {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-stone-600" /> : <Moon className="h-3.5 w-3.5 text-stone-600" />}
+                  {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" />}
                 </button>
-                <a href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-400 hover:text-emerald-600 transition-colors">
-                  <BookMarked className="h-3 w-3" />Constitution
+                <LanguageToggle />
+                <a href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
+                  <BookMarked className="h-3 w-3" aria-hidden="true" />{t('common.constitution')}
                 </a>
               </div>
             </div>
@@ -296,179 +390,60 @@ export default function KenyaGovernancePage() {
         {/* ══════════ LAYOUT: SIDEBAR + MAIN ══════════ */}
         <div className="flex flex-1">
           {/* Sidebar - Desktop (always visible on lg+) */}
-          <aside className="hidden lg:flex flex-col w-60 border-r border-stone-200 bg-white shrink-0 sticky top-[52px] h-[calc(100vh-52px)] overflow-y-auto">
-            <nav className="flex-1 py-3 px-2 space-y-4">
-              {/* Governance Section */}
-              <div>
-                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Governance</p>
-                {governanceItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
-                      activeTab === item.id
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+          <aside className="hidden lg:flex flex-col w-60 border-r border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 shrink-0 sticky top-[52px] h-[calc(100vh-52px)] overflow-y-auto">
+            <nav aria-label="Main navigation" className="flex-1 py-3 px-2 space-y-4">
+              {renderSidebarSection(governanceItems, 'nav.sections.governance', 'bg-emerald-600')}
 
-              <Separator className="bg-stone-100" />
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
 
-              {/* Civic Tools Section */}
-              <div>
-                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Civic Tools</p>
-                {civicItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
-                      activeTab === item.id
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+              {renderSidebarSection(civicItems, 'nav.sections.civicTools', 'bg-blue-600')}
 
-              <Separator className="bg-stone-100" />
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
 
-              {/* Citizen Action Section */}
-              <div>
-                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Citizen Action</p>
-                {citizenItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
-                      activeTab === item.id
-                        ? 'bg-amber-600 text-white shadow-sm'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+              {renderSidebarSection(citizenItems, 'nav.sections.citizenAction', 'bg-amber-600')}
 
-              <Separator className="bg-stone-100" />
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
 
-              {/* Data & Alerts Section */}
-              <div>
-                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Data & Alerts</p>
-                {dataItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
-                      activeTab === item.id
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+              {renderSidebarSection(dataItems, 'nav.sections.dataAlerts', 'bg-purple-600')}
 
-              <Separator className="bg-stone-100" />
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
 
-              {/* Analytics Section */}
-              <div>
-                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Analytics</p>
-                {analyticsItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
-                      activeTab === item.id
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+              {renderSidebarSection(analyticsItems, 'nav.sections.analytics', 'bg-indigo-600')}
 
-              <Separator className="bg-stone-100" />
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
 
-              {/* Leadership & Projects Section */}
-              <div>
-                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Leadership & Projects</p>
-                {leadershipItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
-                      activeTab === item.id
-                        ? 'bg-rose-600 text-white shadow-sm'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+              {renderSidebarSection(leadershipItems, 'nav.sections.leadershipProjects', 'bg-rose-600')}
 
-              <Separator className="bg-stone-100" />
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
 
-              {/* Insights Section */}
-              <div>
-                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Insights</p>
-                {insightItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
-                      activeTab === item.id
-                        ? 'bg-teal-600 text-white shadow-sm'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+              {renderSidebarSection(insightItems, 'nav.sections.insights', 'bg-teal-600')}
 
-              <Separator className="bg-stone-100" />
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
               <div className="px-3 py-2">
-                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Quick Stats</p>
+                <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">{t('sidebar.quickStats')}</p>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-stone-500">Counties</span>
-                    <span className="font-bold text-stone-700">47</span>
+                    <span className="text-stone-500 dark:text-stone-400">{t('sidebar.counties')}</span>
+                    <span className="font-bold text-stone-700 dark:text-stone-200">47</span>
                   </div>
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-stone-500">Data Sources</span>
-                    <span className="font-bold text-stone-700">{allSources.length}</span>
+                    <span className="text-stone-500 dark:text-stone-400">{t('sidebar.dataSources')}</span>
+                    <span className="font-bold text-stone-700 dark:text-stone-200">{allSources.length}</span>
                   </div>
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-stone-500">Term</span>
-                    <span className="font-bold text-stone-700">2022–2027</span>
+                    <span className="text-stone-500 dark:text-stone-400">{t('sidebar.term')}</span>
+                    <span className="font-bold text-stone-700 dark:text-stone-200">2022–2027</span>
                   </div>
                 </div>
                 {/* Data Freshness */}
-                <div className="mt-3 pt-2 border-t border-stone-100">
+                <div className="mt-3 pt-2 border-t border-stone-100 dark:border-stone-800">
                   <DataFreshnessIndicator compact />
                 </div>
               </div>
 
               {/* Sidebar Widgets */}
               <div className="px-3 py-2 space-y-3">
-                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Live Widgets</p>
+                <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{t('sidebar.liveWidgets')}</p>
                 <SidebarMiniMap onCountyClick={(code) => { setSelectedCounty(code); setActiveTab('county'); }} />
                 <WeatherWidget lat={-1.2921} lng={36.8219} location="Nairobi" />
                 <CitizenAuditorDashboard />
@@ -477,7 +452,7 @@ export default function KenyaGovernancePage() {
 
               {/* Primary Sources Links */}
               <div className="px-3 py-2 mt-auto">
-                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Primary Sources</p>
+                <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">{t('sidebar.primarySources')}</p>
                 <div className="space-y-1">
                   {[
                     { label: 'OAG Kenya', url: 'https://oagkenya.go.ke/' },
@@ -487,8 +462,8 @@ export default function KenyaGovernancePage() {
                     { label: 'EACC', url: 'https://eacc.go.ke/' },
                   ].map(s => (
                     <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
-                      <ExternalLink className="h-2.5 w-2.5" /> {s.label}
+                      className="flex items-center gap-1.5 text-[10px] text-stone-500 dark:text-stone-400 hover:text-emerald-600 transition-colors">
+                      <ExternalLink className="h-2.5 w-2.5" aria-hidden="true" /> {s.label}
                     </a>
                   ))}
                 </div>
@@ -500,146 +475,34 @@ export default function KenyaGovernancePage() {
           {sidebarOpen && (
             <div className="lg:hidden fixed inset-0 z-50">
               <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
-              <aside className="absolute left-0 top-0 bottom-0 w-72 bg-white border-r border-stone-200 flex flex-col shadow-xl z-50">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
-                  <span className="text-sm font-bold text-stone-800">Navigation</span>
-                  <button onClick={() => setSidebarOpen(false)} className="h-8 w-8 rounded-lg hover:bg-stone-100 flex items-center justify-center">
-                    <X className="h-4 w-4 text-stone-500" />
+              <aside className="absolute left-0 top-0 bottom-0 w-72 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-700 flex flex-col shadow-xl z-50">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-stone-700">
+                  <span className="text-sm font-bold text-stone-800 dark:text-stone-100">{t('common.navigation')}</span>
+                  <button onClick={() => setSidebarOpen(false)} aria-label="Close navigation menu" className="h-8 w-8 rounded-lg hover:bg-stone-100 dark:bg-stone-700 flex items-center justify-center">
+                    <X className="h-4 w-4 text-stone-500 dark:text-stone-400" aria-hidden="true" />
                   </button>
                 </div>
-                <nav className="flex-1 py-3 px-2 space-y-4 overflow-y-auto">
-                  <div>
-                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Governance</p>
-                    {governanceItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
-                          activeTab === item.id
-                            ? 'bg-emerald-600 text-white'
-                            : 'text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                <nav aria-label="Main navigation" className="flex-1 py-3 px-2 space-y-4 overflow-y-auto">
+                  {renderMobileSidebarSection(governanceItems, 'nav.sections.governance', 'bg-emerald-600')}
                   <Separator />
-                  <div>
-                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Civic Tools</p>
-                    {civicItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
-                          activeTab === item.id
-                            ? 'bg-blue-600 text-white'
-                            : 'text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {renderMobileSidebarSection(civicItems, 'nav.sections.civicTools', 'bg-blue-600')}
                   <Separator />
-                  <div>
-                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Citizen Action</p>
-                    {citizenItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
-                          activeTab === item.id
-                            ? 'bg-amber-600 text-white'
-                            : 'text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {renderMobileSidebarSection(citizenItems, 'nav.sections.citizenAction', 'bg-amber-600')}
                   <Separator />
-                  <div>
-                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Data & Alerts</p>
-                    {dataItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
-                          activeTab === item.id
-                            ? 'bg-purple-600 text-white'
-                            : 'text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {renderMobileSidebarSection(dataItems, 'nav.sections.dataAlerts', 'bg-purple-600')}
                   <Separator />
-                  <div>
-                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Analytics</p>
-                    {analyticsItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
-                          activeTab === item.id
-                            ? 'bg-indigo-600 text-white'
-                            : 'text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {renderMobileSidebarSection(analyticsItems, 'nav.sections.analytics', 'bg-indigo-600')}
                   <Separator />
-                  <div>
-                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Leadership & Projects</p>
-                    {leadershipItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
-                          activeTab === item.id
-                            ? 'bg-rose-600 text-white'
-                            : 'text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {renderMobileSidebarSection(leadershipItems, 'nav.sections.leadershipProjects', 'bg-rose-600')}
                   <Separator />
-                  <div>
-                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Insights</p>
-                    {insightItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
-                          activeTab === item.id
-                            ? 'bg-teal-600 text-white'
-                            : 'text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {renderMobileSidebarSection(insightItems, 'nav.sections.insights', 'bg-teal-600')}
                 </nav>
               </aside>
             </div>
           )}
 
           {/* ══════════ MAIN CONTENT ══════════ */}
-          <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full">
+          <main id="main-content" className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full">
             {activeTab === 'summary' && <NationalSummaryDashboard onNavigate={setActiveTab} />}
             {activeTab === 'tree' && (
               <GovernorsTreeView
@@ -701,6 +564,7 @@ export default function KenyaGovernancePage() {
             {activeTab === 'quiz' && <DevolutionQuizPage />}
             {activeTab === 'servicedelivery' && <ServiceDeliveryPage />}
             {activeTab === 'stories' && <CitizenStoriesPage />}
+            {activeTab === 'reports' && <CitizenReportDashboard />}
             {activeTab === 'cbef' && <CBEFMeetingPage />}
             {activeTab === 'redflags' && <ProcurementRedFlagsPage />}
             {activeTab === 'embed' && <EmbedWidgetPage />}
@@ -720,30 +584,33 @@ export default function KenyaGovernancePage() {
             {activeTab === 'rankings' && <CountyRankingsPage />}
             {activeTab === 'milestones' && <DevolutionMilestonesPage />}
             {activeTab === 'fycomparison' && <FYComparisonPage />}
+            {activeTab === 'hansard' && <AssemblyHansardPage />}
+            {activeTab === 'cecm' && <CECMPerformancePage />}
             {activeTab === 'representatives' && <RepresentativeProfilesPage />}
           </main>
 
           {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 z-50 px-2 py-1.5">
+          <nav aria-label="Quick navigation" className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 z-50 px-2 py-1.5">
             <div className="flex items-center justify-around">
               {[
-                { id: 'summary' as TabId, icon: BarChart3, label: 'Home' },
-                { id: 'countymap' as TabId, icon: Map, label: 'Map' },
-                { id: 'tree' as TabId, icon: TreePine, label: 'Counties' },
-                { id: 'representatives' as TabId, icon: Users, label: 'Reps' },
-                { id: 'alerts' as TabId, icon: Bell, label: 'Alerts' },
+                { id: 'summary' as TabId, icon: BarChart3, labelKey: 'nav.mobileBottom.home' },
+                { id: 'countymap' as TabId, icon: Map, labelKey: 'nav.mobileBottom.map' },
+                { id: 'tree' as TabId, icon: TreePine, labelKey: 'nav.mobileBottom.counties' },
+                { id: 'representatives' as TabId, icon: Users, labelKey: 'nav.mobileBottom.reps' },
+                { id: 'alerts' as TabId, icon: Bell, labelKey: 'nav.mobileBottom.alerts' },
               ].map(item => (
                 <button
                   key={item.id}
                   onClick={() => { setActiveTab(item.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  aria-current={activeTab === item.id ? 'page' : undefined}
                   className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors ${
                     activeTab === item.id
                       ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-stone-400 dark:text-stone-500'
+                      : 'text-stone-500 dark:text-stone-400'
                   }`}
                 >
-                  <item.icon className="h-4 w-4" />
-                  <span className="text-[9px] font-medium">{item.label}</span>
+                  <item.icon className="h-4 w-4" aria-hidden="true" />
+                  <span className="text-[9px] font-medium">{t(item.labelKey)}</span>
                 </button>
               ))}
             </div>
@@ -755,7 +622,7 @@ export default function KenyaGovernancePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
               <div>
-                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Primary Sources</h3>
+                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">{t('footer.primarySources')}</h3>
                 <ul className="space-y-1.5 text-xs">
                   {[
                     { label: 'OAG', url: 'https://oagkenya.go.ke/' },
@@ -766,14 +633,14 @@ export default function KenyaGovernancePage() {
                   ].map(s => (
                     <li key={s.label}>
                       <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
-                        <ExternalLink className="h-3 w-3" /> {s.label}
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" /> {s.label}
                       </a>
                     </li>
                   ))}
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Parliament & Oversight</h3>
+                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">{t('footer.parliamentOversight')}</h3>
                 <ul className="space-y-1.5 text-xs">
                   {[
                     { label: 'Parliament Hansard', url: 'https://parliament.go.ke/' },
@@ -785,14 +652,14 @@ export default function KenyaGovernancePage() {
                   ].map(s => (
                     <li key={s.label}>
                       <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
-                        <ExternalLink className="h-3 w-3" /> {s.label}
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" /> {s.label}
                       </a>
                     </li>
                   ))}
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Resources & Data</h3>
+                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">{t('footer.resourcesData')}</h3>
                 <ul className="space-y-1.5 text-xs">
                   {[
                     { label: 'KNBS Statistics', url: 'https://www.knbs.or.ke/' },
@@ -804,14 +671,14 @@ export default function KenyaGovernancePage() {
                   ].map(s => (
                     <li key={s.label}>
                       <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
-                        <ExternalLink className="h-3 w-3" /> {s.label}
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" /> {s.label}
                       </a>
                     </li>
                   ))}
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Civil Society</h3>
+                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">{t('footer.civilSociety')}</h3>
                 <ul className="space-y-1.5 text-xs">
                   {[
                     { label: 'Mzalendo', url: 'https://mzalendo.com/' },
@@ -823,7 +690,7 @@ export default function KenyaGovernancePage() {
                   ].map(s => (
                     <li key={s.label}>
                       <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
-                        <ExternalLink className="h-3 w-3" /> {s.label}
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" /> {s.label}
                       </a>
                     </li>
                   ))}
@@ -831,9 +698,9 @@ export default function KenyaGovernancePage() {
               </div>
             </div>
             <Separator className="my-6 bg-stone-700" />
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500">
-              <p>Kenya County Governance Explorer · Strictly Non-Partisan · Evidence-Based</p>
-              <p>Last updated: 2026-07-28 · {allSources.length} data sources indexed · 47 counties with OAG audit data</p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500 dark:text-stone-400">
+              <p>{t('app.footerLine1')}</p>
+              <p>{t('app.footerLine2', { sources: allSources.length })}</p>
             </div>
           </div>
         </footer>

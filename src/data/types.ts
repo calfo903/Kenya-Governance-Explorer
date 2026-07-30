@@ -186,7 +186,7 @@ export interface FilterState {
 
 // ─── Color Utilities ──────────────────────────────────────────────
 export function getScoreColor(score: number | null | undefined): string {
-  if (score === null || score === undefined) return 'bg-gray-200 text-gray-500';
+  if (score === null || score === undefined) return 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
   if (score >= 80) return 'bg-green-100 text-green-800 border-green-300';
   if (score >= 50) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
   return 'bg-red-100 text-red-800 border-red-300';
@@ -203,7 +203,7 @@ export function getAuditColor(opinion: AuditOpinion | undefined): string {
     case AUDIT_OPINIONS.QUALIFIED: return 'bg-yellow-100 text-yellow-800 border-yellow-300';
     case AUDIT_OPINIONS.ADVERSE: return 'bg-orange-100 text-orange-800 border-orange-300';
     case AUDIT_OPINIONS.DISCLAIMER: return 'bg-red-100 text-red-800 border-red-300';
-    default: return 'bg-gray-200 text-gray-500 border-gray-300';
+    default: return 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600';
   }
 }
 

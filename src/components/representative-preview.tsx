@@ -41,9 +41,9 @@ const ROLE_MANDATES: Record<string, RoleMandate> = {
   governor: {
     roleTitle: 'Governor',
     icon: <Crown className="h-5 w-5" />,
-    colorClass: 'text-amber-700',
-    bgClass: 'bg-amber-50',
-    borderClass: 'border-amber-200',
+    colorClass: 'text-amber-700 dark:text-amber-300',
+    bgClass: 'bg-amber-50 dark:bg-amber-950',
+    borderClass: 'border-amber-200 dark:border-amber-800',
     constitutionalBasis: 'Article 179, Constitution of Kenya 2010',
     termLength: '5 years (maximum two terms)',
     salaryRange: 'KSh 924,000–1.1M/month (SRC scale)',
@@ -84,9 +84,9 @@ const ROLE_MANDATES: Record<string, RoleMandate> = {
   senator: {
     roleTitle: 'Senator',
     icon: <Scale className="h-5 w-5" />,
-    colorClass: 'text-indigo-700',
-    bgClass: 'bg-indigo-50',
-    borderClass: 'border-indigo-200',
+    colorClass: 'text-indigo-700 dark:text-indigo-300',
+    bgClass: 'bg-indigo-50 dark:bg-indigo-950',
+    borderClass: 'border-indigo-200 dark:border-indigo-800',
     constitutionalBasis: 'Article 96, Constitution of Kenya 2010',
     termLength: '5 years (no term limits)',
     salaryRange: 'KSh 740,000–870,000/month (SRC scale)',
@@ -127,9 +127,9 @@ const ROLE_MANDATES: Record<string, RoleMandate> = {
   womanRep: {
     roleTitle: 'Woman Representative',
     icon: <Heart className="h-5 w-5" />,
-    colorClass: 'text-rose-700',
-    bgClass: 'bg-rose-50',
-    borderClass: 'border-rose-200',
+    colorClass: 'text-rose-700 dark:text-rose-300',
+    bgClass: 'bg-rose-50 dark:bg-rose-950',
+    borderClass: 'border-rose-200 dark:border-rose-800',
     constitutionalBasis: 'Article 97, Constitution of Kenya 2010',
     termLength: '5 years (no term limits)',
     salaryRange: 'KSh 710,000–840,000/month (SRC scale)',
@@ -170,9 +170,9 @@ const ROLE_MANDATES: Record<string, RoleMandate> = {
   mp: {
     roleTitle: 'Member of Parliament (MP)',
     icon: <Building2 className="h-5 w-5" />,
-    colorClass: 'text-emerald-700',
-    bgClass: 'bg-emerald-50',
-    borderClass: 'border-emerald-200',
+    colorClass: 'text-emerald-700 dark:text-emerald-300',
+    bgClass: 'bg-emerald-50 dark:bg-emerald-950',
+    borderClass: 'border-emerald-200 dark:border-emerald-800',
     constitutionalBasis: 'Article 95, Constitution of Kenya 2010',
     termLength: '5 years (no term limits)',
     salaryRange: 'KSh 710,000–840,000/month (SRC scale)',
@@ -213,9 +213,9 @@ const ROLE_MANDATES: Record<string, RoleMandate> = {
   mca: {
     roleTitle: 'Member of County Assembly (MCA)',
     icon: <Landmark className="h-5 w-5" />,
-    colorClass: 'text-teal-700',
-    bgClass: 'bg-teal-50',
-    borderClass: 'border-teal-200',
+    colorClass: 'text-teal-700 dark:text-teal-300',
+    bgClass: 'bg-teal-50 dark:bg-teal-950',
+    borderClass: 'border-teal-200 dark:border-teal-800',
     constitutionalBasis: 'Article 177, Constitution of Kenya 2010; County Government Act 2012',
     termLength: '5 years (no term limits)',
     salaryRange: 'KSh 80,000–165,000/month (varies by county)',
@@ -301,7 +301,7 @@ export function RepresentativePreviewCard({
   if (!mandate) return null;
 
   const isPlaceholder = !profile || profile.name.includes('(TBD)') || profile.name.includes('TBD');
-  const avatarColor = AVATAR_COLORS[roleKey] || 'bg-gray-100 text-gray-700 ring-gray-300';
+  const avatarColor = AVATAR_COLORS[roleKey] || 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 ring-gray-300';
 
   if (compact) {
     // Compact card: just profile + key duties
@@ -312,7 +312,7 @@ export function RepresentativePreviewCard({
             {/* Avatar */}
             <div
               className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold ring-2 shrink-0 ${
-                isPlaceholder ? 'bg-gray-100 text-gray-400 ring-gray-200' : avatarColor
+                isPlaceholder ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 ring-gray-200' : avatarColor
               }`}
             >
               {isPlaceholder ? '?' : getInitials(profile.name)}
@@ -333,15 +333,15 @@ export function RepresentativePreviewCard({
                   </Badge>
                 )}
               </div>
-              <p className={`text-xs font-medium truncate mt-0.5 ${isPlaceholder ? 'text-gray-400 italic' : 'text-gray-800'}`}>
+              <p className={`text-xs font-medium truncate mt-0.5 ${isPlaceholder ? 'text-gray-400 italic' : 'text-gray-800 dark:text-gray-100'}`}>
                 {profile?.name || `${mandate.roleTitle} — TBD`}
               </p>
               <div className="flex items-center gap-2 mt-0.5">
                 {profile?.party && !isPlaceholder && (
-                  <span className="text-[10px] text-gray-500">{profile.party}</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">{profile.party}</span>
                 )}
                 {profile?.coalition && !isPlaceholder && (
-                  <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-gray-200 text-gray-500">
+                  <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
                     {profile.coalition.length > 20 ? profile.coalition.split(' ').slice(0, 2).join(' ') : profile.coalition}
                   </Badge>
                 )}
@@ -353,7 +353,7 @@ export function RepresentativePreviewCard({
             {mandate.duties.slice(0, 3).map((duty, i) => (
               <div key={i} className="flex items-start gap-1.5">
                 {duty.icon}
-                <span className="text-[10px] text-gray-600 leading-tight">{duty.title}</span>
+                <span className="text-[10px] text-gray-600 dark:text-gray-300 leading-tight">{duty.title}</span>
               </div>
             ))}
             {mandate.duties.length > 3 && (
@@ -375,12 +375,12 @@ export function RepresentativePreviewCard({
             <div className={`${mandate.colorClass}`}>{mandate.icon}</div>
             <div>
               <h4 className={`text-sm font-bold ${mandate.colorClass}`}>{mandate.roleTitle}</h4>
-              <p className="text-[10px] text-gray-500">{mandate.constitutionalBasis}</p>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400">{mandate.constitutionalBasis}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[10px] text-gray-500">Term: {mandate.termLength}</p>
-            <p className="text-[10px] text-gray-500">{mandate.salaryRange}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">Term: {mandate.termLength}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">{mandate.salaryRange}</p>
           </div>
         </div>
       </div>
@@ -391,18 +391,18 @@ export function RepresentativePreviewCard({
           {/* Avatar */}
           <div
             className={`h-14 w-14 rounded-full flex items-center justify-center text-base font-bold ring-2 shrink-0 ${
-              isPlaceholder ? 'bg-gray-100 text-gray-400 ring-gray-200' : avatarColor
+              isPlaceholder ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 ring-gray-200' : avatarColor
             }`}
           >
             {isPlaceholder ? '?' : getInitials(profile?.name || '')}
           </div>
           <div className="min-w-0 flex-1">
-            <p className={`text-sm font-bold ${isPlaceholder ? 'text-gray-400 italic' : 'text-gray-900'}`}>
+            <p className={`text-sm font-bold ${isPlaceholder ? 'text-gray-400 italic' : 'text-gray-900 dark:text-gray-50'}`}>
               {profile?.name || `${mandate.roleTitle} — To Be Determined`}
             </p>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {profile?.party && !isPlaceholder && (
-                <Badge variant="outline" className="text-[9px] h-5 border-gray-200">
+                <Badge variant="outline" className="text-[9px] h-5 border-gray-200 dark:border-gray-700">
                   {profile.party}
                 </Badge>
               )}
@@ -412,7 +412,7 @@ export function RepresentativePreviewCard({
                     ? 'bg-blue-100 text-blue-700'
                     : profile.coalition === 'Azimio la Umoja One Kenya Coalition'
                       ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-gray-100 text-gray-700'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'
                 }`}>
                   {profile.coalition === 'Kenya Kwanza Alliance' ? 'Kenya Kwanza' : profile.coalition === 'Azimio la Umoja One Kenya Coalition' ? 'Azimio' : 'Independent'}
                 </Badge>
@@ -452,8 +452,8 @@ export function RepresentativePreviewCard({
                   {duty.icon}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold text-gray-700">{duty.title}</p>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">{duty.description}</p>
+                  <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-200">{duty.title}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">{duty.description}</p>
                 </div>
               </div>
             ))}
@@ -467,8 +467,8 @@ export function RepresentativePreviewCard({
           <div className="flex items-start gap-1.5">
             <Shield className={`h-3.5 w-3.5 ${mandate.colorClass} shrink-0 mt-0.5`} />
             <div>
-              <p className="text-[10px] font-semibold text-gray-700">Oversight Role</p>
-              <p className="text-[10px] text-gray-600 leading-relaxed">{mandate.oversightRole}</p>
+              <p className="text-[10px] font-semibold text-gray-700 dark:text-gray-200">Oversight Role</p>
+              <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed">{mandate.oversightRole}</p>
             </div>
           </div>
         </div>
@@ -515,7 +515,7 @@ export function RepresentativePreviewGrid({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-emerald-600" />
-          <h3 className="text-sm font-bold text-gray-800">
+          <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">
             {countyName} — Representatives & Duties
           </h3>
         </div>
@@ -556,7 +556,7 @@ export function RepresentativePreviewGrid({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-emerald-600" />
-            <h4 className="text-xs font-bold text-gray-700">
+            <h4 className="text-xs font-bold text-gray-700 dark:text-gray-200">
               Constituency Representatives
             </h4>
             <span className="text-[10px] text-gray-400">
@@ -627,7 +627,7 @@ export function RoleDutyReference({ roleKey }: { roleKey: string }) {
           <div className={`${mandate.colorClass}`}>{mandate.icon}</div>
           <div>
             <h4 className={`text-xs font-bold ${mandate.colorClass}`}>{mandate.roleTitle}</h4>
-            <p className="text-[9px] text-gray-500">{mandate.constitutionalBasis}</p>
+            <p className="text-[9px] text-gray-500 dark:text-gray-400">{mandate.constitutionalBasis}</p>
           </div>
         </div>
       </div>
@@ -635,11 +635,11 @@ export function RoleDutyReference({ roleKey }: { roleKey: string }) {
         <div className="grid grid-cols-2 gap-2 text-[9px]">
           <div>
             <span className="text-gray-400">Term:</span>
-            <span className="text-gray-700 font-medium ml-1">{mandate.termLength}</span>
+            <span className="text-gray-700 dark:text-gray-200 font-medium ml-1">{mandate.termLength}</span>
           </div>
           <div>
             <span className="text-gray-400">Salary:</span>
-            <span className="text-gray-700 font-medium ml-1">{mandate.salaryRange}</span>
+            <span className="text-gray-700 dark:text-gray-200 font-medium ml-1">{mandate.salaryRange}</span>
           </div>
         </div>
         <Separator />
@@ -648,8 +648,8 @@ export function RoleDutyReference({ roleKey }: { roleKey: string }) {
             <div key={i} className="flex items-start gap-1.5">
               {duty.icon}
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold text-gray-700">{duty.title}</p>
-                <p className="text-[9px] text-gray-500 leading-relaxed">{duty.description}</p>
+                <p className="text-[10px] font-semibold text-gray-700 dark:text-gray-200">{duty.title}</p>
+                <p className="text-[9px] text-gray-500 dark:text-gray-400 leading-relaxed">{duty.description}</p>
               </div>
             </div>
           ))}

@@ -28,9 +28,9 @@ interface Story {
 }
 
 const SECTORS = [
-  { id: 'health', label: 'Health', icon: Heart, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20' },
-  { id: 'education', label: 'Education', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-  { id: 'roads', label: 'Roads & Transport', icon: Wrench, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+  { id: 'health', label: 'Health', icon: Heart, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950 dark:bg-red-900/20' },
+  { id: 'education', label: 'Education', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950 dark:bg-blue-900/20' },
+  { id: 'roads', label: 'Roads & Transport', icon: Wrench, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950 dark:bg-amber-900/20' },
   { id: 'water', label: 'Water & Environment', icon: Droplets, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-900/20' },
   { id: 'agriculture', label: 'Agriculture', icon: Leaf, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
   { id: 'governance', label: 'Governance & Services', icon: Shield, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20' },
@@ -90,7 +90,7 @@ export default function CitizenStoriesPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-purple-600" /> County Experience Stories
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Anonymous citizen reports on county service delivery — share your experience</p>
@@ -111,7 +111,7 @@ export default function CitizenStoriesPage() {
             {submitted ? (
               <div className="text-center py-4">
                 <p className="text-sm font-semibold text-green-600">Experience submitted successfully!</p>
-                <p className="text-xs text-stone-500 mt-1">Thank you for contributing to transparency.</p>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Thank you for contributing to transparency.</p>
               </div>
             ) : (
               <>
@@ -132,7 +132,7 @@ export default function CitizenStoriesPage() {
                 <Input placeholder="Brief title..." className="text-xs" value={formData.title} onChange={e => setFormData(f => ({ ...f, title: e.target.value }))} />
                 <Textarea placeholder="Describe your experience with county services..." className="text-xs min-h-[80px]" value={formData.experience} onChange={e => setFormData(f => ({ ...f, experience: e.target.value }))} />
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-xs text-stone-500">
+                  <div className="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400">
                     <span>Rating:</span>
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map(i => (
@@ -140,7 +140,7 @@ export default function CitizenStoriesPage() {
                       ))}
                     </div>
                   </div>
-                  <label className="flex items-center gap-1.5 text-xs text-stone-500">
+                  <label className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
                     <input type="checkbox" checked={formData.anonymous} onChange={e => setFormData(f => ({ ...f, anonymous: e.target.checked }))} className="rounded" />
                     Anonymous
                   </label>
@@ -189,15 +189,15 @@ export default function CitizenStoriesPage() {
               <CardContent className="pt-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className={`h-8 w-8 rounded-lg ${sector?.bg || 'bg-stone-100'} flex items-center justify-center shrink-0`}>
-                      <Icon className={`h-4 w-4 ${sector?.color || 'text-stone-600'}`} />
+                    <div className={`h-8 w-8 rounded-lg ${sector?.bg || 'bg-stone-100 dark:bg-stone-700'} flex items-center justify-center shrink-0`}>
+                      <Icon className={`h-4 w-4 ${sector?.color || 'text-stone-600 dark:text-stone-300'}`} />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-xs font-semibold text-stone-800 dark:text-stone-200">{story.title}</h3>
+                        <h3 className="text-xs font-semibold text-stone-800 dark:text-stone-100 dark:text-stone-200">{story.title}</h3>
                         <Badge className="text-[9px] bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">{story.countyName}</Badge>
                       </div>
-                      <p className="text-[11px] text-stone-600 dark:text-stone-400 mt-1.5 leading-relaxed">{story.experience}</p>
+                      <p className="text-[11px] text-stone-600 dark:text-stone-300 dark:text-stone-400 mt-1.5 leading-relaxed">{story.experience}</p>
                       <div className="flex items-center gap-3 mt-2">
                         {renderStars(story.rating)}
                         <span className="text-[10px] text-stone-400 dark:text-stone-500 flex items-center gap-1">

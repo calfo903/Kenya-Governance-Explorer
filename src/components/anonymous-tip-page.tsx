@@ -68,16 +68,16 @@ export default function AnonymousTipPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Form */}
           <div className="lg:col-span-2 space-y-4">
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs font-semibold">Report Details</CardTitle>
-                <CardDescription className="text-[10px] text-stone-500">All fields marked with * are required. The more detail you provide, the better EACC can investigate.</CardDescription>
+                <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">All fields marked with * are required. The more detail you provide, the better EACC can investigate.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Category *</label>
+                  <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Category *</label>
                   <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select category..." /></SelectTrigger>
+                    <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select category..." /></SelectTrigger>
                     <SelectContent className="max-h-60">
                       {CATEGORIES.map(c => (
                         <SelectItem key={c.value} value={c.value}>
@@ -93,25 +93,25 @@ export default function AnonymousTipPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">County *</label>
+                    <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">County *</label>
                     <Select value={county} onValueChange={setCounty}>
-                      <SelectTrigger className="h-9 text-xs border-stone-200"><SelectValue placeholder="Select county..." /></SelectTrigger>
+                      <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700"><SelectValue placeholder="Select county..." /></SelectTrigger>
                       <SelectContent className="max-h-60">
                         {all47Governors.map(g => <SelectItem key={g.county} value={g.county}>{g.county}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Department / Institution *</label>
-                    <Input placeholder="e.g. County Treasury, Health..." className="h-9 text-xs border-stone-200" value={department} onChange={e => setDepartment(e.target.value)} />
+                    <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Department / Institution *</label>
+                    <Input placeholder="e.g. County Treasury, Health..." className="h-9 text-xs border-stone-200 dark:border-stone-700" value={department} onChange={e => setDepartment(e.target.value)} />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Description of Incident *</label>
+                  <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Description of Incident *</label>
                   <Textarea
                     placeholder="Describe what happened in detail — who was involved, when, where, amounts, how you know about it..."
-                    className="text-xs border-stone-200 min-h-[120px]"
+                    className="text-xs border-stone-200 dark:border-stone-700 min-h-[120px]"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                   />
@@ -119,20 +119,20 @@ export default function AnonymousTipPage() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Evidence Description</label>
+                  <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Evidence Description</label>
                   <Textarea
                     placeholder="Describe any evidence you have — documents, receipts, recordings, emails, photographs, etc. (Note: actual file upload requires backend integration)"
-                    className="text-xs border-stone-200 min-h-[80px]"
+                    className="text-xs border-stone-200 dark:border-stone-700 min-h-[80px]"
                     value={evidence}
                     onChange={e => setEvidence(e.target.value)}
                   />
                 </div>
 
-                <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg border border-stone-100">
+                <div className="flex items-center gap-3 p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
                   <Checkbox id="anonymous" checked={anonymous} onCheckedChange={(v) => setAnonymous(v === true)} />
                   <div>
-                    <label htmlFor="anonymous" className="text-xs font-semibold text-stone-800 cursor-pointer">Submit Anonymously</label>
-                    <p className="text-[10px] text-stone-500">Your identity will not be revealed. Protected under the Constitution and EACC Act.</p>
+                    <label htmlFor="anonymous" className="text-xs font-semibold text-stone-800 dark:text-stone-100 cursor-pointer">Submit Anonymously</label>
+                    <p className="text-[10px] text-stone-500 dark:text-stone-400">Your identity will not be revealed. Protected under the Constitution and EACC Act.</p>
                   </div>
                 </div>
 
@@ -146,7 +146,7 @@ export default function AnonymousTipPage() {
 
           {/* Sidebar */}
           <div className="space-y-4">
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-red-200 bg-red-50 dark:bg-red-950">
               <CardContent className="py-3 px-4">
                 <p className="text-xs font-bold text-red-800 flex items-center gap-1.5 mb-2"><Phone className="h-3.5 w-3.5" /> Emergency Hotline</p>
                 <p className="text-sm font-bold text-red-700">EACC: 1512 (Toll-Free)</p>
@@ -154,10 +154,10 @@ export default function AnonymousTipPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardContent className="py-3 px-4 space-y-3">
-                <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5"><Scale className="h-3.5 w-3.5" /> Legal Protection</p>
-                <div className="space-y-1.5 text-[10px] text-stone-600">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><Scale className="h-3.5 w-3.5" /> Legal Protection</p>
+                <div className="space-y-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                   <div className="flex items-start gap-1.5">
                     <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0 mt-0.5" />
                     <span><span className="font-semibold">EACC Act Sec 20-24:</span> Protection of whistleblowers — confidentiality, anti-victimization</span>
@@ -178,10 +178,10 @@ export default function AnonymousTipPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-stone-200 bg-white">
+            <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
               <CardContent className="py-3 px-4 space-y-2">
-                <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> Other Reporting Channels</p>
-                <div className="space-y-1.5 text-[10px] text-stone-600">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> Other Reporting Channels</p>
+                <div className="space-y-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                   <div className="flex items-start gap-1.5">
                     <Mail className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
                     <span>Email: <span className="text-blue-600">complaints@eacc.go.ke</span></span>
@@ -198,11 +198,11 @@ export default function AnonymousTipPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-stone-200 bg-stone-50">
+            <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
               <CardContent className="py-3 px-4">
                 <div className="flex items-start gap-2">
-                  <Info className="h-3.5 w-3.5 text-stone-500 shrink-0 mt-0.5" />
-                  <p className="text-[10px] text-stone-600 leading-relaxed">
+                  <Info className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400 shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
                     <span className="font-bold">Privacy notice:</span> Tips submitted through this form are for demonstration purposes. For official EACC reporting, use the channels listed above or visit <a href="https://www.eacc.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">eacc.go.ke</a>. All data is processed locally in your browser.
                   </p>
                 </div>
@@ -212,7 +212,7 @@ export default function AnonymousTipPage() {
         </div>
       ) : (
         /* Confirmation */
-        <Card className="border-emerald-200 bg-emerald-50">
+        <Card className="border-emerald-200 bg-emerald-50 dark:bg-emerald-950">
           <CardContent className="py-8 px-6 text-center">
             <div className="h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="h-8 w-8 text-emerald-600" />
@@ -222,20 +222,20 @@ export default function AnonymousTipPage() {
               Your tip has been recorded locally. For official EACC investigation, please also report through the official channels:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 max-w-lg mx-auto">
-              <div className="p-3 bg-white rounded-lg border border-emerald-100">
+              <div className="p-3 bg-white dark:bg-stone-900 rounded-lg border border-emerald-100">
                 <Phone className="h-5 w-5 text-red-600 mx-auto mb-1" />
-                <p className="text-xs font-bold text-stone-800">Call 1512</p>
-                <p className="text-[10px] text-stone-500">Toll-free, 24/7</p>
+                <p className="text-xs font-bold text-stone-800 dark:text-stone-100">Call 1512</p>
+                <p className="text-[10px] text-stone-500 dark:text-stone-400">Toll-free, 24/7</p>
               </div>
-              <div className="p-3 bg-white rounded-lg border border-emerald-100">
+              <div className="p-3 bg-white dark:bg-stone-900 rounded-lg border border-emerald-100">
                 <Mail className="h-5 w-5 text-blue-600 mx-auto mb-1" />
-                <p className="text-xs font-bold text-stone-800">Email</p>
-                <p className="text-[10px] text-stone-500">complaints@eacc.go.ke</p>
+                <p className="text-xs font-bold text-stone-800 dark:text-stone-100">Email</p>
+                <p className="text-[10px] text-stone-500 dark:text-stone-400">complaints@eacc.go.ke</p>
               </div>
-              <div className="p-3 bg-white rounded-lg border border-emerald-100">
+              <div className="p-3 bg-white dark:bg-stone-900 rounded-lg border border-emerald-100">
                 <ExternalLink className="h-5 w-5 text-emerald-600 mx-auto mb-1" />
-                <p className="text-xs font-bold text-stone-800">Online</p>
-                <p className="text-[10px] text-stone-500">eacc.go.ke/report</p>
+                <p className="text-xs font-bold text-stone-800 dark:text-stone-100">Online</p>
+                <p className="text-[10px] text-stone-500 dark:text-stone-400">eacc.go.ke/report</p>
               </div>
             </div>
             <Button className="mt-6" onClick={() => setSubmitted(false)}>Submit Another Tip</Button>

@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/providers/query-provider";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { OfflineIndicator } from "@/components/offline-indicator";
+import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,13 +18,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#059669",
+};
+
 export const metadata: Metadata = {
   title: "Kenya County Governance Explorer 2022–2027",
   description: "Interactive hierarchical tree of all Kenyan government representatives across 47 counties. Evidence-based scorecards sourced from OAG, CoB, TI-Kenya, and IEBC.",
   keywords: ["Kenya", "County Governance", "2022-2027", "OAG", "CoB", "IEBC", "Devolved Government"],
   authors: [{ name: "Kenya Governance Explorer" }],
+  manifest: "/manifest.json",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/icons/icon-192.png",
+    apple: "/icons/icon-192.png",
   },
   openGraph: {
     title: "Kenya County Governance Explorer",
@@ -47,8 +57,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider>
-          {children}
-          <Toaster />
+          <QueryProvider>
+            <OfflineIndicator />
+            {children}
+            <PwaInstallPrompt />
+            <Toaster />
+            <ServiceWorkerRegistrar />
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

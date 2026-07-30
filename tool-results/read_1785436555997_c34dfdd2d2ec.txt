@@ -1,0 +1,845 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useMemo } from 'react';
+     4→import {
+     5→  all47Governors, getPlaceholderCounties,
+     6→} from '@/data/governors';
+     7→import { kajiadoCounty } from '@/data/kajiado-county';
+     8→import { getCountyAuditRecords } from '@/data/county-audit-data';
+     9→import { getCountyBudget } from '@/data/county-budget-data';
+    10→import { allSources } from '@/data/sources';
+    11→import {
+    12→  County, Representative, FilterState, ComparisonItem,
+    13→} from '@/data/types';
+    14→import type { TabId } from '@/components/tab-types';
+    15→import WhistleblowerPage from '@/components/whistleblower-page';
+    16→import ConstitutionPage from '@/components/constitution-page';
+    17→import PoliticalXPostsPage from '@/components/political-x-posts-page';
+    18→import CountyMapPage from '@/components/county-map-page';
+    19→import RtiGeneratorPage from '@/components/rti-generator-page';
+    20→import PetitionBuilderPage from '@/components/petition-builder-page';
+    21→import CorruptionHeatmapPage from '@/components/corruption-heatmap-page';
+    22→import ManifestoTrackerPage from '@/components/manifesto-tracker-page';
+    23→import AnonymousTipPage from '@/components/anonymous-tip-page';
+    24→import CitizenFeedbackPage from '@/components/citizen-feedback-page';
+    25→import TimelinePage from '@/components/timeline-page';
+    26→import BudgetSimulatorPage from '@/components/budget-simulator-page';
+    27→import DataFetcherPage from '@/components/data-fetcher-page';
+    28→import AlertsSubscriptionPage from '@/components/alerts-subscription-page';
+    29→import ProcurementMonitorPage from '@/components/procurement-monitor-page';
+    30→import GovernorReportCardPage from '@/components/governor-report-card-page';
+    31→import AuditTrendsPage from '@/components/audit-trends-page';
+    32→import BudgetScatterPage from '@/components/budget-scatter-page';
+    33→import CoalitionComparisonPage from '@/components/coalition-comparison-page';
+    34→import DevolutionQuizPage from '@/components/devolution-quiz-page';
+    35→import ServiceDeliveryPage from '@/components/service-delivery-page';
+    36→import CitizenStoriesPage from '@/components/citizen-stories-page';
+    37→import CBEFMeetingPage from '@/components/cbef-meeting-page';
+    38→import ProcurementRedFlagsPage from '@/components/procurement-redflags-page';
+    39→import EmbedWidgetPage from '@/components/embed-widget-page';
+    40→import MzalendoPage from '@/components/mzalendo-page';
+    41→import RepresentativeProfilesPage from '@/components/representative-profiles-page';
+    42→
+    43→import CountyLeadershipTreePage from '@/components/county-leadership-tree';
+    44→import ProjectsBrowserPage from '@/components/projects-browser-page';
+    45→import SecureWhistleblowerModal from '@/components/secure-whistleblower-modal';
+    46→import { DataFreshnessIndicator } from '@/components/data-freshness';
+    47→import CommandPalette from '@/components/command-palette';
+    48→import CountyRankingsPage from '@/components/county-rankings-page';
+    49→import DevolutionMilestonesPage from '@/components/devolution-milestones-page';
+    50→import FYComparisonPage from '@/components/fy-comparison-page';
+    51→import { KenyaMiniMap } from '@/components/kenya-county-map';
+    52→import CountyComparisonEnhanced from '@/components/county-comparison-enhanced';
+    53→import { WeatherWidget, CitizenAuditorDashboard, AIInsightsWidget, ProjectVelocityChart, RiskForecastWidget, SidebarMiniMap } from '@/components/sidebar-widgets';
+    54→import { useTheme } from 'next-themes';
+    55→
+    56→// Extracted components
+    57→import NationalSummaryDashboard from '@/components/national-summary-dashboard';
+    58→import GovernorsTreeView from '@/components/governors-tree-view';
+    59→import { CountyExplorer } from '@/components/county-explorer';
+    60→import SourcesHub from '@/components/sources-hub';
+    61→import ComparisonView from '@/components/comparison-view';
+    62→import JsonSchemaView from '@/components/json-schema-view';
+    63→
+    64→// ─── ICONS ────────────────────────────────────────────────────────
+    65→import {
+    66→  Shield, Search, Filter,
+    67→  Users, MapPin, Building2, Scale, FileText,
+    68→  BarChart3, GitCompare, TreePine, Database,
+    69→  ExternalLink, AlertTriangle, CheckCircle2,
+    70→  XCircle, Globe, Phone, Mail,
+    71→  Landmark, User, GripVertical, Star,
+    72→  Library, ChevronDown, ChevronRight, Leaf, Gavel,
+    73→  Radio, Megaphone, BookOpen, Hand, Layers,
+    74→  ArrowRight, TrendingUp, TrendingDown, Minus,
+    75→  Eye, BookMarked, Menu, X, Volume2,
+    76→  Map, MailWarning, MessageSquare, Bell,
+    77→  Thermometer, FileOutput, ClipboardList,
+    78→  Receipt, Hash, Send, Timer,
+    79→  FolderSearch, ShoppingCart, AlertCircle,
+    80→  PieChart, Clock, FileCheck, Target, Sun, Moon,
+    81→  Keyboard, GraduationCap,
+    82→  AlertOctagon, Calendar, Code2, Zap,
+    83→  Network, FolderOpen, Vote, ShieldCheck, Lock,
+    84→  Trophy, Flag,
+    85→} from 'lucide-react';
+    86→
+    87→// ─── shadcn/ui ───────────────────────────────────────────────────
+    88→import { Badge } from '@/components/ui/badge';
+    89→import { Separator } from '@/components/ui/separator';
+    90→import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+    91→
+    92→// ─── SIDEBAR NAV ITEMS ───────────────────────────────────────────
+    93→interface NavItem {
+    94→  id: TabId;
+    95→  label: string;
+    96→  icon: React.ElementType;
+    97→  section?: string;
+    98→}
+    99→
+   100→const navItems: NavItem[] = [
+   101→  // ── Governance ──
+   102→  { id: 'summary', label: 'National Summary', icon: BarChart3, section: 'Governance' },
+   103→  { id: 'tree', label: '47 Counties', icon: TreePine, section: 'Governance' },
+   104→  { id: 'countymap', label: 'County Map', icon: Map, section: 'Governance' },
+   105→  { id: 'county', label: 'County Deep-Dive', icon: MapPin, section: 'Governance' },
+   106→  { id: 'compare', label: 'Compare', icon: GitCompare, section: 'Governance' },
+   107→  { id: 'heatmap', label: 'Risk Heatmap', icon: Thermometer, section: 'Governance' },
+   108→  { id: 'sources', label: 'Sources Hub', icon: Library, section: 'Governance' },
+   109→  { id: 'schema', label: 'JSON Schema', icon: Database, section: 'Governance' },
+   110→  { id: 'timeline', label: 'Timeline', icon: Clock, section: 'Governance' },
+   111→  { id: 'budgetsim', label: 'Budget Simulator', icon: PieChart, section: 'Governance' },
+   112→  { id: 'manifesto', label: 'Manifesto Tracker', icon: Target, section: 'Governance' },
+   113→  // ── Civic Tools ──
+   114→  { id: 'whistleblower', label: 'Whistleblower', icon: Eye, section: 'Civic Tools' },
+   115→  { id: 'tiptsubmit', label: 'Submit Tip', icon: Send, section: 'Civic Tools' },
+   116→  { id: 'constitution', label: 'Constitution', icon: BookMarked, section: 'Civic Tools' },
+   117→  { id: 'xposts', label: 'Political X Posts', icon: Volume2, section: 'Civic Tools' },
+   118→  // ── Citizen Action ──
+   119→  { id: 'rti', label: 'RTI Generator', icon: FileCheck, section: 'Citizen Action' },
+   120→  { id: 'petition', label: 'Petition Builder', icon: ClipboardList, section: 'Citizen Action' },
+   121→  { id: 'feedback', label: 'Rate Services', icon: MessageSquare, section: 'Citizen Action' },
+   122→  { id: 'procurement', label: 'Procurement Watch', icon: ShoppingCart, section: 'Citizen Action' },
+   123→  { id: 'reportcard', label: 'Report Card', icon: Star, section: 'Citizen Action' },
+   124→  { id: 'quiz', label: 'Devolution Quiz', icon: GraduationCap, section: 'Citizen Action' },
+   125→  { id: 'stories', label: 'Experience Stories', icon: MessageSquare, section: 'Citizen Action' },
+   126→  { id: 'cbef', label: 'CBEF Meetings', icon: Calendar, section: 'Citizen Action' },
+   127→  // ── Data & Alerts ──
+   128→  { id: 'datafetcher', label: 'Live Data', icon: FolderSearch, section: 'Data & Alerts' },
+   129→  { id: 'alerts', label: 'Alerts', icon: Bell, section: 'Data & Alerts' },
+   130→  // ── Analytics ──
+   131→  { id: 'audittrends', label: 'Audit Trends', icon: Zap, section: 'Analytics' },
+   132→  { id: 'budgetscatter', label: 'Budget Scatter', icon: PieChart, section: 'Analytics' },
+   133→  { id: 'coalition', label: 'Coalition Compare', icon: GitCompare, section: 'Analytics' },
+   134→  { id: 'servicedelivery', label: 'Service Delivery', icon: Building2, section: 'Analytics' },
+   135→  { id: 'redflags', label: 'Red Flags', icon: AlertOctagon, section: 'Analytics' },
+   136→  { id: 'embed', label: 'Embed Widgets', icon: Code2, section: 'Analytics' },
+   137→  // ── Leadership & Projects ──
+   138→  { id: 'leadership', label: 'Leadership Tree', icon: Network, section: 'Leadership & Projects' },
+   139→  { id: 'projects', label: 'Projects & Audits', icon: FolderOpen, section: 'Leadership & Projects' },
+   140→  { id: 'representatives', label: 'Representative Profiles', icon: Users, section: 'Leadership & Projects' },
+   141→  { id: 'mzalendo', label: 'Mzalendo Profiles', icon: Vote, section: 'Leadership & Projects' },
+   142→  { id: 'securetip', label: 'Secure Whistleblower', icon: ShieldCheck, section: 'Leadership & Projects' },
+   143→  { id: 'compareEnhanced', label: 'Comparison Matrix', icon: GitCompare, section: 'Analytics' },
+   144→  // ── Insights ──
+   145→  { id: 'rankings', label: 'County Rankings', icon: Trophy, section: 'Insights' },
+   146→  { id: 'milestones', label: 'Devolution Timeline', icon: Flag, section: 'Insights' },
+   147→  { id: 'fycomparison', label: 'FY Comparison', icon: BarChart3, section: 'Insights' },
+   148→];
+   149→
+   150→// ══════════════════════════════════════════════════════════════════
+   151→// MAIN PAGE
+   152→// ══════════════════════════════════════════════════════════════════
+   153→export default function KenyaGovernancePage() {
+   154→  const [activeTab, setActiveTab] = useState<TabId>('summary');
+   155→  const [selectedCounty, setSelectedCounty] = useState<string>('034');
+   156→  const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
+   157→  const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
+   158→  const [filters, setFilters] = useState<FilterState>({});
+   159→  const [sidebarOpen, setSidebarOpen] = useState(false);
+   160→  const commandPaletteRef = React.useRef<{ open: () => void; close: () => void }>(null);
+   161→
+   162→  const allCounties = useMemo((): County[] => {
+   163→    const placeholders = getPlaceholderCounties();
+   164→    return placeholders.map((c) => {
+   165→      if (c.code === '034') return kajiadoCounty;
+   166→      // Inject real audit opinion from county-audit-data
+   167→      const auditRecords = getCountyAuditRecords(c.code);
+   168→      const latestAudit = auditRecords.find(a => a.financialYear === 'FY 2024/25');
+   169→      const latestBudget = getCountyBudget(c.code, 'FY 2024/25');
+   170→      return {
+   171→        ...c,
+   172→        executiveAuditOpinion: latestAudit?.executiveOpinion || undefined,
+   173→        executiveAuditSource: latestAudit?.source,
+   174→        developmentAbsorptionRate: latestBudget?.devAbsorptionRate || undefined,
+   175→        developmentAbsorptionSource: latestBudget ? {
+   176→          source: latestBudget.source.source,
+   177→          reportTitle: latestBudget.source.reportTitle,
+   178→          financialYear: latestBudget.source.financialYear,
+   179→          url: latestBudget.source.url,
+   180→          accessedDate: latestBudget.source.accessedDate,
+   181→        } : undefined,
+   182→        dataAvailability: 'partial' as const,
+   183→        dataAvailabilityNote: `Audit opinion: ${latestAudit?.executiveOpinion || 'pending'} (FY 2024/25). Budget absorption: ${latestBudget?.devAbsorptionRate ?? 'pending'}%. Full official data from oagkenya.go.ke and cob.go.ke.`,
+   184→      };
+   185→    });
+   186→  }, []);
+   187→
+   188→  const toggleCounty = (code: string) => {
+   189→    const next = new Set(expandedCounties);
+   190→    if (next.has(code)) next.delete(code); else next.add(code);
+   191→    setExpandedCounties(next);
+   192→  };
+   193→
+   194→  const addToComparison = (rep: Representative, countyName: string) => {
+   195→    if (comparisonList.length >= 4) return;
+   196→    if (comparisonList.find(c => c.representative.id === rep.id)) return;
+   197→    setComparisonList([...comparisonList, { representative: rep, countyName }]);
+   198→  };
+   199→
+   200→  const removeFromComparison = (id: string) => {
+   201→    setComparisonList(comparisonList.filter(c => c.representative.id !== id));
+   202→  };
+   203→
+   204→  const filteredGovernors = useMemo(() => {
+   205→    return all47Governors.filter((g) => {
+   206→      if (filters.region && g.region !== filters.region) return false;
+   207→      if (filters.coalition && g.coalition !== filters.coalition) return false;
+   208→      if (filters.party && g.party !== filters.party) return false;
+   209→      if (filters.keyword) {
+   210→        const kw = filters.keyword.toLowerCase();
+   211→        if (!g.name.toLowerCase().includes(kw) && !g.county.toLowerCase().includes(kw)) return false;
+   212→      }
+   213→      return true;
+   214→    });
+   215→  }, [filters]);
+   216→
+   217→  // Group nav items by section
+   218→  const governanceItems = navItems.filter(n => n.section === 'Governance');
+   219→  const civicItems = navItems.filter(n => n.section === 'Civic Tools');
+   220→  const citizenItems = navItems.filter(n => n.section === 'Citizen Action');
+   221→  const dataItems = navItems.filter(n => n.section === 'Data & Alerts');
+   222→  const analyticsItems = navItems.filter(n => n.section === 'Analytics');
+   223→  const leadershipItems = navItems.filter(n => n.section === 'Leadership & Projects');
+   224→  const insightItems = navItems.filter(n => n.section === 'Insights');
+   225→
+   226→  const { theme, setTheme } = useTheme();
+   227→
+   228→  // Keyboard shortcuts
+   229→  React.useEffect(() => {
+   230→    const handler = (e: KeyboardEvent) => {
+   231→      if (e.key === 'Escape') { setSidebarOpen(false); return; }
+   232→      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); commandPaletteRef.current?.open(); return; }
+   233→      if ((e.ctrlKey || e.metaKey) && e.key === 'd') { e.preventDefault(); setTheme(theme === 'dark' ? 'light' : 'dark'); return; }
+   234→      if (e.key === '?' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+   235→        alert('Keyboard Shortcuts:\nCtrl+K: Search\nCtrl+D: Toggle Dark Mode\nEsc: Close panels\n?: This help');
+   236→      }
+   237→    };
+   238→    window.addEventListener('keydown', handler);
+   239→    return () => window.removeEventListener('keydown', handler);
+   240→  }, [theme, setTheme]);
+   241→
+   242→  return (
+   243→    <TooltipProvider>
+   244→      <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950">
+   245→        {/* ══════════ HEADER ══════════ */}
+   246→        <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50">
+   247→          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+   248→            <div className="py-3 flex items-center justify-between gap-4">
+   249→              <div className="flex items-center gap-3">
+   250→                <button
+   251→                  onClick={() => setSidebarOpen(!sidebarOpen)}
+   252→                  className="lg:hidden h-9 w-9 rounded-lg border border-stone-200 flex items-center justify-center hover:bg-stone-50 transition-colors"
+   253→                >
+   254→                  <Menu className="h-4 w-4 text-stone-600" />
+   255→                </button>
+   256→                <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+   257→                  <Shield className="h-4 w-4 text-white" />
+   258→                </div>
+   259→                <div>
+   260→                  <h1 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
+   261→                    Kenya Governance Explorer
+   262→                  </h1>
+   263→                  <p className="text-[10px] sm:text-xs text-stone-500">
+   264→                    2022–2027 · 47 Counties · Evidence-Based
+   265→                  </p>
+   266→                </div>
+   267→              </div>
+   268→              <div className="flex items-center gap-2">
+   269→                {comparisonList.length > 0 && (
+   270→                  <Badge variant="secondary" className="text-[10px] h-6 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+   271→                    {comparisonList.length}/4 compare
+   272→                  </Badge>
+   273→                )}
+   274→                <button
+   275→                  onClick={() => commandPaletteRef.current?.open()}
+   276→                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+   277→                  title="Search (Ctrl+K)"
+   278→                >
+   279→                  <Keyboard className="h-3.5 w-3.5 text-stone-600" />
+   280→                </button>
+   281→                <button
+   282→                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+   283→                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+   284→                  title="Toggle Dark Mode (Ctrl+D)"
+   285→                >
+   286→                  {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-stone-600" /> : <Moon className="h-3.5 w-3.5 text-stone-600" />}
+   287→                </button>
+   288→                <a href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-400 hover:text-emerald-600 transition-colors">
+   289→                  <BookMarked className="h-3 w-3" />Constitution
+   290→                </a>
+   291→              </div>
+   292→            </div>
+   293→          </div>
+   294→        </header>
+   295→
+   296→        {/* ══════════ LAYOUT: SIDEBAR + MAIN ══════════ */}
+   297→        <div className="flex flex-1">
+   298→          {/* Sidebar - Desktop (always visible on lg+) */}
+   299→          <aside className="hidden lg:flex flex-col w-60 border-r border-stone-200 bg-white shrink-0 sticky top-[52px] h-[calc(100vh-52px)] overflow-y-auto">
+   300→            <nav className="flex-1 py-3 px-2 space-y-4">
+   301→              {/* Governance Section */}
+   302→              <div>
+   303→                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Governance</p>
+   304→                {governanceItems.map((item) => (
+   305→                  <button
+   306→                    key={item.id}
+   307→                    onClick={() => setActiveTab(item.id)}
+   308→                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+   309→                      activeTab === item.id
+   310→                        ? 'bg-emerald-600 text-white shadow-sm'
+   311→                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+   312→                    }`}
+   313→                  >
+   314→                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+   315→                    <span>{item.label}</span>
+   316→                  </button>
+   317→                ))}
+   318→              </div>
+   319→
+   320→              <Separator className="bg-stone-100" />
+   321→
+   322→              {/* Civic Tools Section */}
+   323→              <div>
+   324→                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Civic Tools</p>
+   325→                {civicItems.map((item) => (
+   326→                  <button
+   327→                    key={item.id}
+   328→                    onClick={() => setActiveTab(item.id)}
+   329→                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+   330→                      activeTab === item.id
+   331→                        ? 'bg-blue-600 text-white shadow-sm'
+   332→                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+   333→                    }`}
+   334→                  >
+   335→                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+   336→                    <span>{item.label}</span>
+   337→                  </button>
+   338→                ))}
+   339→              </div>
+   340→
+   341→              <Separator className="bg-stone-100" />
+   342→
+   343→              {/* Citizen Action Section */}
+   344→              <div>
+   345→                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Citizen Action</p>
+   346→                {citizenItems.map((item) => (
+   347→                  <button
+   348→                    key={item.id}
+   349→                    onClick={() => setActiveTab(item.id)}
+   350→                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+   351→                      activeTab === item.id
+   352→                        ? 'bg-amber-600 text-white shadow-sm'
+   353→                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+   354→                    }`}
+   355→                  >
+   356→                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+   357→                    <span>{item.label}</span>
+   358→                  </button>
+   359→                ))}
+   360→              </div>
+   361→
+   362→              <Separator className="bg-stone-100" />
+   363→
+   364→              {/* Data & Alerts Section */}
+   365→              <div>
+   366→                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Data & Alerts</p>
+   367→                {dataItems.map((item) => (
+   368→                  <button
+   369→                    key={item.id}
+   370→                    onClick={() => setActiveTab(item.id)}
+   371→                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+   372→                      activeTab === item.id
+   373→                        ? 'bg-purple-600 text-white shadow-sm'
+   374→                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+   375→                    }`}
+   376→                  >
+   377→                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+   378→                    <span>{item.label}</span>
+   379→                  </button>
+   380→                ))}
+   381→              </div>
+   382→
+   383→              <Separator className="bg-stone-100" />
+   384→
+   385→              {/* Analytics Section */}
+   386→              <div>
+   387→                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Analytics</p>
+   388→                {analyticsItems.map((item) => (
+   389→                  <button
+   390→                    key={item.id}
+   391→                    onClick={() => setActiveTab(item.id)}
+   392→                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+   393→                      activeTab === item.id
+   394→                        ? 'bg-indigo-600 text-white shadow-sm'
+   395→                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+   396→                    }`}
+   397→                  >
+   398→                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+   399→                    <span>{item.label}</span>
+   400→                  </button>
+   401→                ))}
+   402→              </div>
+   403→
+   404→              <Separator className="bg-stone-100" />
+   405→
+   406→              {/* Leadership & Projects Section */}
+   407→              <div>
+   408→                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Leadership & Projects</p>
+   409→                {leadershipItems.map((item) => (
+   410→                  <button
+   411→                    key={item.id}
+   412→                    onClick={() => setActiveTab(item.id)}
+   413→                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+   414→                      activeTab === item.id
+   415→                        ? 'bg-rose-600 text-white shadow-sm'
+   416→                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+   417→                    }`}
+   418→                  >
+   419→                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+   420→                    <span>{item.label}</span>
+   421→                  </button>
+   422→                ))}
+   423→              </div>
+   424→
+   425→              <Separator className="bg-stone-100" />
+   426→
+   427→              {/* Insights Section */}
+   428→              <div>
+   429→                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Insights</p>
+   430→                {insightItems.map((item) => (
+   431→                  <button
+   432→                    key={item.id}
+   433→                    onClick={() => setActiveTab(item.id)}
+   434→                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+   435→                      activeTab === item.id
+   436→                        ? 'bg-teal-600 text-white shadow-sm'
+   437→                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+   438→                    }`}
+   439→                  >
+   440→                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+   441→                    <span>{item.label}</span>
+   442→                  </button>
+   443→                ))}
+   444→              </div>
+   445→
+   446→              <Separator className="bg-stone-100" />
+   447→              <div className="px-3 py-2">
+   448→                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Quick Stats</p>
+   449→                <div className="space-y-1.5">
+   450→                  <div className="flex items-center justify-between text-[10px]">
+   451→                    <span className="text-stone-500">Counties</span>
+   452→                    <span className="font-bold text-stone-700">47</span>
+   453→                  </div>
+   454→                  <div className="flex items-center justify-between text-[10px]">
+   455→                    <span className="text-stone-500">Data Sources</span>
+   456→                    <span className="font-bold text-stone-700">{allSources.length}</span>
+   457→                  </div>
+   458→                  <div className="flex items-center justify-between text-[10px]">
+   459→                    <span className="text-stone-500">Term</span>
+   460→                    <span className="font-bold text-stone-700">2022–2027</span>
+   461→                  </div>
+   462→                </div>
+   463→                {/* Data Freshness */}
+   464→                <div className="mt-3 pt-2 border-t border-stone-100">
+   465→                  <DataFreshnessIndicator compact />
+   466→                </div>
+   467→              </div>
+   468→
+   469→              {/* Sidebar Widgets */}
+   470→              <div className="px-3 py-2 space-y-3">
+   471→                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Live Widgets</p>
+   472→                <SidebarMiniMap onCountyClick={(code) => { setSelectedCounty(code); setActiveTab('county'); }} />
+   473→                <WeatherWidget lat={-1.2921} lng={36.8219} location="Nairobi" />
+   474→                <CitizenAuditorDashboard />
+   475→                <AIInsightsWidget />
+   476→              </div>
+   477→
+   478→              {/* Primary Sources Links */}
+   479→              <div className="px-3 py-2 mt-auto">
+   480→                <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Primary Sources</p>
+   481→                <div className="space-y-1">
+   482→                  {[
+   483→                    { label: 'OAG Kenya', url: 'https://oagkenya.go.ke/' },
+   484→                    { label: 'Controller of Budget', url: 'https://cob.go.ke/' },
+   485→                    { label: 'TI-Kenya', url: 'https://tikenya.org/' },
+   486→                    { label: 'IEBC', url: 'https://www.iebc.or.ke/' },
+   487→                    { label: 'EACC', url: 'https://eacc.go.ke/' },
+   488→                  ].map(s => (
+   489→                    <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
+   490→                      className="flex items-center gap-1.5 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
+   491→                      <ExternalLink className="h-2.5 w-2.5" /> {s.label}
+   492→                    </a>
+   493→                  ))}
+   494→                </div>
+   495→              </div>
+   496→            </nav>
+   497→          </aside>
+   498→
+   499→          {/* Mobile Sidebar Overlay */}
+   500→          {sidebarOpen && (
+   501→            <div className="lg:hidden fixed inset-0 z-50">
+   502→              <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
+   503→              <aside className="absolute left-0 top-0 bottom-0 w-72 bg-white border-r border-stone-200 flex flex-col shadow-xl z-50">
+   504→                <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
+   505→                  <span className="text-sm font-bold text-stone-800">Navigation</span>
+   506→                  <button onClick={() => setSidebarOpen(false)} className="h-8 w-8 rounded-lg hover:bg-stone-100 flex items-center justify-center">
+   507→                    <X className="h-4 w-4 text-stone-500" />
+   508→                  </button>
+   509→                </div>
+   510→                <nav className="flex-1 py-3 px-2 space-y-4 overflow-y-auto">
+   511→                  <div>
+   512→                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Governance</p>
+   513→                    {governanceItems.map((item) => (
+   514→                      <button
+   515→                        key={item.id}
+   516→                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+   517→                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+   518→                          activeTab === item.id
+   519→                            ? 'bg-emerald-600 text-white'
+   520→                            : 'text-stone-600 hover:bg-stone-50'
+   521→                        }`}
+   522→                      >
+   523→                        <item.icon className="h-4 w-4" />
+   524→                        <span>{item.label}</span>
+   525→                      </button>
+   526→                    ))}
+   527→                  </div>
+   528→                  <Separator />
+   529→                  <div>
+   530→                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Civic Tools</p>
+   531→                    {civicItems.map((item) => (
+   532→                      <button
+   533→                        key={item.id}
+   534→                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+   535→                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+   536→                          activeTab === item.id
+   537→                            ? 'bg-blue-600 text-white'
+   538→                            : 'text-stone-600 hover:bg-stone-50'
+   539→                        }`}
+   540→                      >
+   541→                        <item.icon className="h-4 w-4" />
+   542→                        <span>{item.label}</span>
+   543→                      </button>
+   544→                    ))}
+   545→                  </div>
+   546→                  <Separator />
+   547→                  <div>
+   548→                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Citizen Action</p>
+   549→                    {citizenItems.map((item) => (
+   550→                      <button
+   551→                        key={item.id}
+   552→                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+   553→                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+   554→                          activeTab === item.id
+   555→                            ? 'bg-amber-600 text-white'
+   556→                            : 'text-stone-600 hover:bg-stone-50'
+   557→                        }`}
+   558→                      >
+   559→                        <item.icon className="h-4 w-4" />
+   560→                        <span>{item.label}</span>
+   561→                      </button>
+   562→                    ))}
+   563→                  </div>
+   564→                  <Separator />
+   565→                  <div>
+   566→                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Data & Alerts</p>
+   567→                    {dataItems.map((item) => (
+   568→                      <button
+   569→                        key={item.id}
+   570→                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+   571→                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+   572→                          activeTab === item.id
+   573→                            ? 'bg-purple-600 text-white'
+   574→                            : 'text-stone-600 hover:bg-stone-50'
+   575→                        }`}
+   576→                      >
+   577→                        <item.icon className="h-4 w-4" />
+   578→                        <span>{item.label}</span>
+   579→                      </button>
+   580→                    ))}
+   581→                  </div>
+   582→                  <Separator />
+   583→                  <div>
+   584→                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Analytics</p>
+   585→                    {analyticsItems.map((item) => (
+   586→                      <button
+   587→                        key={item.id}
+   588→                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+   589→                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+   590→                          activeTab === item.id
+   591→                            ? 'bg-indigo-600 text-white'
+   592→                            : 'text-stone-600 hover:bg-stone-50'
+   593→                        }`}
+   594→                      >
+   595→                        <item.icon className="h-4 w-4" />
+   596→                        <span>{item.label}</span>
+   597→                      </button>
+   598→                    ))}
+   599→                  </div>
+   600→                  <Separator />
+   601→                  <div>
+   602→                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Leadership & Projects</p>
+   603→                    {leadershipItems.map((item) => (
+   604→                      <button
+   605→                        key={item.id}
+   606→                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+   607→                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+   608→                          activeTab === item.id
+   609→                            ? 'bg-rose-600 text-white'
+   610→                            : 'text-stone-600 hover:bg-stone-50'
+   611→                        }`}
+   612→                      >
+   613→                        <item.icon className="h-4 w-4" />
+   614→                        <span>{item.label}</span>
+   615→                      </button>
+   616→                    ))}
+   617→                  </div>
+   618→                  <Separator />
+   619→                  <div>
+   620→                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Insights</p>
+   621→                    {insightItems.map((item) => (
+   622→                      <button
+   623→                        key={item.id}
+   624→                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+   625→                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+   626→                          activeTab === item.id
+   627→                            ? 'bg-teal-600 text-white'
+   628→                            : 'text-stone-600 hover:bg-stone-50'
+   629→                        }`}
+   630→                      >
+   631→                        <item.icon className="h-4 w-4" />
+   632→                        <span>{item.label}</span>
+   633→                      </button>
+   634→                    ))}
+   635→                  </div>
+   636→                </nav>
+   637→              </aside>
+   638→            </div>
+   639→          )}
+   640→
+   641→          {/* ══════════ MAIN CONTENT ══════════ */}
+   642→          <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full">
+   643→            {activeTab === 'summary' && <NationalSummaryDashboard onNavigate={setActiveTab} />}
+   644→            {activeTab === 'tree' && (
+   645→              <GovernorsTreeView
+   646→                governors={filteredGovernors}
+   647→                expandedCounties={expandedCounties}
+   648→                toggleCounty={toggleCounty}
+   649→                allCounties={allCounties}
+   650→                filters={filters}
+   651→                setFilters={setFilters}
+   652→                addToComparison={addToComparison}
+   653→                comparisonList={comparisonList}
+   654→              />
+   655→            )}
+   656→            {activeTab === 'county' && (
+   657→              <CountyExplorer
+   658→                countyCode={selectedCounty}
+   659→                allCounties={allCounties}
+   660→                onSelectCounty={setSelectedCounty}
+   661→                addToComparison={addToComparison}
+   662→                comparisonList={comparisonList}
+   663→              />
+   664→            )}
+   665→            {activeTab === 'sources' && <SourcesHub />}
+   666→            {activeTab === 'compare' && (
+   667→              <ComparisonView
+   668→                comparisonList={comparisonList}
+   669→                removeFromComparison={removeFromComparison}
+   670→                addToComparison={addToComparison}
+   671→                allCounties={allCounties}
+   672→              />
+   673→            )}
+   674→            {activeTab === 'schema' && <JsonSchemaView />}
+   675→            {activeTab === 'whistleblower' && <WhistleblowerPage />}
+   676→            {activeTab === 'constitution' && <ConstitutionPage />}
+   677→            {activeTab === 'xposts' && <PoliticalXPostsPage />}
+   678→            {activeTab === 'countymap' && (
+   679→              <CountyMapPage
+   680→                onCountyDeepDive={(code) => {
+   681→                  setSelectedCounty(code);
+   682→                  setActiveTab('county');
+   683→                }}
+   684→              />
+   685→            )}
+   686→            {activeTab === 'rti' && <RtiGeneratorPage />}
+   687→            {activeTab === 'petition' && <PetitionBuilderPage />}
+   688→            {activeTab === 'heatmap' && <CorruptionHeatmapPage />}
+   689→            {activeTab === 'manifesto' && <ManifestoTrackerPage />}
+   690→            {activeTab === 'tiptsubmit' && <AnonymousTipPage />}
+   691→            {activeTab === 'feedback' && <CitizenFeedbackPage />}
+   692→            {activeTab === 'timeline' && <TimelinePage />}
+   693→            {activeTab === 'budgetsim' && <BudgetSimulatorPage />}
+   694→            {activeTab === 'datafetcher' && <DataFetcherPage />}
+   695→            {activeTab === 'alerts' && <AlertsSubscriptionPage />}
+   696→            {activeTab === 'procurement' && <ProcurementMonitorPage />}
+   697→            {activeTab === 'reportcard' && <GovernorReportCardPage />}
+   698→            {activeTab === 'audittrends' && <AuditTrendsPage />}
+   699→            {activeTab === 'budgetscatter' && <BudgetScatterPage />}
+   700→            {activeTab === 'coalition' && <CoalitionComparisonPage />}
+   701→            {activeTab === 'quiz' && <DevolutionQuizPage />}
+   702→            {activeTab === 'servicedelivery' && <ServiceDeliveryPage />}
+   703→            {activeTab === 'stories' && <CitizenStoriesPage />}
+   704→            {activeTab === 'cbef' && <CBEFMeetingPage />}
+   705→            {activeTab === 'redflags' && <ProcurementRedFlagsPage />}
+   706→            {activeTab === 'embed' && <EmbedWidgetPage />}
+   707→            {activeTab === 'leadership' && <CountyLeadershipTreePage />}
+   708→            {activeTab === 'projects' && (
+   709→            <div className="space-y-4">
+   710→              <ProjectsBrowserPage />
+   711→              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   712→                <ProjectVelocityChart projectRef="PRJ-034-001" />
+   713→                <RiskForecastWidget projectId="PRJ-034-001" />
+   714→              </div>
+   715→            </div>
+   716→            )}
+   717→            {activeTab === 'mzalendo' && <MzalendoPage />}
+   718→            {activeTab === 'securetip' && <SecureWhistleblowerModal />}
+   719→            {activeTab === 'compareEnhanced' && <CountyComparisonEnhanced />}
+   720→            {activeTab === 'rankings' && <CountyRankingsPage />}
+   721→            {activeTab === 'milestones' && <DevolutionMilestonesPage />}
+   722→            {activeTab === 'fycomparison' && <FYComparisonPage />}
+   723→            {activeTab === 'representatives' && <RepresentativeProfilesPage />}
+   724→          </main>
+   725→
+   726→          {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
+   727→          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 z-50 px-2 py-1.5">
+   728→            <div className="flex items-center justify-around">
+   729→              {[
+   730→                { id: 'summary' as TabId, icon: BarChart3, label: 'Home' },
+   731→                { id: 'countymap' as TabId, icon: Map, label: 'Map' },
+   732→                { id: 'tree' as TabId, icon: TreePine, label: 'Counties' },
+   733→                { id: 'representatives' as TabId, icon: Users, label: 'Reps' },
+   734→                { id: 'alerts' as TabId, icon: Bell, label: 'Alerts' },
+   735→              ].map(item => (
+   736→                <button
+   737→                  key={item.id}
+   738→                  onClick={() => { setActiveTab(item.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+   739→                  className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors ${
+   740→                    activeTab === item.id
+   741→                      ? 'text-emerald-600 dark:text-emerald-400'
+   742→                      : 'text-stone-400 dark:text-stone-500'
+   743→                  }`}
+   744→                >
+   745→                  <item.icon className="h-4 w-4" />
+   746→                  <span className="text-[9px] font-medium">{item.label}</span>
+   747→                </button>
+   748→              ))}
+   749→            </div>
+   750→          </nav>
+   751→        </div>
+   752→
+   753→        {/* ══════════ FOOTER ══════════ */}
+   754→        <footer className="bg-stone-900 text-stone-400 py-6 mt-auto">
+   755→          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   756→            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
+   757→              <div>
+   758→                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Primary Sources</h3>
+   759→                <ul className="space-y-1.5 text-xs">
+   760→                  {[
+   761→                    { label: 'OAG', url: 'https://oagkenya.go.ke/' },
+   762→                    { label: 'CoB', url: 'https://cob.go.ke/' },
+   763→                    { label: 'TI-Kenya', url: 'https://tikenya.org/' },
+   764→                    { label: 'IEBC', url: 'https://www.iebc.or.ke/' },
+   765→                    { label: 'EACC', url: 'https://eacc.go.ke/' },
+   766→                  ].map(s => (
+   767→                    <li key={s.label}>
+   768→                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+   769→                        <ExternalLink className="h-3 w-3" /> {s.label}
+   770→                      </a>
+   771→                    </li>
+   772→                  ))}
+   773→                </ul>
+   774→              </div>
+   775→              <div>
+   776→                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Parliament & Oversight</h3>
+   777→                <ul className="space-y-1.5 text-xs">
+   778→                  {[
+   779→                    { label: 'Parliament Hansard', url: 'https://parliament.go.ke/' },
+   780→                    { label: 'Senate CPAIC', url: 'https://parliament.go.ke/committees' },
+   781→                    { label: 'PPRA / PPIP', url: 'https://ppra.go.ke/' },
+   782→                    { label: 'CRA', url: 'https://cra.go.ke/' },
+   783→                    { label: 'PSC', url: 'https://psc.go.ke/' },
+   784→                    { label: 'CAJ Ombudsman', url: 'https://caj.go.ke/' },
+   785→                  ].map(s => (
+   786→                    <li key={s.label}>
+   787→                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+   788→                        <ExternalLink className="h-3 w-3" /> {s.label}
+   789→                      </a>
+   790→                    </li>
+   791→                  ))}
+   792→                </ul>
+   793→              </div>
+   794→              <div>
+   795→                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Resources & Data</h3>
+   796→                <ul className="space-y-1.5 text-xs">
+   797→                  {[
+   798→                    { label: 'KNBS Statistics', url: 'https://www.knbs.or.ke/' },
+   799→                    { label: 'Kenya Open Data', url: 'https://opendata.go.ke/' },
+   800→                    { label: 'National Treasury', url: 'https://treasury.go.ke/' },
+   801→                    { label: 'NLC Land', url: 'https://nlc.go.ke/' },
+   802→                    { label: 'WASREB Water', url: 'https://wasreb.go.ke/' },
+   803→                    { label: 'KFS Forests', url: 'https://kenyaforestservice.org/' },
+   804→                  ].map(s => (
+   805→                    <li key={s.label}>
+   806→                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+   807→                        <ExternalLink className="h-3 w-3" /> {s.label}
+   808→                      </a>
+   809→                    </li>
+   810→                  ))}
+   811→                </ul>
+   812→              </div>
+   813→              <div>
+   814→                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">Civil Society</h3>
+   815→                <ul className="space-y-1.5 text-xs">
+   816→                  {[
+   817→                    { label: 'Mzalendo', url: 'https://mzalendo.com/' },
+   818→                    { label: 'PesaCheck', url: 'https://pesacheck.africa/' },
+   819→                    { label: 'Katiba Institute', url: 'https://katibainstitute.org/' },
+   820→                    { label: 'AfriCOG', url: 'https://africog.org/' },
+   821→                    { label: 'Bajeti Hub', url: 'https://bajeti.go.ke/' },
+   822→                    { label: 'IEA Kenya', url: 'https://ieakenya.or.ke/' },
+   823→                  ].map(s => (
+   824→                    <li key={s.label}>
+   825→                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+   826→                        <ExternalLink className="h-3 w-3" /> {s.label}
+   827→                      </a>
+   828→                    </li>
+   829→                  ))}
+   830→                </ul>
+   831→              </div>
+   832→            </div>
+   833→            <Separator className="my-6 bg-stone-700" />
+   834→            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500">
+   835→              <p>Kenya County Governance Explorer · Strictly Non-Partisan · Evidence-Based</p>
+   836→              <p>Last updated: 2026-07-28 · {allSources.length} data sources indexed · 47 counties with OAG audit data</p>
+   837→            </div>
+   838→          </div>
+   839→        </footer>
+   840→      </div>
+   841→      <CommandPalette ref={commandPaletteRef} onNavigate={(tabId) => setActiveTab(tabId as TabId)} />
+   842→    </TooltipProvider>
+   843→  );
+   844→}
+   845→

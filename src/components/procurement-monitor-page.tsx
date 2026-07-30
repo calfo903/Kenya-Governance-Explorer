@@ -102,15 +102,15 @@ export default function ProcurementMonitorPage() {
       {/* Data Sources */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <a href="https://www.ppip.go.ke" target="_blank" rel="noopener noreferrer" className="block">
-          <Card className="border-stone-200 bg-white hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer">
             <CardContent className="py-4 px-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
                   <Database className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-stone-800">PPIP Portal — Public Procurement Information Portal</p>
-                  <p className="text-[10px] text-stone-500">Searchable county procurement data, tender notices, contract awards, and supplier information</p>
+                  <p className="text-xs font-bold text-stone-800 dark:text-stone-100">PPIP Portal — Public Procurement Information Portal</p>
+                  <p className="text-[10px] text-stone-500 dark:text-stone-400">Searchable county procurement data, tender notices, contract awards, and supplier information</p>
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-stone-400 shrink-0" />
               </div>
@@ -118,15 +118,15 @@ export default function ProcurementMonitorPage() {
           </Card>
         </a>
         <a href="https://www.ppra.go.ke" target="_blank" rel="noopener noreferrer" className="block">
-          <Card className="border-stone-200 bg-white hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer">
             <CardContent className="py-4 px-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
                   <Building2 className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-stone-800">PPRA — Public Procurement Regulatory Authority</p>
-                  <p className="text-[10px] text-stone-500">Annual reports, debarment lists, procurement guidelines, threshold regulations</p>
+                  <p className="text-xs font-bold text-stone-800 dark:text-stone-100">PPRA — Public Procurement Regulatory Authority</p>
+                  <p className="text-[10px] text-stone-500 dark:text-stone-400">Annual reports, debarment lists, procurement guidelines, threshold regulations</p>
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-stone-400 shrink-0" />
               </div>
@@ -139,14 +139,14 @@ export default function ProcurementMonitorPage() {
         {/* County Search & Red Flags */}
         <div className="lg:col-span-2 space-y-4">
           {/* Search */}
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardContent className="py-3 px-4">
               <div className="flex flex-col md:flex-row gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Search County on PPIP</label>
+                  <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Search County on PPIP</label>
                   <div className="flex gap-2">
                     <Select value={selectedCounty} onValueChange={setSelectedCounty}>
-                      <SelectTrigger className="h-9 text-xs border-stone-200 flex-1"><SelectValue placeholder="Select county..." /></SelectTrigger>
+                      <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700 flex-1"><SelectValue placeholder="Select county..." /></SelectTrigger>
                       <SelectContent className="max-h-60">
                         {all47Governors.map(g => <SelectItem key={g.county} value={g.county}>{g.county}</SelectItem>)}
                       </SelectContent>
@@ -162,9 +162,9 @@ export default function ProcurementMonitorPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-semibold text-stone-600 uppercase tracking-wider mb-1 block">Search on Google (Gov sites)</label>
+                  <label className="text-[10px] font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-1 block">Search on Google (Gov sites)</label>
                   <div className="flex gap-2">
-                    <Input placeholder="e.g. Nakuru tender 2025" className="h-9 text-xs border-stone-200 flex-1" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                    <Input placeholder="e.g. Nakuru tender 2025" className="h-9 text-xs border-stone-200 dark:border-stone-700 flex-1" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                     <Button variant="outline" className="gap-1.5" onClick={() => {
                       if (selectedCounty && searchQuery) {
                         window.open(`https://www.google.com/search?q=${encodeURIComponent(`${searchQuery} ${selectedCounty} county procurement site:ppip.go.ke OR site:ppra.go.ke`)}`, '_blank');
@@ -179,27 +179,27 @@ export default function ProcurementMonitorPage() {
           </Card>
 
           {/* Red Flags Checklist */}
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-semibold flex items-center gap-2">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
                 Procurement Red Flags Checklist
               </CardTitle>
-              <CardDescription className="text-[10px] text-stone-500">Check patterns you observe in your county&apos;s procurement records</CardDescription>
+              <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">Check patterns you observe in your county&apos;s procurement records</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {filteredFlags.map(flag => {
                 const risk = RISK_LEVELS[flag.riskLevel];
                 return (
-                  <div key={flag.id} className={`p-3 rounded-lg border transition-colors ${checkedFlags.has(flag.id) ? 'bg-amber-50 border-amber-200' : 'bg-white border-stone-100'}`}>
+                  <div key={flag.id} className={`p-3 rounded-lg border transition-colors ${checkedFlags.has(flag.id) ? 'bg-amber-50 dark:bg-amber-950 border-amber-200' : 'bg-white dark:bg-stone-900 border-stone-100 dark:border-stone-800'}`}>
                     <div className="flex items-start gap-2">
                       <Checkbox checked={checkedFlags.has(flag.id)} onCheckedChange={() => toggleFlag(flag.id)} className="mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-bold text-stone-800">{flag.label}</span>
+                          <span className="text-xs font-bold text-stone-800 dark:text-stone-100">{flag.label}</span>
                           <Badge variant="outline" className={`text-[8px] h-4 ${risk.bg} ${risk.text}`}>{risk.label}</Badge>
                         </div>
-                        <p className="text-[10px] text-stone-600 leading-relaxed">{flag.description}</p>
+                        <p className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">{flag.description}</p>
                         <p className="text-[9px] text-emerald-600 mt-1">
                           <Scale className="h-2.5 w-2.5 inline mr-0.5" />
                           {flag.legalBasis}
@@ -216,7 +216,7 @@ export default function ProcurementMonitorPage() {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* PPRA Stats */}
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-semibold flex items-center gap-2">
                 <BookOpen className="h-3.5 w-3.5 text-blue-600" />
@@ -225,7 +225,7 @@ export default function ProcurementMonitorPage() {
             </CardHeader>
             <CardContent className="space-y-1.5">
               {PPRA_STATS.map((stat, i) => (
-                <div key={i} className="flex items-start gap-1.5 text-[10px] text-stone-600">
+                <div key={i} className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                   <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0 mt-0.5" />
                   <span>{stat.label} <span className="text-stone-400">— {stat.source}</span></span>
                 </div>
@@ -234,10 +234,10 @@ export default function ProcurementMonitorPage() {
           </Card>
 
           {/* PPAD Act Education */}
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-semibold flex items-center gap-2">
-                <Gavel className="h-3.5 w-3.5 text-slate-600" />
+                <Gavel className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
                 PPAD Act 2015 — Key Sections
               </CardTitle>
             </CardHeader>
@@ -252,12 +252,12 @@ export default function ProcurementMonitorPage() {
                   { section: 'Sec. 172 — Whistleblower Protection', desc: 'Protection for persons reporting procurement irregularities' },
                   { section: 'Sec. 155 — Collusion', desc: 'Offenses related to bid rigging, collusion, and fraud in procurement' },
                 ].map((item, i) => (
-                  <AccordionItem key={i} value={`sec-${i}`} className="border border-stone-100 rounded-lg overflow-hidden">
+                  <AccordionItem key={i} value={`sec-${i}`} className="border border-stone-100 dark:border-stone-800 rounded-lg overflow-hidden">
                     <AccordionTrigger className="py-2 px-3 hover:no-underline">
-                      <span className="text-[10px] font-semibold text-stone-700">{item.section}</span>
+                      <span className="text-[10px] font-semibold text-stone-700 dark:text-stone-200">{item.section}</span>
                     </AccordionTrigger>
                     <AccordionContent className="px-3 pb-2">
-                      <p className="text-[10px] text-stone-600">{item.desc}</p>
+                      <p className="text-[10px] text-stone-600 dark:text-stone-300">{item.desc}</p>
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -266,7 +266,7 @@ export default function ProcurementMonitorPage() {
           </Card>
 
           {/* Reporting */}
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-red-200 bg-red-50 dark:bg-red-950">
             <CardContent className="py-3 px-4 space-y-2">
               <p className="text-xs font-bold text-red-800 flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> Report Procurement Irregularities</p>
               <div className="space-y-1 text-[10px] text-red-700">
@@ -293,19 +293,19 @@ export default function ProcurementMonitorPage() {
       </div>
 
       {/* Sources */}
-      <Card className="border-stone-200 bg-stone-50">
+      <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
         <CardContent className="py-3 px-4">
           <div className="space-y-1.5">
-            <p className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">Data Sources & References</p>
-            <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+            <p className="text-[10px] font-bold text-stone-600 dark:text-stone-300 uppercase tracking-wider">Data Sources & References</p>
+            <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
               <span>PPIP Portal: <a href="https://www.ppip.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">ppip.go.ke</a> — Searchable county procurement data, tender notices, and contract awards</span>
             </div>
-            <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+            <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
               <span>PPRA: <a href="https://www.ppra.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">ppra.go.ke</a> — Annual reports, debarment lists, procurement regulations</span>
             </div>
-            <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+            <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
               <span>PPAD Act 2015: Public Procurement and Asset Disposal Act — <a href="https://kenyalaw.org/klr/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">Full text at KenyaLaw.org</a></span>
             </div>

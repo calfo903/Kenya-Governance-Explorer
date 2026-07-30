@@ -97,7 +97,7 @@ export default function BudgetScatterPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-red-600" /> Budget Absorption Scatter Plot
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
@@ -122,7 +122,7 @@ export default function BudgetScatterPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-3">
           <p className="text-[10px] text-stone-500 dark:text-stone-400">Counties Plotted</p>
-          <p className="text-xl font-bold text-stone-900 dark:text-stone-100">{COUNTY_BUDGET_DATA.length}</p>
+          <p className="text-xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{COUNTY_BUDGET_DATA.length}</p>
         </div>
         <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-3">
           <p className="text-[10px] text-stone-500 dark:text-stone-400">Avg Dev Absorption</p>
@@ -156,8 +156,8 @@ export default function BudgetScatterPage() {
                     if (!payload?.length) return null;
                     const d = payload[0].payload;
                     return (
-                      <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-600 rounded-lg p-3 shadow-lg text-xs">
-                        <p className="font-bold text-stone-900 dark:text-stone-100">{d.county}</p>
+                      <div className="bg-white dark:bg-stone-900 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 dark:border-stone-600 rounded-lg p-3 shadow-lg text-xs">
+                        <p className="font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{d.county}</p>
                         <p className="text-stone-500 dark:text-stone-400">{d.region} · {d.coalition}</p>
                         <Separator className="my-1.5 bg-stone-200 dark:bg-stone-600" />
                         <p>Budget: <span className="font-bold">KSh {d.budgetBn}B</span></p>

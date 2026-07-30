@@ -189,61 +189,61 @@ export default function CorruptionHeatmapPage() {
 
       {/* Key Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardContent className="py-3 px-4">
-            <p className="text-[10px] text-stone-500 uppercase tracking-wider">Risk Levels</p>
+            <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Risk Levels</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-lg font-bold text-red-600">{riskCounts.critical}</span>
-              <span className="text-xs text-stone-500">Critical</span>
+              <span className="text-xs text-stone-500 dark:text-stone-400">Critical</span>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardContent className="py-3 px-4">
-            <p className="text-[10px] text-stone-500 uppercase tracking-wider">EACC Cases</p>
+            <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">EACC Cases</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-lg font-bold text-orange-600">{Object.keys(EACC_INVESTIGATING).length}</span>
-              <span className="text-xs text-stone-500">Counties</span>
+              <span className="text-xs text-stone-500 dark:text-stone-400">Counties</span>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardContent className="py-3 px-4">
-            <p className="text-[10px] text-stone-500 uppercase tracking-wider">Unspent Dev Funds</p>
+            <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Unspent Dev Funds</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-lg font-bold text-amber-600">KSh 72B</span>
-              <span className="text-xs text-stone-500">FY 2024/25</span>
+              <span className="text-xs text-stone-500 dark:text-stone-400">FY 2024/25</span>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardContent className="py-3 px-4">
-            <p className="text-[10px] text-stone-500 uppercase tracking-wider">Qualified Opinions</p>
+            <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Qualified Opinions</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-lg font-bold text-yellow-600">{latestAudit.countyExecutive.qualified}</span>
-              <span className="text-xs text-stone-500">of 47</span>
+              <span className="text-xs text-stone-500 dark:text-stone-400">of 47</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardContent className="py-3 px-4">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
-              <Input placeholder="Search county..." className="h-9 pl-9 text-xs border-stone-200" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+              <Input placeholder="Search county..." className="h-9 pl-9 text-xs border-stone-200 dark:border-stone-700" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             </div>
             <Select value={regionFilter} onValueChange={setRegionFilter}>
-              <SelectTrigger className="h-9 w-36 text-xs border-stone-200"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-36 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Regions</SelectItem>
                 {REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={riskFilter} onValueChange={setRiskFilter}>
-              <SelectTrigger className="h-9 w-36 text-xs border-stone-200"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-36 text-xs border-stone-200 dark:border-stone-700"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Risks</SelectItem>
                 <SelectItem value="critical">Critical</SelectItem>
@@ -257,10 +257,10 @@ export default function CorruptionHeatmapPage() {
       </Card>
 
       {/* Heatmap Grid */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-semibold">County Corruption Risk Matrix</CardTitle>
-          <CardDescription className="text-[10px] text-stone-500">Risk scores based on OAG audit opinions, CoB budget absorption, and EACC cases. Click a county for details.</CardDescription>
+          <CardDescription className="text-[10px] text-stone-500 dark:text-stone-400">Risk scores based on OAG audit opinions, CoB budget absorption, and EACC cases. Click a county for details.</CardDescription>
         </CardHeader>
         <CardContent>
           <ScrollArea className="max-h-[500px]">
@@ -273,8 +273,8 @@ export default function CorruptionHeatmapPage() {
                     onClick={() => setSelectedCounty(risk)}
                     className={`p-2 rounded-lg border ${colors.bg} ${colors.border} ${selectedCounty?.name === risk.name ? 'ring-2 ring-offset-1 ring-slate-800' : ''} hover:opacity-80 transition-opacity text-center`}
                   >
-                    <p className="text-[9px] font-semibold text-stone-800 leading-tight">{risk.name.length > 10 ? risk.name.split(' ').map(w => w[0]).join('') : risk.name}</p>
-                    <p className="text-[8px] text-stone-500 mt-0.5">{risk.riskScore}</p>
+                    <p className="text-[9px] font-semibold text-stone-800 dark:text-stone-100 leading-tight">{risk.name.length > 10 ? risk.name.split(' ').map(w => w[0]).join('') : risk.name}</p>
+                    <p className="text-[8px] text-stone-500 dark:text-stone-400 mt-0.5">{risk.riskScore}</p>
                   </button>
                 );
               })}
@@ -284,24 +284,24 @@ export default function CorruptionHeatmapPage() {
       </Card>
 
       {/* Legend */}
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardContent className="py-3 px-4">
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-1.5">
               <div className="h-3 w-3 rounded-sm bg-red-500" />
-              <span className="text-[10px] text-stone-600">Critical (65+)</span>
+              <span className="text-[10px] text-stone-600 dark:text-stone-300">Critical (65+)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="h-3 w-3 rounded-sm bg-orange-500" />
-              <span className="text-[10px] text-stone-600">High (45-64)</span>
+              <span className="text-[10px] text-stone-600 dark:text-stone-300">High (45-64)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="h-3 w-3 rounded-sm bg-amber-500" />
-              <span className="text-[10px] text-stone-600">Medium (25-44)</span>
+              <span className="text-[10px] text-stone-600 dark:text-stone-300">Medium (25-44)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="h-3 w-3 rounded-sm bg-emerald-500" />
-              <span className="text-[10px] text-stone-600">Low (&lt;25)</span>
+              <span className="text-[10px] text-stone-600 dark:text-stone-300">Low (&lt;25)</span>
             </div>
           </div>
         </CardContent>
@@ -309,11 +309,11 @@ export default function CorruptionHeatmapPage() {
 
       {/* Selected County Detail */}
       {selectedCounty && (
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-semibold flex items-center gap-2">
-                <MapPin className="h-3.5 w-3.5 text-slate-700" />
+                <MapPin className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
                 {selectedCounty.name} County — Risk Score: {selectedCounty.riskScore}
               </CardTitle>
               <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setSelectedCounty(null)}>
@@ -323,29 +323,29 @@ export default function CorruptionHeatmapPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-3 bg-stone-50 rounded-lg border border-stone-100">
-                <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-2">OAG Audit Opinion (FY 2024/25)</p>
+              <div className="p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
+                <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">OAG Audit Opinion (FY 2024/25)</p>
                 <Badge className={selectedCounty.auditOpinion === 'Adverse' ? 'bg-orange-100 text-orange-800' : selectedCounty.auditOpinion === 'Qualified' ? 'bg-yellow-100 text-yellow-800' : 'bg-emerald-100 text-emerald-800'}>
                   {selectedCounty.auditOpinion}
                 </Badge>
               </div>
-              <div className="p-3 bg-stone-50 rounded-lg border border-stone-100">
-                <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-2">Dev Budget Absorption (FY 2024/25)</p>
+              <div className="p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
+                <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">Dev Budget Absorption (FY 2024/25)</p>
                 {selectedCounty.devAbsorptionRate !== null ? (
                   <div className="space-y-1">
-                    <p className="text-sm font-bold text-stone-800">{selectedCounty.devAbsorptionRate}%</p>
+                    <p className="text-sm font-bold text-stone-800 dark:text-stone-100">{selectedCounty.devAbsorptionRate}%</p>
                     <Progress value={selectedCounty.devAbsorptionRate} className="h-2" />
                   </div>
                 ) : (
                   <p className="text-xs text-stone-400">Data not available</p>
                 )}
               </div>
-              <div className="p-3 bg-stone-50 rounded-lg border border-stone-100">
-                <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-2">EACC Investigation Status</p>
+              <div className="p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800">
+                <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">EACC Investigation Status</p>
                 {selectedCounty.eaccCase ? (
                   <div className="space-y-1">
                     <Badge className="bg-red-100 text-red-800">Under Investigation</Badge>
-                    <p className="text-[10px] text-stone-600">{EACC_INVESTIGATING[selectedCounty.name]}</p>
+                    <p className="text-[10px] text-stone-600 dark:text-stone-300">{EACC_INVESTIGATING[selectedCounty.name]}</p>
                   </div>
                 ) : (
                   <p className="text-xs text-emerald-600 font-medium">No known active investigation</p>
@@ -357,29 +357,29 @@ export default function CorruptionHeatmapPage() {
       )}
 
       {/* Sources */}
-      <Card className="border-stone-200 bg-stone-50">
+      <Card className="border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800">
         <CardContent className="py-3 px-4">
           <div className="space-y-2">
-            <p className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">Data Sources</p>
+            <p className="text-[10px] font-bold text-stone-600 dark:text-stone-300 uppercase tracking-wider">Data Sources</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-              <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+              <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                 <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
                 <span>OAG FY 2024/25: 1 unmodified, 44 qualified, 2 adverse — <a href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">oagkenya.go.ke</a></span>
               </div>
-              <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+              <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                 <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
                 <span>CoB FY 2024/25: KSh 72B unspent dev funds — <a href="https://cob.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">cob.go.ke</a></span>
               </div>
-              <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+              <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                 <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
                 <span>EACC: 5 sitting + 11 former governors under investigation — <a href="https://eacc.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">eacc.go.ke</a></span>
               </div>
-              <div className="flex items-start gap-1.5 text-[10px] text-stone-600">
+              <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                 <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
                 <span>TI-Kenya CPI 2025: Score 30/100, Rank 130/182 — <a href="https://www.tikenya.org" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">tikenya.org</a></span>
               </div>
             </div>
-            <div className="flex items-start gap-1.5 text-[10px] text-stone-500">
+            <div className="flex items-start gap-1.5 text-[10px] text-stone-500 dark:text-stone-400">
               <Info className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
               <span>Risk scores are composite indicators for analytical purposes only and do not constitute legal findings.</span>
             </div>

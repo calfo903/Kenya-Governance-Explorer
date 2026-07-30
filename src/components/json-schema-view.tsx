@@ -14,7 +14,7 @@ export default function JsonSchemaView() {
 
   return (
     <div className="space-y-5">
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Database className="h-4 w-4 text-emerald-600" /> Reusable JSON Schema</CardTitle><CardDescription className="text-xs">Downloadable schema with source citation fields and live feed endpoints for {allSources.length} data sources.</CardDescription></CardHeader>
         <CardContent>
           <div className="bg-stone-900 rounded-lg p-4 overflow-auto max-h-[500px]"><pre className="text-[11px] text-emerald-400 leading-relaxed whitespace-pre-wrap break-words">{JSON.stringify(jsonSchema, null, 2)}</pre></div>
@@ -25,7 +25,7 @@ export default function JsonSchemaView() {
         </CardContent>
       </Card>
 
-      <Card className="border-stone-200 bg-white">
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
         <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Expanding Any County — Step-by-Step</CardTitle></CardHeader>
         <CardContent className="space-y-3 text-xs">
           {[{ title: '1. Pull Election Data', desc: 'IEBC official results for Governor, Deputy, Senator, Woman Rep, MPs, MCAs. Verify against official gazette.', url: 'https://www.iebc.or.ke/' },
@@ -36,9 +36,9 @@ export default function JsonSchemaView() {
             { title: '6. Check Natural Resources', desc: 'NLC for land, WASREB for water, KFS for forests, Mining for minerals.', url: 'https://nlc.go.ke/' },
             { title: '7. Verify Contacts', desc: 'Only include publicly available contacts from official county websites.', url: 'https://opendata.go.ke/' },
           ].map((step, i) => (
-            <div key={i} className="flex items-start gap-3 p-3 bg-stone-50 rounded-lg">
+            <div key={i} className="flex items-start gap-3 p-3 bg-stone-50 dark:bg-stone-800 rounded-lg">
               <span className="font-bold text-emerald-700 shrink-0">{step.title}</span>
-              <p className="text-stone-600">{step.desc} <a href={step.url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline ml-1">→</a></p>
+              <p className="text-stone-600 dark:text-stone-300">{step.desc} <a href={step.url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline ml-1">→</a></p>
             </div>
           ))}
         </CardContent>

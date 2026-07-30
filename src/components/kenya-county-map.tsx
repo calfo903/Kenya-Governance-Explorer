@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useCallback, useMemo, useRef, useImperativeHandle, forwardRef } from "react";
-import { MapPin, Users, FileWarning, Wallet, TrendingUp, Landmark, Info, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import { MapPin, Users, FileWarning, Wallet, TrendingUp, Landmark, Info, ZoomIn, ZoomOut, Maximize2, Award } from "lucide-react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { all47Governors } from "@/data/governors";
 import { countyAuditData, getCountyAuditRecords } from "@/data/county-audit-data";
 import { countyBudgetData, getCountyBudget } from "@/data/county-budget-data";
 import { REGIONS } from "@/data/types";
 import { COALITIONS, AUDIT_OPINIONS } from "@/data/types";
+import { getCECMPerformanceScores, getCECMScoreColor } from "@/data/cecm-performance";
 
 // ─── SVG Path Data ──────────────────────────────────────────────────
 
@@ -86,7 +88,7 @@ export const kenyaCountyPaths: CountyShape[] = [
 
 // ─── Types ──────────────────────────────────────────────────────────
 
-type ColorMode = "coalition" | "region" | "audit" | "budget" | "population";
+type ColorMode = "coalition" | "region" | "audit" | "budget" | "population" | "cecm-performance";
 
 type MiniColorMode = "coalition" | "region" | "audit";
 
@@ -267,6 +269,14 @@ function getLegendItems(mode: ColorMode): LegendItem[] {
         { color: lerpColor(0.66), label: "Good (60-80%)" },
         { color: lerpColor(1), label: "High (>80%)" },
       ];
+    case "cecm-performance":
+      return [
+        { color: "#047857", label: "High (80-100)" },
+        { color: "#059669", label: "Good (60-79)" },
+        { color: "#d97706", label: "Average (40-59)" },
+        { color: "#ea580c", label: "Below Avg (20-39)" },
+        { color: "#dc2626", label: "Poor (0-19)" },
+      ];
     case "population":
       return [
         { color: "#fef08a", label: "<20/km²" },
@@ -288,6 +298,7 @@ const SMALL_COUNTY_CODES = new Set([
 
 interface TooltipData {
   countyName: string;
+  countyCode: string;
   governor: string;
   party: string;
   coalition: string;
@@ -296,15 +307,17 @@ interface TooltipData {
   auditOpinion: string | null;
   budgetAbsorption: number | null;
   totalBudget: number | null;
+  cecmScore: number | null;
+  cecmLabel: string | null;
 }
 
 function getAuditBadgeColor(opinion: string | null): string {
   switch (opinion) {
-    case AUDIT_OPINIONS.UNMODIFIED: return "bg-green-100 text-green-800 border-green-300";
-    case AUDIT_OPINIONS.QUALIFIED: return "bg-yellow-100 text-yellow-800 border-yellow-300";
-    case AUDIT_OPINIONS.ADVERSE: return "bg-orange-100 text-orange-800 border-orange-300";
-    case AUDIT_OPINIONS.DISCLAIMER: return "bg-red-100 text-red-800 border-red-300";
-    default: return "bg-gray-100 text-gray-500 border-gray-300";
+    case AUDIT_OPINIONS.UNMODIFIED: return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700";
+    case AUDIT_OPINIONS.QUALIFIED: return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700";
+    case AUDIT_OPINIONS.ADVERSE: return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-700";
+    case AUDIT_OPINIONS.DISCLAIMER: return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700";
+    default: return "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600";
   }
 }
 
@@ -320,6 +333,7 @@ function MapTooltip({ data, x, y }: { data: TooltipData; x: number; y: number })
   const popFormatted = data.population.toLocaleString();
   const auditBadgeClass = getAuditBadgeColor(data.auditOpinion);
   const barColor = getBudgetBarColor(data.budgetAbsorption);
+  const cecmScoreColor = data.cecmScore != null ? getCECMScoreColor(data.cecmScore) : null;
 
   return (
     <div
@@ -367,7 +381,7 @@ function MapTooltip({ data, x, y }: { data: TooltipData; x: number; y: number })
                 </span>
               )}
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${barColor}`}
                 style={{ width: `${data.budgetAbsorption ?? 0}%` }}
@@ -375,6 +389,27 @@ function MapTooltip({ data, x, y }: { data: TooltipData; x: number; y: number })
             </div>
           </div>
         </div>
+        {data.cecmScore != null && (
+          <div className="flex items-center gap-2">
+            <Award className="h-3 w-3 shrink-0" />
+            <div className="flex flex-1 flex-col gap-0.5">
+              <div className="flex items-center justify-between">
+                <span>CECM Score: {data.cecmScore}/100</span>
+                {data.cecmLabel && (
+                  <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none`} style={{ borderColor: cecmScoreColor, color: cecmScoreColor, backgroundColor: cecmScoreColor ? `${cecmScoreColor}18` : undefined }}>
+                    {data.cecmLabel}
+                  </span>
+                )}
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{ width: `${data.cecmScore}%`, backgroundColor: cecmScoreColor ?? '#9ca3af' }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -388,6 +423,7 @@ function resolveCountyFill(
   govMap: Record<string, (typeof all47Governors)[number]>,
   auditMap: Record<string, (typeof countyAuditData)[number]>,
   budgetMap: Record<string, number>,
+  cecmScoreMap: Map<string, { overallScore: number }>,
 ): string {
   switch (mode) {
     case "coalition": {
@@ -407,6 +443,11 @@ function resolveCountyFill(
       const rate = budgetMap[code];
       if (rate == null) return DEFAULT_FILL;
       return lerpColor(rate / 100);
+    }
+    case "cecm-performance": {
+      const scoreEntry = cecmScoreMap.get(code);
+      if (!scoreEntry) return DEFAULT_FILL;
+      return getCECMScoreColor(scoreEntry.overallScore);
     }
     case "population": {
       const gov = govMap[code];
@@ -440,10 +481,83 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const transformRef = useRef<React.ComponentRef<typeof TransformWrapper>>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
+
+    // Dark-aware SVG style strings
+    const svgStyle = useMemo(() => {
+      const countyStroke = isDark ? "#292524" : "#ffffff";
+      const hoverStroke = isDark ? "#e7e5e4" : "#0f172a";
+      const labelFill = isDark ? "#e7e5e4" : "#0f172a";
+      const labelSmallFill = isDark ? "#a8a29e" : "#334155";
+      return `
+        .county-path {
+          stroke: ${countyStroke};
+          stroke-width: 1.2;
+          cursor: pointer;
+          transition: fill 0.6s ease, stroke-width 0.2s ease, filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+          transform-origin: center;
+        }
+        .county-path:hover {
+          stroke-width: 2.5;
+          stroke: ${hoverStroke};
+          filter: url(#county-shadow);
+          transform: scale(1.02);
+        }
+        .county-path:focus-visible {
+          stroke-width: 2.5;
+          stroke: #059669;
+          outline: 2px solid #059669;
+          outline-offset: 1px;
+        }
+        .county-path.highlighted {
+          stroke-width: 2.5;
+          stroke: ${hoverStroke};
+        }
+        .county-path.selected {
+          stroke-width: 3;
+          stroke: ${isDark ? "#d6d3d1" : "#1e293b"};
+          filter: url(#selected-glow);
+        }
+        .county-label {
+          font-family: ui-sans-serif, system-ui, sans-serif;
+          font-size: 9px;
+          fill: ${labelFill};
+          pointer-events: none;
+          text-anchor: middle;
+          dominant-baseline: central;
+          font-weight: 500;
+        }
+        .county-label-small {
+          font-family: ui-sans-serif, system-ui, sans-serif;
+          font-size: 7px;
+          fill: ${labelSmallFill};
+          pointer-events: none;
+          text-anchor: middle;
+          dominant-baseline: central;
+          font-weight: 400;
+        }
+        @keyframes pulse-county {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.6; }
+        }
+        .county-animated {
+          animation: pulse-county 2s ease-in-out infinite;
+        }
+        @keyframes glow-pulse {
+          0%, 100% { filter: drop-shadow(0 0 2px rgba(${isDark ? "214, 211, 209" : "30, 41, 59"}, 0.4)); }
+          50% { filter: drop-shadow(0 0 6px rgba(${isDark ? "214, 211, 209" : "30, 41, 59"}, 0.7)); }
+        }
+        .county-selected-glow {
+          animation: glow-pulse 2s ease-in-out infinite;
+        }
+      `;
+    }, [isDark]);
 
     const govMap = useMemo(() => buildGovernorMap(), []);
     const auditMap = useMemo(() => buildAuditMap(financialYear), [financialYear]);
     const budgetMap = useMemo(() => buildBudgetAbsorptionMap(financialYear), [financialYear]);
+    const cecmScoreMap = useMemo(() => getCECMPerformanceScores(financialYear), [financialYear]);
 
     const legendItems = useMemo(() => getLegendItems(colorMode), [colorMode]);
 
@@ -478,6 +592,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
         const gov = govMap[county.code];
         const audit = auditMap[county.code];
         const budget = getCountyBudget(county.code, financialYear);
+        const cecmEntry = cecmScoreMap.get(county.code);
 
         // Position tooltip relative to the outermost container (not affected by zoom)
         const outerContainer = containerRef.current?.getBoundingClientRect();
@@ -490,6 +605,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
 
         setTooltipData({
           countyName: county.name,
+          countyCode: county.code,
           governor: gov?.name ?? "N/A",
           party: gov?.party ?? "",
           coalition: gov?.coalition ?? "",
@@ -498,9 +614,21 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
           auditOpinion: audit?.executiveOpinion ?? null,
           budgetAbsorption: budget?.devAbsorptionRate ?? null,
           totalBudget: budget?.totalBudget ?? null,
+          cecmScore: cecmEntry?.overallScore ?? null,
+          cecmLabel: cecmEntry
+            ? cecmEntry.overallScore >= 80
+              ? 'High Performing'
+              : cecmEntry.overallScore >= 60
+                ? 'Good'
+                : cecmEntry.overallScore >= 40
+                  ? 'Average'
+                  : cecmEntry.overallScore >= 20
+                    ? 'Below Average'
+                    : 'Poor'
+            : null,
         });
       },
-      [govMap, auditMap, financialYear, onCountyHover],
+      [govMap, auditMap, financialYear, onCountyHover, cecmScoreMap],
     );
 
     const handleMouseLeave = useCallback(() => {
@@ -512,6 +640,23 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
     const handleClick = useCallback(
       (county: CountyShape) => {
         onCountyClick?.(county.code, county.name);
+      },
+      [onCountyClick],
+    );
+
+    const handleKeyDown = useCallback(
+      (county: CountyShape, e: React.KeyboardEvent<SVGPathElement>) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick(county);
+        }
+      },
+      [handleClick],
+    );
+
+    const handleMiniKeyDown = useCallback(
+      (county: CountyShape) => {
+        onCountyClick?.(county.code);
       },
       [onCountyClick],
     );
@@ -542,7 +687,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
                   viewBox="0 0 1000 1200"
                   className="w-full h-auto select-none"
                   role="img"
-                  aria-label="Map of Kenya showing 47 counties"
+                  aria-label="Interactive map of Kenya showing 47 counties. Use arrow keys to navigate, Enter or Space to select a county."
                 >
                   <defs>
                     <filter id="county-shadow" x="-5%" y="-5%" width="110%" height="110%">
@@ -555,69 +700,14 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
                         <feMergeNode in="SourceGraphic" />
                       </feMerge>
                     </filter>
-                    <style>{`
-                      .county-path {
-                        stroke: #ffffff;
-                        stroke-width: 1.2;
-                        cursor: pointer;
-                        transition: fill 0.6s ease, stroke-width 0.2s ease, filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
-                        transform-origin: center;
-                      }
-                      .county-path:hover {
-                        stroke-width: 2.5;
-                        stroke: #0f172a;
-                        filter: url(#county-shadow);
-                        transform: scale(1.02);
-                      }
-                      .county-path.highlighted {
-                        stroke-width: 2.5;
-                        stroke: #0f172a;
-                      }
-                      .county-path.selected {
-                        stroke-width: 3;
-                        stroke: #1e293b;
-                        filter: url(#selected-glow);
-                      }
-                      .county-label {
-                        font-family: ui-sans-serif, system-ui, sans-serif;
-                        font-size: 9px;
-                        fill: #0f172a;
-                        pointer-events: none;
-                        text-anchor: middle;
-                        dominant-baseline: central;
-                        font-weight: 500;
-                      }
-                      .county-label-small {
-                        font-family: ui-sans-serif, system-ui, sans-serif;
-                        font-size: 7px;
-                        fill: #334155;
-                        pointer-events: none;
-                        text-anchor: middle;
-                        dominant-baseline: central;
-                        font-weight: 400;
-                      }
-                      @keyframes pulse-county {
-                        0%, 100% { opacity: 1; }
-                        50% { opacity: 0.6; }
-                      }
-                      .county-animated {
-                        animation: pulse-county 2s ease-in-out infinite;
-                      }
-                      @keyframes glow-pulse {
-                        0%, 100% { filter: drop-shadow(0 0 2px rgba(30, 41, 59, 0.4)); }
-                        50% { filter: drop-shadow(0 0 6px rgba(30, 41, 59, 0.7)); }
-                      }
-                      .county-selected-glow {
-                        animation: glow-pulse 2s ease-in-out infinite;
-                      }
-                    `}</style>
+                    <style>{svgStyle}</style>
                   </defs>
 
                   {/* Kenya outline border */}
                   <path
                     d={KENYA_OUTLINE}
                     fill="none"
-                    stroke="#1e293b"
+                    stroke={isDark ? "#57534e" : "#1e293b"}
                     strokeWidth="2.5"
                     strokeLinejoin="round"
                   />
@@ -630,6 +720,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
                       govMap,
                       auditMap,
                       budgetMap,
+                      cecmScoreMap,
                     );
                     const isHovered = hoveredCounty === county.code;
                     const isHighlighted = highlightedCounties.includes(county.code);
@@ -653,6 +744,9 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
                           onMouseEnter={(e) => handleMouseEnter(county, e)}
                           onMouseLeave={handleMouseLeave}
                           onClick={() => handleClick(county)}
+                          onKeyDown={(e) => handleKeyDown(county, e)}
+                          tabIndex={0}
+                          role="button"
                           aria-label={`${county.name} County`}
                         />
                         {showLabels && !isSmall && (
@@ -724,13 +818,15 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
                     ? "Audit Opinion"
                     : colorMode === "budget"
                       ? "Budget Absorption"
-                      : "Population Density"}
+                      : colorMode === "cecm-performance"
+                        ? "CECM Performance"
+                        : "Population Density"}
             </span>
           </div>
           {legendItems.map((item, i) => (
             <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <span
-                className="inline-block h-3 w-3 rounded-sm border border-white/30 shadow-sm"
+                className="inline-block h-3 w-3 rounded-sm border border-white/30 dark:border-stone-600 shadow-sm"
                 style={{ backgroundColor: item.color }}
               />
               <span>{item.label}</span>
@@ -754,6 +850,36 @@ export function KenyaMiniMap({
 }: KenyaMiniMapProps) {
   const govMap = useMemo(() => buildGovernorMap(), []);
   const auditMap = useMemo(() => buildAuditMap(), []);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  const miniSvgStyle = useMemo(() => {
+    const countyStroke = isDark ? "#292524" : "#ffffff";
+    const hoverStroke = isDark ? "#e7e5e4" : "#0f172a";
+    return `
+      .mini-county {
+        stroke: ${countyStroke};
+        stroke-width: 2;
+        cursor: pointer;
+        transition: opacity 0.15s ease, stroke-width 0.15s ease;
+      }
+      .mini-county:hover {
+        opacity: 0.8;
+        stroke-width: 3.5;
+        stroke: ${hoverStroke};
+      }
+      .mini-county:focus-visible {
+        stroke-width: 3.5;
+        stroke: #059669;
+        outline: 2px solid #059669;
+        outline-offset: 1px;
+      }
+      .mini-county.highlighted {
+        stroke-width: 3.5;
+        stroke: ${hoverStroke};
+      }
+    `;
+  }, [isDark]);
 
   const handleClick = useCallback(
     (county: CountyShape) => {
@@ -772,30 +898,14 @@ export function KenyaMiniMap({
         aria-label="Mini map of Kenya counties"
       >
         <defs>
-          <style>{`
-            .mini-county {
-              stroke: #ffffff;
-              stroke-width: 2;
-              cursor: pointer;
-              transition: opacity 0.15s ease, stroke-width 0.15s ease;
-            }
-            .mini-county:hover {
-              opacity: 0.8;
-              stroke-width: 3.5;
-              stroke: #0f172a;
-            }
-            .mini-county.highlighted {
-              stroke-width: 3.5;
-              stroke: #0f172a;
-            }
-          `}</style>
+          <style>{miniSvgStyle}</style>
         </defs>
 
         {/* Kenya outline */}
         <path
           d={KENYA_OUTLINE}
           fill="none"
-          stroke="#334155"
+          stroke={isDark ? "#57534e" : "#334155"}
           strokeWidth="3"
           strokeLinejoin="round"
         />
@@ -817,7 +927,15 @@ export function KenyaMiniMap({
               fill={fill}
               className={["mini-county", isHighlighted ? "highlighted" : ""].join(" ")}
               onClick={() => handleClick(county)}
-              aria-label={county.name}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleMiniKeyDown(county);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`${county.name} County`}
             />
           );
         })}
