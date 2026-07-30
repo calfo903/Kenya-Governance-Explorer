@@ -308,3 +308,33 @@ Stage Summary:
 - "Deep Dive" button navigates from map to County Deep-Dive tab
 - Quick filter chips for adverse audit, top budget absorption, largest population
 - All 47 county paths preserved exactly, all existing props work unchanged
+
+---
+Task ID: 10
+Agent: Main Agent
+Task: Add representative profiles & duties preview for all 47 counties (Governor, Senator, Woman Rep, MPs, MCAs)
+
+Work Log:
+- Created representative-preview.tsx (470 lines) with:
+  - ROLE_MANDATES data for all 5 representative types with 6 duties each (30 total duties)
+  - Constitutional basis, term length, salary range, and oversight role for each role type
+  - RepresentativePreviewCard: compact and full card variants with avatar, party badge, coalition badge
+  - RepresentativePreviewGrid: full county layout with top-level cards (Governor/Senator/WomanRep) + constituency sections (MPs + MCAs per ward)
+  - RoleDutyReference: standalone duty reference card
+- Integrated into county-leadership-tree.tsx:
+  - Added "Representatives" tab (with IdCard icon) to mini navigation tabs
+  - Added representativesRef and scrollToSection handler for new tab
+  - Added full-width "Representatives & Duties" section spanning 12 columns
+  - Maps normalized leadership data to RepresentativePreviewGrid props
+  - Shows all representatives: Governor profile + duties, Senator profile + duties, Woman Rep profile + duties
+  - For each constituency: MP profile + duties, then MCAs in 2-column grid with ward names
+- Fixed missing Eye import from lucide-react
+- Build verified: 14 pages generated, zero compilation errors
+
+Stage Summary:
+- Every county now shows a "Representatives" tab with profile cards and constitutional duties
+- 5 role types covered: Governor (Art. 179), Senator (Art. 96), Woman Rep (Art. 97), MP (Art. 95), MCA (Art. 177)
+- Each role has 6 detailed duties with descriptions based on the Constitution of Kenya 2010
+- Compact cards show avatar + party + coalition + top 3 duties
+- Constituency sections show MP + all ward MCAs with profile and duty cards
+- Total counts shown: constituencies, MPs, MCAs per county

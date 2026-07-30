@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { RepresentativePreviewGrid } from '@/components/representative-preview';
 import {
   ChevronDown, ChevronRight, User, Building2, Landmark, Users,
   DollarSign, TrendingUp, TrendingDown, AlertTriangle,
@@ -19,6 +20,7 @@ import {
   MapPin, Stethoscope, GraduationCap, Droplets, Truck, Leaf,
   Handshake, Scale, Eye, Briefcase, Heart, Award,
   Search, Shuffle, ChevronsUpDown, ChevronsDownUp, Globe,
+  IdCard,
 } from 'lucide-react';
 
 // ─── County List (all 47) ──────────────────────────────────────────
@@ -545,6 +547,7 @@ export default function CountyLeadershipTreePage() {
   const auditRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const leadershipRef = useRef<HTMLDivElement>(null);
+  const representativesRef = useRef<HTMLDivElement>(null);
 
   const filteredCounties = useMemo(() => {
     if (!searchQuery.trim()) return COUNTY_LIST;
@@ -570,6 +573,7 @@ export default function CountyLeadershipTreePage() {
       else if (tab === 'audit') auditRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       else if (tab === 'contact') contactRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       else if (tab === 'leadership') leadershipRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (tab === 'representatives') representativesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 50);
   }, []);
 
@@ -732,6 +736,7 @@ export default function CountyLeadershipTreePage() {
           <div className="flex items-center gap-1 overflow-x-auto pb-1">
             {[
               { key: 'leadership', label: 'Leadership', icon: <Users className="h-3 w-3" /> },
+              { key: 'representatives', label: 'Representatives', icon: <IdCard className="h-3 w-3" /> },
               { key: 'financial', label: 'Financial', icon: <DollarSign className="h-3 w-3" /> },
               { key: 'audit', label: 'Audit', icon: <Shield className="h-3 w-3" /> },
               { key: 'contact', label: 'Contact', icon: <Globe className="h-3 w-3" /> },
@@ -959,6 +964,58 @@ export default function CountyLeadershipTreePage() {
                       ))}
                   </TreeNode>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* ─── REPRESENTATIVES & DUTIES (full width) ────────── */}
+          <div className="lg:col-span-12 space-y-3" ref={representativesRef}>
+            <Card className="border-emerald-200">
+              <CardHeader className="p-4 pb-2">
+                <div className="flex items-center gap-2">
+                  <IdCard className="h-4 w-4 text-emerald-600" />
+                  <CardTitle className="text-sm font-semibold text-gray-800">
+                    Representatives & Duties
+                  </CardTitle>
+                  <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-300 ml-auto">
+                    Constitutional Mandates (Art. 95-179)
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-1">
+                <RepresentativePreviewGrid
+                  leadership={{
+                    governor: {
+                      name: currentCounty.governor?.fullName || '',
+                      party: currentCounty.governor?.politicalParty || '',
+                      coalition: currentCounty.governor?.coalition || '',
+                    },
+                    senator: {
+                      name: currentCounty.senator?.fullName || '',
+                      party: currentCounty.senator?.politicalParty || '',
+                      coalition: currentCounty.senator?.coalition || '',
+                    },
+                    womanRep: {
+                      name: currentCounty.womanRep?.fullName || '',
+                      party: currentCounty.womanRep?.politicalParty || '',
+                      coalition: currentCounty.womanRep?.coalition || '',
+                    },
+                    constituencies: currentCounty.constituencies?.map((con) => ({
+                      name: con.name,
+                      mp: {
+                        name: con.mp?.fullName || '',
+                        party: con.mp?.politicalParty || '',
+                        coalition: con.mp?.coalition || '',
+                      },
+                      wards: con.wards?.map((w) => ({
+                        name: w.name,
+                        mca: w.mca?.fullName || '',
+                      })) || [],
+                    })) || [],
+                  }}
+                  countyName={currentCounty.countyName}
+                  showExpanded={false}
+                />
               </CardContent>
             </Card>
           </div>
