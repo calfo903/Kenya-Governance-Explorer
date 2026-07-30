@@ -1,0 +1,987 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useMemo } from 'react';
+     4→import { getAllLeadership, CountyLeadershipData } from '@/data/county-leadership';
+     5→import { getCountyBudget, CountyBudgetRecord } from '@/data/county-budget-data';
+     6→import { getCountyAuditRecords, CountyAuditRecord } from '@/data/county-audit-data';
+     7→import { getAuditColor, AuditOpinion } from '@/data/types';
+     8→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     9→import { Badge } from '@/components/ui/badge';
+    10→import { Button } from '@/components/ui/button';
+    11→import { Progress } from '@/components/ui/progress';
+    12→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    13→import { Separator } from '@/components/ui/separator';
+    14→import {
+    15→  ChevronDown, ChevronRight, User, Building2, Landmark, Users,
+    16→  DollarSign, TrendingUp, TrendingDown, AlertTriangle,
+    17→  CheckCircle2, Shield, FileText, ExternalLink,
+    18→  MapPin, Stethoscope, GraduationCap, Droplets, Truck, Leaf,
+    19→  Handshake, Scale, Eye, Briefcase, Heart, Award,
+    20→} from 'lucide-react';
+    21→
+    22→// ─── County List (all 47) ──────────────────────────────────────────
+    23→
+    24→const COUNTY_LIST = [
+    25→  { code: '001', name: 'Mombasa' },
+    26→  { code: '002', name: 'Kwale' },
+    27→  { code: '003', name: 'Kilifi' },
+    28→  { code: '004', name: 'Tana River' },
+    29→  { code: '005', name: 'Lamu' },
+    30→  { code: '006', name: 'Taita Taveta' },
+    31→  { code: '007', name: 'Garissa' },
+    32→  { code: '008', name: 'Wajir' },
+    33→  { code: '009', name: 'Mandera' },
+    34→  { code: '010', name: 'Marsabit' },
+    35→  { code: '011', name: 'Isiolo' },
+    36→  { code: '012', name: 'Meru' },
+    37→  { code: '013', name: 'Tharaka Nithi' },
+    38→  { code: '014', name: 'Embu' },
+    39→  { code: '015', name: 'Kitui' },
+    40→  { code: '016', name: 'Machakos' },
+    41→  { code: '017', name: 'Makueni' },
+    42→  { code: '018', name: 'Nyandarua' },
+    43→  { code: '019', name: 'Nyeri' },
+    44→  { code: '020', name: 'Kirinyaga' },
+    45→  { code: '021', name: "Murang'a" },
+    46→  { code: '022', name: 'Kiambu' },
+    47→  { code: '023', name: 'Turkana' },
+    48→  { code: '024', name: 'West Pokot' },
+    49→  { code: '025', name: 'Samburu' },
+    50→  { code: '026', name: 'Trans Nzoia' },
+    51→  { code: '027', name: 'Uasin Gishu' },
+    52→  { code: '028', name: 'Elgeyo Marakwet' },
+    53→  { code: '029', name: 'Nandi' },
+    54→  { code: '030', name: 'Baringo' },
+    55→  { code: '031', name: 'Laikipia' },
+    56→  { code: '032', name: 'Nakuru' },
+    57→  { code: '033', name: 'Narok' },
+    58→  { code: '034', name: 'Kajiado' },
+    59→  { code: '035', name: 'Kericho' },
+    60→  { code: '036', name: 'Bomet' },
+    61→  { code: '037', name: 'Kakamega' },
+    62→  { code: '038', name: 'Vihiga' },
+    63→  { code: '039', name: 'Bungoma' },
+    64→  { code: '040', name: 'Busia' },
+    65→  { code: '041', name: 'Siaya' },
+    66→  { code: '042', name: 'Kisumu' },
+    67→  { code: '043', name: 'Homa Bay' },
+    68→  { code: '044', name: 'Migori' },
+    69→  { code: '045', name: 'Kisii' },
+    70→  { code: '046', name: 'Nyamira' },
+    71→  { code: '047', name: 'Nairobi City' },
+    72→];
+    73→
+    74→// ─── Sample Leadership Data (used when real data is empty) ──────────
+    75→
+    76→// Normalizer: maps data file fields to component-expected shape
+    77→function normalizeLeadershipData(raw: any) {
+    78→  return {
+    79→    countyCode: raw.countyCode,
+    80→    countyName: raw.countyName,
+    81→    region: raw.region,
+    82→    governor: {
+    83→      fullName: raw.governor?.name || raw.governor?.fullName || 'Governor (TBD)',
+    84→      politicalParty: raw.governor?.party || raw.governor?.politicalParty || '-',
+    85→      coalition: raw.governor?.coalition || undefined,
+    86→    },
+    87→    deputyGovernor: {
+    88→      fullName: raw.deputyGovernor?.name || raw.deputyGovernor?.fullName || 'Deputy (TBD)',
+    89→      politicalParty: raw.deputyGovernor?.party || '-',
+    90→      coalition: raw.deputyGovernor?.coalition || undefined,
+    91→    },
+    92→    countySecretary: { fullName: raw.countySecretary?.name || 'County Secretary (TBD)' },
+    93→    cecMembers: (raw.cecms || []).map((c: any) => ({
+    94→      portfolio: c.portfolio || c.name || 'Unknown',
+    95→      fullName: c.name || c.fullName || 'CEC (TBD)',
+    96→    })),
+    97→    assembly: {
+    98→      speaker: {
+    99→        fullName: raw.assemblySpeaker?.name || 'Speaker (TBD)',
+   100→        politicalParty: raw.assemblySpeaker?.party || '-',
+   101→      },
+   102→      wardCount: raw.assemblySpeaker ? 30 : 0,
+   103→    },
+   104→    senator: {
+   105→      fullName: raw.senator?.name || raw.senator?.fullName || 'Senator (TBD)',
+   106→      politicalParty: raw.senator?.party || '-',
+   107→      coalition: raw.senator?.coalition || undefined,
+   108→    },
+   109→    womanRep: {
+   110→      fullName: raw.womanRep?.name || raw.womanRep?.fullName || 'Woman Rep (TBD)',
+   111→      politicalParty: raw.womanRep?.party || '-',
+   112→      coalition: raw.womanRep?.coalition || undefined,
+   113→    },
+   114→    constituencies: (raw.constituencies || []).map((con: any) => ({
+   115→      name: con.name,
+   116→      mp: {
+   117→        fullName: con.mp?.name || con.mp?.fullName || 'MP (TBD)',
+   118→        politicalParty: con.mp?.party || '-',
+   119→        coalition: con.mp?.coalition || undefined,
+   120→      },
+   121→      wards: (con.wards || []).map((w: any) => ({
+   122→        name: w.name,
+   123→        mca: { fullName: w.mca || 'MCA (TBD)' },
+   124→      })),
+   125→    })),
+   126→  };
+   127→}
+   128→
+   129→function generateSampleLeadership(countyCode: string, countyName: string): CountyLeadershipData {
+   130→  return {
+   131→    countyCode,
+   132→    countyName,
+   133→    region: 'Sample Region',
+   134→    governor: { fullName: 'Hon. Governor (TBD)', politicalParty: '-', coalition: undefined },
+   135→    deputyGovernor: { fullName: 'Deputy Governor (TBD)' },
+   136→    countySecretary: { fullName: 'County Secretary (TBD)' },
+   137→    cecMembers: [
+   138→      { portfolio: 'Finance', fullName: 'CEC Finance (TBD)' },
+   139→      { portfolio: 'Health', fullName: 'CEC Health (TBD)' },
+   140→      { portfolio: 'Education', fullName: 'CEC Education (TBD)' },
+   141→      { portfolio: 'Infrastructure', fullName: 'CEC Infrastructure (TBD)' },
+   142→      { portfolio: 'Agriculture', fullName: 'CEC Agriculture (TBD)' },
+   143→    ],
+   144→    assembly: {
+   145→      speaker: { fullName: 'Speaker (TBD)' },
+   146→      wardCount: 30,
+   147→    },
+   148→    senator: { fullName: 'Senator (TBD)' },
+   149→    womanRep: { fullName: 'Woman Rep (TBD)' },
+   150→    constituencies: [
+   151→      {
+   152→        name: `${countyName} Central`,
+   153→        mp: { fullName: 'MP (TBD)' },
+   154→        wards: [
+   155→          { name: 'Ward A', mca: { fullName: 'MCA (TBD)' } },
+   156→          { name: 'Ward B', mca: { fullName: 'MCA (TBD)' } },
+   157→        ],
+   158→      },
+   159→      {
+   160→        name: `${countyName} West`,
+   161→        mp: { fullName: 'MP (TBD)' },
+   162→        wards: [
+   163→          { name: 'Ward C', mca: { fullName: 'MCA (TBD)' } },
+   164→        ],
+   165→      },
+   166→    ],
+   167→  };
+   168→}
+   169→
+   170→// ─── Helpers ────────────────────────────────────────────────────────
+   171→
+   172→function getInitials(name: string): string {
+   173→  return name
+   174→    .split(' ')
+   175→    .filter(Boolean)
+   176→    .map((w) => w[0])
+   177→    .slice(0, 2)
+   178→    .join('')
+   179→    .toUpperCase();
+   180→}
+   181→
+   182→const AVATAR_COLORS = [
+   183→  'bg-emerald-100 text-emerald-700',
+   184→  'bg-amber-100 text-amber-700',
+   185→  'bg-rose-100 text-rose-700',
+   186→  'bg-sky-100 text-sky-700',
+   187→  'bg-violet-100 text-violet-700',
+   188→  'bg-teal-100 text-teal-700',
+   189→  'bg-orange-100 text-orange-700',
+   190→  'bg-lime-100 text-lime-700',
+   191→];
+   192→
+   193→function getAvatarColor(name: string): string {
+   194→  let hash = 0;
+   195→  for (let i = 0; i < name.length; i++) {
+   196→    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+   197→  }
+   198→  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+   199→}
+   200→
+   201→function portfolioIcon(portfolio: string) {
+   202→  const lower = portfolio.toLowerCase();
+   203→  if (lower.includes('health') || lower.includes('medical')) return <Stethoscope className="h-3.5 w-3.5 text-emerald-600" />;
+   204→  if (lower.includes('education') || lower.includes('learn')) return <GraduationCap className="h-3.5 w-3.5 text-emerald-600" />;
+   205→  if (lower.includes('water') || lower.includes('irrigation')) return <Droplets className="h-3.5 w-3.5 text-emerald-600" />;
+   206→  if (lower.includes('road') || lower.includes('infra') || lower.includes('transport')) return <Truck className="h-3.5 w-3.5 text-emerald-600" />;
+   207→  if (lower.includes('agric') || lower.includes('livestock')) return <Leaf className="h-3.5 w-3.5 text-emerald-600" />;
+   208→  if (lower.includes('finance') || lower.includes('treasury') || lower.includes('economic')) return <DollarSign className="h-3.5 w-3.5 text-emerald-600" />;
+   209→  if (lower.includes('trade') || lower.includes('cooper')) return <Handshake className="h-3.5 w-3.5 text-emerald-600" />;
+   210→  if (lower.includes('land') || lower.includes('housing') || lower.includes('urban')) return <Building2 className="h-3.5 w-3.5 text-emerald-600" />;
+   211→  if (lower.includes('youth') || lower.includes('gender') || lower.includes('sport') || lower.includes('culture')) return <Award className="h-3.5 w-3.5 text-emerald-600" />;
+   212→  if (lower.includes('admin') || lower.includes('devolution') || lower.includes('service')) return <Briefcase className="h-3.5 w-3.5 text-emerald-600" />;
+   213→  if (lower.includes('tourism') || lower.includes('environment')) return <MapPin className="h-3.5 w-3.5 text-emerald-600" />;
+   214→  return <Briefcase className="h-3.5 w-3.5 text-emerald-600" />;
+   215→}
+   216→
+   217→function formatCurrency(millions: number): string {
+   218→  if (millions >= 1000) return `KSh ${(millions / 1000).toFixed(1)}B`;
+   219→  return `KSh ${millions.toFixed(0)}M`;
+   220→}
+   221→
+   222→function formatBillions(billions: number): string {
+   223→  return `KSh ${billions.toFixed(1)}B`;
+   224→}
+   225→
+   226→// ─── Tree Node Component ────────────────────────────────────────────
+   227→
+   228→function TreeNode({
+   229→  label,
+   230→  icon,
+   231→  children,
+   232→  defaultOpen = false,
+   233→  badge,
+   234→}: {
+   235→  label: string;
+   236→  icon: React.ReactNode;
+   237→  children: React.ReactNode;
+   238→  defaultOpen?: boolean;
+   239→  badge?: string;
+   240→}) {
+   241→  const [open, setOpen] = useState(defaultOpen);
+   242→  return (
+   243→    <div>
+   244→      <button
+   245→        onClick={() => setOpen(!open)}
+   246→        className="flex items-center gap-2 w-full text-left py-1.5 px-1 rounded-md hover:bg-emerald-50 transition-colors group"
+   247→      >
+   248→        {open ? (
+   249→          <ChevronDown className="h-3 w-3 text-emerald-600 shrink-0" />
+   250→        ) : (
+   251→          <ChevronRight className="h-3 w-3 text-emerald-600 shrink-0" />
+   252→        )}
+   253→        <span className="shrink-0">{icon}</span>
+   254→        <span className="text-xs font-semibold text-gray-800">{label}</span>
+   255→        {badge && (
+   256→          <span className="text-[10px] text-emerald-600 font-medium bg-emerald-50 px-1.5 py-0.5 rounded-full">
+   257→            {badge}
+   258→          </span>
+   259→        )}
+   260→      </button>
+   261→      {open && (
+   262→        <div className="ml-4 border-l-2 border-emerald-200 pl-3 mt-1 space-y-1">{children}</div>
+   263→      )}
+   264→    </div>
+   265→  );
+   266→}
+   267→
+   268→// ─── Person Row Component ──────────────────────────────────────────
+   269→
+   270→function PersonRow({
+   271→  name,
+   272→  party,
+   273→  coalition,
+   274→  role,
+   275→  icon,
+   276→}: {
+   277→  name: string;
+   278→  party?: string;
+   279→  coalition?: string;
+   280→  role: string;
+   281→  icon?: React.ReactNode;
+   282→}) {
+   283→  const isPlaceholder = name.includes('(TBD)');
+   284→  return (
+   285→    <div className="flex items-center gap-2.5 py-1.5 px-1 rounded-md hover:bg-gray-50 transition-colors">
+   286→      {icon ? (
+   287→        <span className="shrink-0">{icon}</span>
+   288→      ) : (
+   289→        <div
+   290→          className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+   291→            isPlaceholder ? 'bg-gray-100 text-gray-400' : getAvatarColor(name)
+   292→          }`}
+   293→        >
+   294→          {getInitials(name)}
+   295→        </div>
+   296→      )}
+   297→      <div className="min-w-0 flex-1">
+   298→        <div className="flex items-center gap-1.5 flex-wrap">
+   299→          <span
+   300→            className={`text-xs font-medium truncate ${
+   301→              isPlaceholder ? 'text-gray-400 italic' : 'text-gray-800'
+   302→            }`}
+   303→          >
+   304→            {name}
+   305→          </span>
+   306→          {coalition && !isPlaceholder && (
+   307→            <Badge
+   308→              variant="outline"
+   309→              className="text-[9px] px-1.5 py-0 h-4 font-normal border-emerald-300 text-emerald-700 bg-emerald-50"
+   310→            >
+   311→              {coalition}
+   312→            </Badge>
+   313→          )}
+   314→        </div>
+   315→        <div className="flex items-center gap-2">
+   316→          {party && !isPlaceholder && party !== '-' && (
+   317→            <span className="text-[10px] text-gray-400">{party}</span>
+   318→          )}
+   319→          <span className="text-[10px] text-gray-400">· {role}</span>
+   320→        </div>
+   321→      </div>
+   322→    </div>
+   323→  );
+   324→}
+   325→
+   326→// ─── CEC Row Component ─────────────────────────────────────────────
+   327→
+   328→function CECRow({ portfolio, fullName }: { portfolio: string; fullName: string }) {
+   329→  return (
+   330→    <div className="flex items-center gap-2 py-1 px-1 rounded-md hover:bg-gray-50 transition-colors">
+   331→      {portfolioIcon(portfolio)}
+   332→      <div className="min-w-0 flex-1">
+   333→        <span
+   334→          className={`text-[11px] font-medium truncate ${
+   335→            fullName.includes('(TBD)') ? 'text-gray-400 italic' : 'text-gray-700'
+   336→          }`}
+   337→        >
+   338→          {fullName}
+   339→        </span>
+   340→        <span className="text-[10px] text-gray-400 ml-1.5">{portfolio}</span>
+   341→      </div>
+   342→    </div>
+   343→  );
+   344→}
+   345→
+   346→// ─── Ward Row Component ─────────────────────────────────────────────
+   347→
+   348→function WardRow({ wardName, mcaName }: { wardName: string; mcaName?: string }) {
+   349→  return (
+   350→    <div className="flex items-center gap-2 py-0.5 px-1">
+   351→      <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
+   352→      <span className="text-[11px] text-gray-600">{wardName}</span>
+   353→      {mcaName && <span className="text-[10px] text-gray-400">— {mcaName}</span>}
+   354→    </div>
+   355→  );
+   356→}
+   357→
+   358→// ─── Audit Opinion Badge ───────────────────────────────────────────
+   359→
+   360→function AuditBadge({ opinion }: { opinion: AuditOpinion | string | null | undefined }) {
+   361→  if (!opinion) {
+   362→    return (
+   363→      <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 border border-gray-200">
+   364→        N/A
+   365→      </span>
+   366→    );
+   367→  }
+   368→  const colorMap: Record<string, string> = {
+   369→    Unmodified: 'bg-green-100 text-green-700 border-green-300',
+   370→    Qualified: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+   371→    Adverse: 'bg-orange-100 text-orange-700 border-orange-300',
+   372→    Disclaimer: 'bg-red-100 text-red-700 border-red-300',
+   373→  };
+   374→  const colorClass = colorMap[opinion] || 'bg-gray-100 text-gray-500 border-gray-300';
+   375→  return (
+   376→    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${colorClass}`}>
+   377→      {opinion}
+   378→    </span>
+   379→  );
+   380→}
+   381→
+   382→// ─── Horizontal Bar Component ───────────────────────────────────────
+   383→
+   384→function HorizontalBar({
+   385→  label,
+   386→  value,
+   387→  max,
+   388→  color,
+   389→}: {
+   390→  label: string;
+   391→  value: number;
+   392→  max: number;
+   393→  color: string;
+   394→}) {
+   395→  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+   396→  return (
+   397→    <div className="space-y-1">
+   398→      <div className="flex justify-between text-[10px]">
+   399→        <span className="text-gray-600 font-medium">{label}</span>
+   400→        <span className="text-gray-500">{pct}%</span>
+   401→      </div>
+   402→      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+   403→        <div
+   404→          className={`h-full rounded-full transition-all duration-500 ${color}`}
+   405→          style={{ width: `${pct}%` }}
+   406→        />
+   407→      </div>
+   408→    </div>
+   409→  );
+   410→}
+   411→
+   412→// ─── Main Component ────────────────────────────────────────────────
+   413→
+   414→export default function CountyLeadershipTreePage() {
+   415→  const [selectedCounty, setSelectedCounty] = useState<string>('');
+   416→
+   417→  const leadershipData = useMemo(() => {
+   418→    try {
+   419→      return getAllLeadership();
+   420→    } catch {
+   421→      return [];
+   422→    }
+   423→  }, []);
+   424→
+   425→  const currentCounty = useMemo(() => {
+   426→    if (!selectedCounty) return null;
+   427→    const real = leadershipData.find((c) => c.countyCode === selectedCounty);
+   428→    if (real) return normalizeLeadershipData(real);
+   429→    const countyName = COUNTY_LIST.find((c) => c.code === selectedCounty)?.name || selectedCounty;
+   430→    return generateSampleLeadership(selectedCounty, countyName);
+   431→  }, [selectedCounty, leadershipData]);
+   432→
+   433→  const budgetData = useMemo(() => {
+   434→    if (!selectedCounty) return null;
+   435→    try {
+   436→      return getCountyBudget(selectedCounty);
+   437→    } catch {
+   438→      return null;
+   439→    }
+   440→  }, [selectedCounty]);
+   441→
+   442→  const auditData = useMemo(() => {
+   443→    if (!selectedCounty) return [];
+   444→    try {
+   445→      return getCountyAuditRecords(selectedCounty);
+   446→    } catch {
+   447→      return [];
+   448→    }
+   449→  }, [selectedCounty]);
+   450→
+   451→  const latestAudit = useMemo(() => {
+   452→    if (auditData.length === 0) return null;
+   453→    return auditData.sort((a, b) => b.financialYear.localeCompare(a.financialYear))[0];
+   454→  }, [auditData]);
+   455→
+   456→  const expenseBreakdown = useMemo(() => {
+   457→    if (!budgetData) return null;
+   458→    const total = budgetData.totalBudget;
+   459→    if (total <= 0) return null;
+   460→    return [
+   461→      { label: 'Health', pct: 22, color: 'bg-rose-400', icon: <Stethoscope className="h-3 w-3" /> },
+   462→      { label: 'Education', pct: 18, color: 'bg-amber-400', icon: <GraduationCap className="h-3 w-3" /> },
+   463→      { label: 'Infrastructure', pct: 20, color: 'bg-sky-400', icon: <Truck className="h-3 w-3" /> },
+   464→      { label: 'Agriculture', pct: 12, color: 'bg-emerald-400', icon: <Leaf className="h-3 w-3" /> },
+   465→      { label: 'Admin', pct: 18, color: 'bg-violet-400', icon: <Briefcase className="h-3 w-3" /> },
+   466→      { label: 'Other', pct: 10, color: 'bg-gray-400', icon: <FileText className="h-3 w-3" /> },
+   467→    ];
+   468→  }, [budgetData]);
+   469→
+   470→  const pendingBillsSeverity = useMemo(() => {
+   471→    if (!budgetData) return { color: 'text-gray-400', bg: 'bg-gray-50', label: 'N/A' };
+   472→    const bills = budgetData.pendingBills;
+   473→    const totalBudgetM = budgetData.totalBudget * 1000;
+   474→    if (bills === 0) return { color: 'text-gray-400', bg: 'bg-gray-50', label: 'None reported' };
+   475→    if (bills > totalBudgetM * 0.5) return { color: 'text-red-600', bg: 'bg-red-50', label: 'Critical' };
+   476→    if (bills > totalBudgetM * 0.3) return { color: 'text-orange-600', bg: 'bg-orange-50', label: 'High' };
+   477→    if (bills > totalBudgetM * 0.15) return { color: 'text-yellow-600', bg: 'bg-yellow-50', label: 'Moderate' };
+   478→    return { color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Low' };
+   479→  }, [budgetData]);
+   480→
+   481→  return (
+   482→    <div className="space-y-4">
+   483→      {/* ── County Selector ──────────────────────────────────────── */}
+   484→      <Card className="border-emerald-200">
+   485→        <CardContent className="p-4">
+   486→          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+   487→            <div className="flex items-center gap-2">
+   488→              <MapPin className="h-4 w-4 text-emerald-600" />
+   489→              <span className="text-sm font-semibold text-gray-700">Select County</span>
+   490→            </div>
+   491→            <Select value={selectedCounty} onValueChange={setSelectedCounty}>
+   492→              <SelectTrigger className="w-full sm:w-72">
+   493→                <SelectValue placeholder="Choose a county..." />
+   494→              </SelectTrigger>
+   495→              <SelectContent className="max-h-80">
+   496→                {COUNTY_LIST.map((c) => (
+   497→                  <SelectItem key={c.code} value={c.code}>
+   498→                    <span className="flex items-center gap-2">
+   499→                      <span className="text-[10px] text-gray-400 w-6">{c.code}</span>
+   500→                      {c.name}
+   501→                    </span>
+   502→                  </SelectItem>
+   503→                ))}
+   504→              </SelectContent>
+   505→            </Select>
+   506→          </div>
+   507→        </CardContent>
+   508→      </Card>
+   509→
+   510→      {/* ── Empty State ──────────────────────────────────────────── */}
+   511→      {!selectedCounty && (
+   512→        <div className="flex flex-col items-center justify-center py-16 text-center">
+   513→          <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+   514→            <Landmark className="h-8 w-8 text-emerald-400" />
+   515→          </div>
+   516→          <h3 className="text-sm font-semibold text-gray-700">County Leadership Explorer</h3>
+   517→          <p className="text-xs text-gray-400 mt-1 max-w-sm">
+   518→            Select a county above to view the leadership hierarchy and financial dashboard.
+   519→            Explore governors, MCAs, MPs, budget data, and audit opinions.
+   520→          </p>
+   521→        </div>
+   522→      )}
+   523→
+   524→      {/* ── Main Content ─────────────────────────────────────────── */}
+   525→      {selectedCounty && currentCounty && (
+   526→        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+   527→          {/* ─── LEFT COLUMN: Leadership Tree (55%) ──────────────── */}
+   528→          <div className="lg:col-span-7 space-y-3">
+   529→            <Card>
+   530→              <CardHeader className="p-4 pb-2">
+   531→                <div className="flex items-center justify-between">
+   532→                  <CardTitle className="text-sm font-semibold text-gray-800">
+   533→                    {currentCounty.countyName} — Leadership Structure
+   534→                  </CardTitle>
+   535→                  <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300">
+   536→                    {currentCounty.countyCode}
+   537→                  </Badge>
+   538→                </div>
+   539→              </CardHeader>
+   540→              <CardContent className="p-4 pt-1">
+   541→                <div className="max-h-[72vh] overflow-y-auto pr-1 space-y-1">
+   542→                  {/* County Executive */}
+   543→                  <TreeNode
+   544→                    label="County Executive"
+   545→                    icon={<Building2 className="h-3.5 w-3.5 text-emerald-600" />}
+   546→                    defaultOpen={true}
+   547→                  >
+   548→                    {currentCounty.governor && (
+   549→                      <PersonRow
+   550→                        name={currentCounty.governor.fullName}
+   551→                        party={currentCounty.governor.politicalParty}
+   552→                        coalition={currentCounty.governor.coalition}
+   553→                        role="Governor"
+   554→                      />
+   555→                    )}
+   556→                    {currentCounty.deputyGovernor && (
+   557→                      <PersonRow
+   558→                        name={currentCounty.deputyGovernor.fullName}
+   559→                        party={currentCounty.deputyGovernor.politicalParty}
+   560→                        coalition={currentCounty.deputyGovernor.coalition}
+   561→                        role="Deputy Governor"
+   562→                      />
+   563→                    )}
+   564→                    {currentCounty.countySecretary && (
+   565→                      <PersonRow
+   566→                        name={currentCounty.countySecretary.fullName}
+   567→                        role="County Secretary"
+   568→                      />
+   569→                    )}
+   570→                    {currentCounty.cecMembers && currentCounty.cecMembers.length > 0 && (
+   571→                      <div className="mt-1">
+   572→                        <TreeNode
+   573→                          label="CEC Members"
+   574→                          icon={<Users className="h-3.5 w-3.5 text-emerald-600" />}
+   575→                          defaultOpen={true}
+   576→                          badge={`${currentCounty.cecMembers.length}`}
+   577→                        >
+   578→                          {currentCounty.cecMembers.map((cec, i) => (
+   579→                            <CECRow
+   580→                              key={`cec-${i}`}
+   581→                              portfolio={cec.portfolio}
+   582→                              fullName={cec.fullName}
+   583→                            />
+   584→                          ))}
+   585→                        </TreeNode>
+   586→                      </div>
+   587→                    )}
+   588→                  </TreeNode>
+   589→
+   590→                  {/* County Assembly */}
+   591→                  <TreeNode
+   592→                    label="County Assembly"
+   593→                    icon={<Landmark className="h-3.5 w-3.5 text-emerald-600" />}
+   594→                    defaultOpen={false}
+   595→                    badge={
+   596→                      currentCounty.assembly
+   597→                        ? `${currentCounty.assembly.wardCount} Wards`
+   598→                        : undefined
+   599→                    }
+   600→                  >
+   601→                    {currentCounty.assembly?.speaker && (
+   602→                      <PersonRow
+   603→                        name={currentCounty.assembly.speaker.fullName}
+   604→                        party={currentCounty.assembly.speaker.politicalParty}
+   605→                        coalition={currentCounty.assembly.speaker.coalition}
+   606→                        role="Speaker"
+   607→                      />
+   608→                    )}
+   609→                    {currentCounty.assembly && (
+   610→                      <div className="text-[10px] text-gray-400 px-1 py-0.5">
+   611→                        {currentCounty.assembly.wardCount} Ward Representatives (MCAs)
+   612→                      </div>
+   613→                    )}
+   614→                  </TreeNode>
+   615→
+   616→                  {/* Senate Representatives */}
+   617→                  <TreeNode
+   618→                    label="Senate Representatives"
+   619→                    icon={<Scale className="h-3.5 w-3.5 text-emerald-600" />}
+   620→                    defaultOpen={false}
+   621→                  >
+   622→                    {currentCounty.senator && (
+   623→                      <PersonRow
+   624→                        name={currentCounty.senator.fullName}
+   625→                        party={currentCounty.senator.politicalParty}
+   626→                        coalition={currentCounty.senator.coalition}
+   627→                        role="Senator"
+   628→                      />
+   629→                    )}
+   630→                    {currentCounty.womanRep && (
+   631→                      <PersonRow
+   632→                        name={currentCounty.womanRep.fullName}
+   633→                        party={currentCounty.womanRep.politicalParty}
+   634→                        coalition={currentCounty.womanRep.coalition}
+   635→                        role="Woman Representative"
+   636→                      />
+   637→                    )}
+   638→                  </TreeNode>
+   639→
+   640→                  {/* Constituencies */}
+   641→                  <TreeNode
+   642→                    label="Constituencies"
+   643→                    icon={<MapPin className="h-3.5 w-3.5 text-emerald-600" />}
+   644→                    defaultOpen={false}
+   645→                    badge={
+   646→                      currentCounty.constituencies
+   647→                        ? `${currentCounty.constituencies.length}`
+   648→                        : undefined
+   649→                    }
+   650→                  >
+   651→                    {currentCounty.constituencies &&
+   652→                      currentCounty.constituencies.map((constituency, ci) => (
+   653→                        <div key={`con-${ci}`}>
+   654→                          <TreeNode
+   655→                            label={constituency.name}
+   656→                            icon={<User className="h-3.5 w-3.5 text-emerald-600" />}
+   657→                            defaultOpen={false}
+   658→                          >
+   659→                            {constituency.mp && (
+   660→                              <PersonRow
+   661→                                name={constituency.mp.fullName}
+   662→                                party={constituency.mp.politicalParty}
+   663→                                coalition={constituency.mp.coalition}
+   664→                                role="Member of Parliament"
+   665→                              />
+   666→                            )}
+   667→                            {constituency.wards && constituency.wards.length > 0 && (
+   668→                              <div className="mt-0.5">
+   669→                                <TreeNode
+   670→                                  label={`${constituency.wards.length} Wards`}
+   671→                                  icon={<Users className="h-3 w-3 text-gray-400" />}
+   672→                                  defaultOpen={false}
+   673→                                >
+   674→                                  {constituency.wards.map((ward, wi) => (
+   675→                                    <WardRow
+   676→                                      key={`ward-${wi}`}
+   677→                                      wardName={ward.name}
+   678→                                      mcaName={ward.mca?.fullName}
+   679→                                    />
+   680→                                  ))}
+   681→                                </TreeNode>
+   682→                              </div>
+   683→                            )}
+   684→                          </TreeNode>
+   685→                        </div>
+   686→                      ))}
+   687→                  </TreeNode>
+   688→                </div>
+   689→              </CardContent>
+   690→            </Card>
+   691→          </div>
+   692→
+   693→          {/* ─── RIGHT COLUMN: Financial Dashboard (45%) ────────── */}
+   694→          <div className="lg:col-span-5 space-y-3">
+   695→            {/* Funding Sources Card */}
+   696→            <Card>
+   697→              <CardHeader className="p-4 pb-2">
+   698→                <div className="flex items-center gap-2">
+   699→                  <DollarSign className="h-4 w-4 text-emerald-600" />
+   700→                  <CardTitle className="text-sm font-semibold text-gray-800">Funding Sources</CardTitle>
+   701→                </div>
+   702→              </CardHeader>
+   703→              <CardContent className="p-4 pt-1 space-y-3">
+   704→                {budgetData ? (
+   705→                  <>
+   706→                    <HorizontalBar
+   707→                      label="Equitable Share"
+   708→                      value={budgetData.totalBudget - budgetData.ownSourceRevenue / 1000}
+   709→                      max={budgetData.totalBudget}
+   710→                      color="bg-emerald-400"
+   711→                    />
+   712→                    <HorizontalBar
+   713→                      label="Own Revenue"
+   714→                      value={budgetData.ownSourceRevenue / 1000}
+   715→                      max={budgetData.totalBudget}
+   716→                      color="bg-amber-400"
+   717→                    />
+   718→                    <div className="flex items-center justify-between text-[10px] text-gray-400">
+   719→                      <span>Total: {formatBillions(budgetData.totalBudget)}</span>
+   720→                      <span>Own Rev: {formatCurrency(budgetData.ownSourceRevenue)}</span>
+   721→                    </div>
+   722→                  </>
+   723→                ) : (
+   724→                  <p className="text-xs text-gray-400">No budget data available.</p>
+   725→                )}
+   726→              </CardContent>
+   727→            </Card>
+   728→
+   729→            {/* Budget Absorption Card */}
+   730→            <Card>
+   731→              <CardHeader className="p-4 pb-2">
+   732→                <div className="flex items-center gap-2">
+   733→                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+   734→                  <CardTitle className="text-sm font-semibold text-gray-800">Budget Absorption</CardTitle>
+   735→                </div>
+   736→                {budgetData && (
+   737→                  <p className="text-[10px] text-gray-400">
+   738→                    {budgetData.financialYear} · {budgetData.period}
+   739→                  </p>
+   740→                )}
+   741→              </CardHeader>
+   742→              <CardContent className="p-4 pt-1 space-y-3">
+   743→                {budgetData ? (
+   744→                  <>
+   745→                    <div className="space-y-1.5">
+   746→                      <div className="flex justify-between text-[11px]">
+   747→                        <span className="font-medium text-gray-700">Development</span>
+   748→                        <span
+   749→                          className={`font-semibold ${
+   750→                            budgetData.devAbsorptionRate >= 50
+   751→                              ? 'text-emerald-600'
+   752→                              : budgetData.devAbsorptionRate >= 30
+   753→                                ? 'text-yellow-600'
+   754→                                : 'text-red-600'
+   755→                          }`}
+   756→                        >
+   757→                          {budgetData.devAbsorptionRate}%
+   758→                        </span>
+   759→                      </div>
+   760→                      <div className="relative">
+   761→                        <Progress value={budgetData.devAbsorptionRate} className="h-2.5" />
+   762→                        <div
+   763→                          className="absolute top-0 bottom-0 w-0.5 bg-red-400 z-10"
+   764→                          style={{ left: '50%' }}
+   765→                          title="50% target"
+   766→                        />
+   767→                      </div>
+   768→                      <div className="flex items-center gap-1">
+   769→                        <div className="w-2 h-0.5 bg-red-400" />
+   770→                        <span className="text-[9px] text-gray-400">50% CoB Target</span>
+   771→                      </div>
+   772→                    </div>
+   773→
+   774→                    <Separator />
+   775→
+   776→                    <div className="space-y-1.5">
+   777→                      <div className="flex justify-between text-[11px]">
+   778→                        <span className="font-medium text-gray-700">Recurrent</span>
+   779→                        <span
+   780→                          className={`font-semibold ${
+   781→                            budgetData.recurrentAbsorptionRate >= 85
+   782→                              ? 'text-emerald-600'
+   783→                              : budgetData.recurrentAbsorptionRate >= 70
+   784→                                ? 'text-yellow-600'
+   785→                                : 'text-red-600'
+   786→                          }`}
+   787→                        >
+   788→                          {budgetData.recurrentAbsorptionRate}%
+   789→                        </span>
+   790→                      </div>
+   791→                      <Progress value={budgetData.recurrentAbsorptionRate} className="h-2.5" />
+   792→                    </div>
+   793→                  </>
+   794→                ) : (
+   795→                  <p className="text-xs text-gray-400">No budget data available.</p>
+   796→                )}
+   797→              </CardContent>
+   798→            </Card>
+   799→
+   800→            {/* Expense Breakdown Card */}
+   801→            <Card>
+   802→              <CardHeader className="p-4 pb-2">
+   803→                <div className="flex items-center gap-2">
+   804→                  <FileText className="h-4 w-4 text-emerald-600" />
+   805→                  <CardTitle className="text-sm font-semibold text-gray-800">Expense Breakdown</CardTitle>
+   806→                </div>
+   807→              </CardHeader>
+   808→              <CardContent className="p-4 pt-1 space-y-2">
+   809→                {expenseBreakdown ? (
+   810→                  expenseBreakdown.map((item) => (
+   811→                    <div key={item.label} className="space-y-0.5">
+   812→                      <div className="flex items-center justify-between">
+   813→                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+   814→                          {item.icon}
+   815→                          <span>{item.label}</span>
+   816→                        </div>
+   817→                        <span className="text-[11px] font-medium text-gray-700">{item.pct}%</span>
+   818→                      </div>
+   819→                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+   820→                        <div
+   821→                          className={`h-full rounded-full ${item.color}`}
+   822→                          style={{ width: `${item.pct}%` }}
+   823→                        />
+   824→                      </div>
+   825→                    </div>
+   826→                  ))
+   827→                ) : (
+   828→                  <p className="text-xs text-gray-400">No data available.</p>
+   829→                )}
+   830→              </CardContent>
+   831→            </Card>
+   832→
+   833→            {/* Pending Bills Card */}
+   834→            <Card>
+   835→              <CardHeader className="p-4 pb-2">
+   836→                <div className="flex items-center gap-2">
+   837→                  <AlertTriangle className="h-4 w-4 text-emerald-600" />
+   838→                  <CardTitle className="text-sm font-semibold text-gray-800">Pending Bills</CardTitle>
+   839→                </div>
+   840→              </CardHeader>
+   841→              <CardContent className="p-4 pt-1">
+   842→                {budgetData ? (
+   843→                  <div className="space-y-2">
+   844→                    <div className={`rounded-lg p-3 ${pendingBillsSeverity.bg}`}>
+   845→                      <div className={`text-lg font-bold ${pendingBillsSeverity.color}`}>
+   846→                        {formatCurrency(budgetData.pendingBills)}
+   847→                      </div>
+   848→                      <div className="flex items-center gap-2 mt-1">
+   849→                        <span
+   850→                          className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${pendingBillsSeverity.bg} ${pendingBillsSeverity.color} border border-current/20`}
+   851→                        >
+   852→                          {pendingBillsSeverity.label}
+   853→                        </span>
+   854→                        <span className="text-[10px] text-gray-400">
+   855→                          of {formatBillions(budgetData.totalBudget)} total budget
+   856→                        </span>
+   857→                      </div>
+   858→                    </div>
+   859→                  </div>
+   860→                ) : (
+   861→                  <p className="text-xs text-gray-400">No data available.</p>
+   862→                )}
+   863→              </CardContent>
+   864→            </Card>
+   865→
+   866→            {/* OAG Audit Card */}
+   867→            <Card>
+   868→              <CardHeader className="p-4 pb-2">
+   869→                <div className="flex items-center gap-2">
+   870→                  <Shield className="h-4 w-4 text-emerald-600" />
+   871→                  <CardTitle className="text-sm font-semibold text-gray-800">OAG Audit Opinion</CardTitle>
+   872→                </div>
+   873→              </CardHeader>
+   874→              <CardContent className="p-4 pt-1 space-y-2">
+   875→                {latestAudit ? (
+   876→                  <>
+   877→                    <div className="flex items-center gap-2 flex-wrap">
+   878→                      <AuditBadge opinion={latestAudit.executiveOpinion} />
+   879→                      <span className="text-[10px] text-gray-400">
+   880→                        Executive · {latestAudit.financialYear}
+   881→                      </span>
+   882→                    </div>
+   883→                    {latestAudit.assemblyOpinion && (
+   884→                      <div className="flex items-center gap-2 flex-wrap">
+   885→                        <AuditBadge opinion={latestAudit.assemblyOpinion} />
+   886→                        <span className="text-[10px] text-gray-400">Assembly</span>
+   887→                      </div>
+   888→                    )}
+   889→                    {latestAudit.keyFindings && latestAudit.keyFindings.length > 0 && (
+   890→                      <div className="space-y-1 mt-2">
+   891→                        <span className="text-[10px] font-semibold text-gray-600">Key Findings</span>
+   892→                        <ul className="space-y-1">
+   893→                          {latestAudit.keyFindings.slice(0, 3).map((f, i) => (
+   894→                            <li
+   895→                              key={i}
+   896→                              className="text-[10px] text-gray-500 flex items-start gap-1.5"
+   897→                            >
+   898→                              <AlertTriangle className="h-3 w-3 text-amber-400 shrink-0 mt-0.5" />
+   899→                              <span>{f}</span>
+   900→                            </li>
+   901→                          ))}
+   902→                        </ul>
+   903→                      </div>
+   904→                    )}
+   905→                    {latestAudit.source.url && (
+   906→                      <a
+   907→                        href={latestAudit.source.url}
+   908→                        target="_blank"
+   909→                        rel="noopener noreferrer"
+   910→                        className="inline-flex items-center gap-1 text-[10px] text-emerald-600 hover:text-emerald-800 hover:underline mt-1"
+   911→                      >
+   912→                        <ExternalLink className="h-3 w-3" />
+   913→                        View OAG Report
+   914→                      </a>
+   915→                    )}
+   916→                  </>
+   917→                ) : (
+   918→                  <p className="text-xs text-gray-400">No audit data available.</p>
+   919→                )}
+   920→              </CardContent>
+   921→            </Card>
+   922→
+   923→            {/* Disbursement Summary Card */}
+   924→            <Card>
+   925→              <CardHeader className="p-4 pb-2">
+   926→                <div className="flex items-center gap-2">
+   927→                  <TrendingDown className="h-4 w-4 text-emerald-600" />
+   928→                  <CardTitle className="text-sm font-semibold text-gray-800">Disbursement Summary</CardTitle>
+   929→                </div>
+   930→              </CardHeader>
+   931→              <CardContent className="p-4 pt-1">
+   932→                {budgetData ? (
+   933→                  <div className="space-y-3">
+   934→                    <div className="grid grid-cols-2 gap-3">
+   935→                      <div className="rounded-lg bg-emerald-50 p-3 text-center">
+   936→                        <div className="text-[10px] text-gray-500 font-medium mb-1">Total Allocation</div>
+   937→                        <div className="text-sm font-bold text-emerald-700">
+   938→                          {formatBillions(budgetData.totalBudget)}
+   939→                        </div>
+   940→                      </div>
+   941→                      <div className="rounded-lg bg-amber-50 p-3 text-center">
+   942→                        <div className="text-[10px] text-gray-500 font-medium mb-1">Est. Spending</div>
+   943→                        <div className="text-sm font-bold text-amber-700">
+   944→                          {formatBillions(
+   945→                            budgetData.totalBudget *
+   946→                              ((budgetData.devAbsorptionRate *
+   947→                                (budgetData.developmentBudget / budgetData.totalBudget) +
+   948→                                budgetData.recurrentAbsorptionRate *
+   949→                                  (budgetData.recurrentBudget / budgetData.totalBudget)) /
+   950→                                100),
+   951→                          )}
+   952→                        </div>
+   953→                      </div>
+   954→                    </div>
+   955→                    <div className="space-y-1">
+   956→                      <div className="flex justify-between text-[10px]">
+   957→                        <span className="text-gray-500">Dev Budget</span>
+   958→                        <span className="text-gray-700 font-medium">
+   959→                          {formatBillions(budgetData.developmentBudget)}
+   960→                        </span>
+   961→                      </div>
+   962→                      <div className="flex justify-between text-[10px]">
+   963→                        <span className="text-gray-500">Recurrent Budget</span>
+   964→                        <span className="text-gray-700 font-medium">
+   965→                          {formatBillions(budgetData.recurrentBudget)}
+   966→                        </span>
+   967→                      </div>
+   968→                      <div className="flex justify-between text-[10px]">
+   969→                        <span className="text-gray-500">Own Revenue</span>
+   970→                        <span className="text-gray-700 font-medium">
+   971→                          {formatCurrency(budgetData.ownSourceRevenue)}
+   972→                        </span>
+   973→                      </div>
+   974→                    </div>
+   975→                  </div>
+   976→                ) : (
+   977→                  <p className="text-xs text-gray-400">No data available.</p>
+   978→                )}
+   979→              </CardContent>
+   980→            </Card>
+   981→          </div>
+   982→        </div>
+   983→      )}
+   984→    </div>
+   985→  );
+   986→}
+   987→

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { getAllLeadership, CountyLeadershipData } from '@/data/county-leadership';
 import { getCountyBudget, CountyBudgetRecord } from '@/data/county-budget-data';
 import { getCountyAuditRecords, CountyAuditRecord } from '@/data/county-audit-data';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
   ChevronDown, ChevronRight, User, Building2, Landmark, Users,
@@ -17,6 +18,7 @@ import {
   CheckCircle2, Shield, FileText, ExternalLink,
   MapPin, Stethoscope, GraduationCap, Droplets, Truck, Leaf,
   Handshake, Scale, Eye, Briefcase, Heart, Award,
+  Search, Shuffle, ChevronsUpDown, ChevronsDownUp, Globe,
 } from 'lucide-react';
 
 // ─── County List (all 47) ──────────────────────────────────────────
@@ -70,6 +72,58 @@ const COUNTY_LIST = [
   { code: '046', name: 'Nyamira' },
   { code: '047', name: 'Nairobi City' },
 ];
+
+// ─── County Metadata (population, area, capital) ────────────────────
+
+const COUNTY_METADATA: Record<string, { population: number; area: number; capital: string }> = {
+  '001': { population: 1200000, area: 212.5, capital: 'Mombasa' },
+  '002': { population: 870000, area: 8270, capital: 'Kwale' },
+  '003': { population: 1400000, area: 12410, capital: 'Kilifi' },
+  '004': { population: 310000, area: 38500, capital: 'Hola' },
+  '005': { population: 143000, area: 6820, capital: 'Lamu' },
+  '006': { population: 340000, area: 17040, capital: 'Voi' },
+  '007': { population: 840000, area: 45720, capital: 'Garissa' },
+  '008': { population: 820000, area: 55800, capital: 'Wajir' },
+  '009': { population: 1040000, area: 25990, capital: 'Mandera' },
+  '010': { population: 460000, area: 70900, capital: 'Marsabit' },
+  '011': { population: 268000, area: 5570, capital: 'Isiolo' },
+  '012': { population: 900000, area: 17100, capital: 'Meru' },
+  '013': { population: 400000, area: 1560, capital: 'Chuka' },
+  '014': { population: 600000, area: 2800, capital: 'Embu' },
+  '015': { population: 1100000, area: 24300, capital: 'Kitui' },
+  '016': { population: 1500000, area: 5950, capital: 'Machakos' },
+  '017': { population: 1000000, area: 8100, capital: 'Wote' },
+  '018': { population: 640000, area: 3240, capital: 'Ol Kalou' },
+  '019': { population: 760000, area: 4760, capital: 'Nyeri' },
+  '020': { population: 620000, area: 1470, capital: 'Kerugoya' },
+  '021': { population: 1100000, area: 2360, capital: "Murang'a" },
+  '022': { population: 2500000, area: 2325, capital: 'Kiambu' },
+  '023': { population: 1000000, area: 68300, capital: 'Lodwar' },
+  '024': { population: 620000, area: 9100, capital: 'Kapenguria' },
+  '025': { population: 310000, area: 20500, capital: 'Maralal' },
+  '026': { population: 990000, area: 2490, capital: 'Kitale' },
+  '027': { population: 1700000, area: 3340, capital: 'Eldoret' },
+  '028': { population: 460000, area: 3050, capital: 'Iten' },
+  '029': { population: 830000, area: 2880, capital: 'Kapsabet' },
+  '030': { population: 670000, area: 10900, capital: 'Kabarnet' },
+  '031': { population: 530000, area: 9620, capital: 'Nanyuki' },
+  '032': { population: 2200000, area: 7100, capital: 'Nakuru' },
+  '033': { population: 1160000, area: 12950, capital: 'Narok' },
+  '034': { population: 1100000, area: 21700, capital: 'Kajiado' },
+  '035': { population: 590000, area: 2480, capital: 'Kericho' },
+  '036': { population: 780000, area: 2000, capital: 'Bomet' },
+  '037': { population: 1900000, area: 3030, capital: 'Kakamega' },
+  '038': { population: 560000, area: 1310, capital: 'Vihiga' },
+  '039': { population: 1700000, area: 3030, capital: 'Bungoma' },
+  '040': { population: 890000, area: 1630, capital: 'Busia' },
+  '041': { population: 1000000, area: 2530, capital: 'Siaya' },
+  '042': { population: 1200000, area: 2085, capital: 'Kisumu' },
+  '043': { population: 1200000, area: 3190, capital: 'Homa Bay' },
+  '044': { population: 1000000, area: 2610, capital: 'Migori' },
+  '045': { population: 1300000, area: 1330, capital: 'Kisii' },
+  '046': { population: 610000, area: 900, capital: 'Nyamira' },
+  '047': { population: 4400000, area: 696, capital: 'Nairobi' },
+};
 
 // ─── Sample Leadership Data (used when real data is empty) ──────────
 
@@ -231,18 +285,23 @@ function TreeNode({
   children,
   defaultOpen = false,
   badge,
+  forceOpen,
 }: {
   label: string;
   icon: React.ReactNode;
   children: React.ReactNode;
   defaultOpen?: boolean;
   badge?: string;
+  forceOpen?: boolean | null;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const open = forceOpen !== undefined && forceOpen !== null ? forceOpen : internalOpen;
   return (
     <div>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (forceOpen === undefined || forceOpen === null) setInternalOpen(!internalOpen);
+        }}
         className="flex items-center gap-2 w-full text-left py-1.5 px-1 rounded-md hover:bg-emerald-50 transition-colors group"
       >
         {open ? (
@@ -478,22 +537,104 @@ export default function CountyLeadershipTreePage() {
     return { color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Low' };
   }, [budgetData]);
 
+  // ── New state: search, tabs, expand/collapse, refs ──
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<string>('leadership');
+  const [expandAll, setExpandAll] = useState<boolean | null>(null);
+  const financialRef = useRef<HTMLDivElement>(null);
+  const auditRef = useRef<HTMLDivElement>(null);
+  const contactRef = useRef<HTMLDivElement>(null);
+  const leadershipRef = useRef<HTMLDivElement>(null);
+
+  const filteredCounties = useMemo(() => {
+    if (!searchQuery.trim()) return COUNTY_LIST;
+    const q = searchQuery.toLowerCase();
+    return COUNTY_LIST.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.code.includes(q) ||
+        (COUNTY_METADATA[c.code]?.capital || '').toLowerCase().includes(q),
+    );
+  }, [searchQuery]);
+
+  const handleRandomCounty = useCallback(() => {
+    const idx = Math.floor(Math.random() * COUNTY_LIST.length);
+    setSelectedCounty(COUNTY_LIST[idx].code);
+    setSearchQuery('');
+  }, []);
+
+  const scrollToSection = useCallback((tab: string) => {
+    setActiveTab(tab);
+    setTimeout(() => {
+      if (tab === 'financial') financialRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (tab === 'audit') auditRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (tab === 'contact') contactRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (tab === 'leadership') leadershipRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }, []);
+
+  const dataQuality = useMemo(() => {
+    if (!currentCounty) return null;
+    const govOk = !currentCounty.governor?.fullName.includes('(TBD)');
+    const cecTotal = currentCounty.cecMembers?.length || 0;
+    const cecVerified = currentCounty.cecMembers?.filter((c) => !c.fullName.includes('(TBD)')).length || 0;
+    let mcaTotal = 0;
+    let mcaVerified = 0;
+    currentCounty.constituencies?.forEach((con) => {
+      con.wards?.forEach((w) => {
+        mcaTotal++;
+        if (w.mca?.fullName && !w.mca.fullName.includes('(TBD)')) mcaVerified++;
+      });
+    });
+    if (govOk && cecVerified >= 3) return { level: 'verified', label: 'Verified Data', cecVerified, cecTotal, mcaVerified, mcaTotal };
+    if (cecVerified > 0 || mcaVerified > 0) return { level: 'partial', label: 'Partial Data', cecVerified, cecTotal, mcaVerified, mcaTotal };
+    return { level: 'placeholder', label: 'Placeholder Data', cecVerified, cecTotal, mcaVerified, mcaTotal };
+  }, [currentCounty]);
+
+  const countyMeta = useMemo(() => {
+    if (!selectedCounty) return null;
+    return COUNTY_METADATA[selectedCounty] || null;
+  }, [selectedCounty]);
+
+  const totalWards = useMemo(() => {
+    if (!currentCounty) return 0;
+    return currentCounty.constituencies?.reduce((sum, con) => sum + (con.wards?.length || 0), 0) || 0;
+  }, [currentCounty]);
+
+  const totalConstituencies = useMemo(() => {
+    if (!currentCounty) return 0;
+    return currentCounty.constituencies?.length || 0;
+  }, [currentCounty]);
+
   return (
     <div className="space-y-4">
       {/* ── County Selector ──────────────────────────────────────── */}
       <Card className="border-emerald-200">
-        <CardContent className="p-4">
+        <CardContent className="p-4 space-y-3">
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+            <Input
+              placeholder="Search counties by name, code, or capital..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 text-xs"
+            />
+          </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-emerald-600" />
               <span className="text-sm font-semibold text-gray-700">Select County</span>
             </div>
-            <Select value={selectedCounty} onValueChange={setSelectedCounty}>
+            <Select value={selectedCounty} onValueChange={(v) => { setSelectedCounty(v); setExpandAll(null); }}>
               <SelectTrigger className="w-full sm:w-72">
                 <SelectValue placeholder="Choose a county..." />
               </SelectTrigger>
               <SelectContent className="max-h-80">
-                {COUNTY_LIST.map((c) => (
+                {filteredCounties.length === 0 && (
+                  <div className="px-2 py-3 text-xs text-gray-400 text-center">No counties match your search.</div>
+                )}
+                {filteredCounties.map((c) => (
                   <SelectItem key={c.code} value={c.code}>
                     <span className="flex items-center gap-2">
                       <span className="text-[10px] text-gray-400 w-6">{c.code}</span>
@@ -503,9 +644,72 @@ export default function CountyLeadershipTreePage() {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              onClick={handleRandomCounty}
+            >
+              <Shuffle className="h-3 w-3" />
+              Random
+            </Button>
+            {selectedCounty && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`h-8 text-xs gap-1 ${expandAll === true ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  onClick={() => setExpandAll(true)}
+                >
+                  <ChevronsUpDown className="h-3 w-3" />
+                  Expand All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`h-8 text-xs gap-1 ${expandAll === false ? 'bg-gray-100 border-gray-400 text-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  onClick={() => setExpandAll(false)}
+                >
+                  <ChevronsDownUp className="h-3 w-3" />
+                  Collapse All
+                </Button>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* ── County Overview Stats Bar ────────────────────────────── */}
+      {selectedCounty && countyMeta && (
+        <Card className="border-emerald-200">
+          <CardContent className="p-3">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className="text-center">
+                <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Population</div>
+                <div className="text-sm font-bold text-gray-800 mt-0.5">{(countyMeta.population / 1000000).toFixed(1)}M</div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Area</div>
+                <div className="text-sm font-bold text-gray-800 mt-0.5">{countyMeta.area.toLocaleString()} km²</div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Constituencies</div>
+                <div className="text-sm font-bold text-gray-800 mt-0.5">{totalConstituencies}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Wards</div>
+                <div className="text-sm font-bold text-gray-800 mt-0.5">{totalWards}</div>
+              </div>
+              <div className="text-center col-span-2 sm:col-span-1">
+                <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">MCA Verified</div>
+                <div className="text-sm font-bold text-gray-800 mt-0.5">
+                  {dataQuality ? `${dataQuality.mcaVerified}/${dataQuality.mcaTotal}` : '—'}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Empty State ──────────────────────────────────────────── */}
       {!selectedCounty && (
@@ -523,15 +727,77 @@ export default function CountyLeadershipTreePage() {
 
       {/* ── Main Content ─────────────────────────────────────────── */}
       {selectedCounty && currentCounty && (
+        <>
+          {/* ── Mini Navigation Tabs ─────────────────────────────── */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+            {[
+              { key: 'leadership', label: 'Leadership', icon: <Users className="h-3 w-3" /> },
+              { key: 'financial', label: 'Financial', icon: <DollarSign className="h-3 w-3" /> },
+              { key: 'audit', label: 'Audit', icon: <Shield className="h-3 w-3" /> },
+              { key: 'contact', label: 'Contact', icon: <Globe className="h-3 w-3" /> },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => scrollToSection(tab.key)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                  activeTab === tab.key
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-transparent'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+            {dataQuality && (
+              <Badge
+                className={`ml-auto text-[10px] shrink-0 ${
+                  dataQuality.level === 'verified'
+                    ? 'bg-green-100 text-green-700 border-green-300'
+                    : dataQuality.level === 'partial'
+                      ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
+                      : 'bg-gray-100 text-gray-500 border-gray-300'
+                }`}
+                variant="outline"
+              >
+                {dataQuality.level === 'verified' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                {dataQuality.label}
+              </Badge>
+            )}
+          </div>
+          {dataQuality && (dataQuality.cecTotal > 0 || dataQuality.mcaTotal > 0) && (
+            <p className="text-[10px] text-gray-400 -mt-2">
+              {dataQuality.cecTotal > 0 && `${dataQuality.cecVerified}/${dataQuality.cecTotal} CECMs verified`}
+              {dataQuality.cecTotal > 0 && dataQuality.mcaTotal > 0 && ', '}
+              {dataQuality.mcaTotal > 0 && `${dataQuality.mcaVerified}/${dataQuality.mcaTotal} MCAs verified`}
+            </p>
+          )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* ─── LEFT COLUMN: Leadership Tree (55%) ──────────────── */}
-          <div className="lg:col-span-7 space-y-3">
+          <div className="lg:col-span-7 space-y-3" ref={leadershipRef}>
             <Card>
               <CardHeader className="p-4 pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold text-gray-800">
-                    {currentCounty.countyName} — Leadership Structure
-                  </CardTitle>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-sm font-semibold text-gray-800">
+                      {currentCounty.countyName} — Leadership Structure
+                    </CardTitle>
+                    {dataQuality && (
+                      <Badge
+                        className={`text-[10px] ${
+                          dataQuality.level === 'verified'
+                            ? 'bg-green-100 text-green-700 border-green-300'
+                            : dataQuality.level === 'partial'
+                              ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
+                              : 'bg-gray-100 text-gray-500 border-gray-300'
+                        }`}
+                        variant="outline"
+                      >
+                        {dataQuality.label}
+                      </Badge>
+                    )}
+                  </div>
                   <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300">
                     {currentCounty.countyCode}
                   </Badge>
@@ -544,6 +810,7 @@ export default function CountyLeadershipTreePage() {
                     label="County Executive"
                     icon={<Building2 className="h-3.5 w-3.5 text-emerald-600" />}
                     defaultOpen={true}
+                    forceOpen={expandAll}
                   >
                     {currentCounty.governor && (
                       <PersonRow
@@ -574,6 +841,7 @@ export default function CountyLeadershipTreePage() {
                           icon={<Users className="h-3.5 w-3.5 text-emerald-600" />}
                           defaultOpen={true}
                           badge={`${currentCounty.cecMembers.length}`}
+                          forceOpen={expandAll}
                         >
                           {currentCounty.cecMembers.map((cec, i) => (
                             <CECRow
@@ -592,6 +860,7 @@ export default function CountyLeadershipTreePage() {
                     label="County Assembly"
                     icon={<Landmark className="h-3.5 w-3.5 text-emerald-600" />}
                     defaultOpen={false}
+                    forceOpen={expandAll}
                     badge={
                       currentCounty.assembly
                         ? `${currentCounty.assembly.wardCount} Wards`
@@ -618,6 +887,7 @@ export default function CountyLeadershipTreePage() {
                     label="Senate Representatives"
                     icon={<Scale className="h-3.5 w-3.5 text-emerald-600" />}
                     defaultOpen={false}
+                    forceOpen={expandAll}
                   >
                     {currentCounty.senator && (
                       <PersonRow
@@ -642,6 +912,7 @@ export default function CountyLeadershipTreePage() {
                     label="Constituencies"
                     icon={<MapPin className="h-3.5 w-3.5 text-emerald-600" />}
                     defaultOpen={false}
+                    forceOpen={expandAll}
                     badge={
                       currentCounty.constituencies
                         ? `${currentCounty.constituencies.length}`
@@ -655,6 +926,7 @@ export default function CountyLeadershipTreePage() {
                             label={constituency.name}
                             icon={<User className="h-3.5 w-3.5 text-emerald-600" />}
                             defaultOpen={false}
+                            forceOpen={expandAll}
                           >
                             {constituency.mp && (
                               <PersonRow
@@ -670,6 +942,7 @@ export default function CountyLeadershipTreePage() {
                                   label={`${constituency.wards.length} Wards`}
                                   icon={<Users className="h-3 w-3 text-gray-400" />}
                                   defaultOpen={false}
+                                  forceOpen={expandAll}
                                 >
                                   {constituency.wards.map((ward, wi) => (
                                     <WardRow
@@ -691,7 +964,7 @@ export default function CountyLeadershipTreePage() {
           </div>
 
           {/* ─── RIGHT COLUMN: Financial Dashboard (45%) ────────── */}
-          <div className="lg:col-span-5 space-y-3">
+          <div className="lg:col-span-5 space-y-3" ref={financialRef}>
             {/* Funding Sources Card */}
             <Card>
               <CardHeader className="p-4 pb-2">
@@ -864,6 +1137,7 @@ export default function CountyLeadershipTreePage() {
             </Card>
 
             {/* OAG Audit Card */}
+            <div ref={auditRef}>
             <Card>
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center gap-2">
@@ -919,6 +1193,7 @@ export default function CountyLeadershipTreePage() {
                 )}
               </CardContent>
             </Card>
+            </div>
 
             {/* Disbursement Summary Card */}
             <Card>
@@ -979,7 +1254,48 @@ export default function CountyLeadershipTreePage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* ─── CONTACT CARD (below grid) ────────────────────── */}
+          <div ref={contactRef} className="lg:col-span-12">
+            <Card>
+              <CardHeader className="p-4 pb-2">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-emerald-600" />
+                  <CardTitle className="text-sm font-semibold text-gray-800">County Contact & Links</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Capital Town</div>
+                    <div className="text-sm font-semibold text-gray-800 mt-0.5">{countyMeta?.capital || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">County Code</div>
+                    <div className="text-sm font-semibold text-gray-800 mt-0.5">{selectedCounty}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Official Website</div>
+                    {countyMeta ? (
+                      <a
+                        href={`https://${currentCounty.countyName.toLowerCase().replace(/\s+/g, '')}.go.ke`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-800 hover:underline mt-0.5"
+                      >
+                        {currentCounty.countyName.toLowerCase().replace(/\s+/g, '')}.go.ke
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    ) : (
+                      <span className="text-sm text-gray-400 mt-0.5 block">N/A</span>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+        </>
       )}
     </div>
   );

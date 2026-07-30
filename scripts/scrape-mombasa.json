@@ -1,0 +1,23 @@
+{
+  "code": 200,
+  "data": {
+    "description": "",
+    "external": {},
+    "html": "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n\t<title>Database Error</title>\n\n</head>\n<body>\n\t<h1>Error establishing a database connection</h1>\n\n\n</body></html>",
+    "httpStatus": 500,
+    "httpStatusText": "Internal Server Error",
+    "metadata": {},
+    "title": "Database Error",
+    "url": "https://mombasa.go.ke/county-executive",
+    "usage": {
+      "tokens": 63
+    },
+    "warning": "Target URL returned error 500: Internal Server Error"
+  },
+  "meta": {
+    "usage": {
+      "tokens": 63
+    }
+  },
+  "status": 20000
+}

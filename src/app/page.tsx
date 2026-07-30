@@ -48,6 +48,10 @@ import CountyLeadershipTreePage from '@/components/county-leadership-tree';
 import ProjectsBrowserPage from '@/components/projects-browser-page';
 import SecureWhistleblowerModal from '@/components/secure-whistleblower-modal';
 import { DataFreshnessIndicator } from '@/components/data-freshness';
+import CommandPalette from '@/components/command-palette';
+import CountyComparisonEnhanced from '@/components/county-comparison-enhanced';
+import ExportButton from '@/components/export-button';
+import { exportCountiesToCSV } from '@/lib/data-export';
 import { WeatherWidget, CitizenAuditorDashboard, AIInsightsWidget, ProjectVelocityChart, RiskForecastWidget } from '@/components/sidebar-widgets';
 import { useTheme } from 'next-themes';
 
@@ -96,7 +100,7 @@ type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema'
   | 'reportcard' | 'audittrends' | 'budgetscatter'
   | 'coalition' | 'quiz' | 'servicedelivery'
   | 'stories' | 'cbef' | 'redflags' | 'embed'
-  | 'leadership' | 'projects' | 'mzalendo' | 'securetip';
+  | 'leadership' | 'projects' | 'mzalendo' | 'securetip' | 'compareEnhanced';
 
 interface NavItem {
   id: TabId;
@@ -147,6 +151,7 @@ const navItems: NavItem[] = [
   { id: 'projects', label: 'Projects & Audits', icon: FolderOpen, section: 'Leadership & Projects' },
   { id: 'mzalendo', label: 'Mzalendo Profiles', icon: Vote, section: 'Leadership & Projects' },
   { id: 'securetip', label: 'Secure Whistleblower', icon: ShieldCheck, section: 'Leadership & Projects' },
+  { id: 'compareEnhanced', label: 'Comparison Matrix', icon: GitCompare, section: 'Analytics' },
 ];
 
 // ─── ICON MAP FOR SOURCES ────────────────────────────────────────
@@ -178,6 +183,7 @@ export default function KenyaGovernancePage() {
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
   const [filters, setFilters] = useState<FilterState>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const commandPaletteRef = React.useRef<{ open: () => void; close: () => void }>(null);
 
   const allCounties = useMemo((): County[] => {
     const placeholders = getPlaceholderCounties();
@@ -248,7 +254,7 @@ export default function KenyaGovernancePage() {
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { setSidebarOpen(false); return; }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); /* Focus search */ return; }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); commandPaletteRef.current?.open(); return; }
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') { e.preventDefault(); setTheme(theme === 'dark' ? 'light' : 'dark'); return; }
       if (e.key === '?' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
         alert('Keyboard Shortcuts:\nCtrl+K: Search\nCtrl+D: Toggle Dark Mode\nEsc: Close panels\n?: This help');
@@ -290,6 +296,13 @@ export default function KenyaGovernancePage() {
                     {comparisonList.length}/4 compare
                   </Badge>
                 )}
+                <button
+                  onClick={() => commandPaletteRef.current?.open()}
+                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                  title="Search (Ctrl+K)"
+                >
+                  <Keyboard className="h-3.5 w-3.5 text-stone-600" />
+                </button>
                 <button
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                   className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
@@ -571,6 +584,42 @@ export default function KenyaGovernancePage() {
                       </button>
                     ))}
                   </div>
+                  <Separator />
+                  <div>
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Analytics</p>
+                    {analyticsItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+                          activeTab === item.id
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <Separator />
+                  <div>
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Leadership & Projects</p>
+                    {leadershipItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+                          activeTab === item.id
+                            ? 'bg-rose-600 text-white'
+                            : 'text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </nav>
               </aside>
             </div>
@@ -578,7 +627,7 @@ export default function KenyaGovernancePage() {
 
           {/* ══════════ MAIN CONTENT ══════════ */}
           <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full">
-            {activeTab === 'summary' && <NationalSummaryDashboard />}
+            {activeTab === 'summary' && <NationalSummaryDashboard onNavigate={setActiveTab} />}
             {activeTab === 'tree' && (
               <GovernorsTreeView
                 governors={filteredGovernors}
@@ -647,6 +696,7 @@ export default function KenyaGovernancePage() {
             )}
             {activeTab === 'mzalendo' && <MzalendoPage />}
             {activeTab === 'securetip' && <SecureWhistleblowerModal />}
+            {activeTab === 'compareEnhanced' && <CountyComparisonEnhanced />}
           </main>
 
           {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
@@ -764,6 +814,7 @@ export default function KenyaGovernancePage() {
           </div>
         </footer>
       </div>
+      <CommandPalette ref={commandPaletteRef} onNavigate={(tabId) => setActiveTab(tabId as TabId)} />
     </TooltipProvider>
   );
 }
@@ -771,13 +822,36 @@ export default function KenyaGovernancePage() {
 // ══════════════════════════════════════════════════════════════════
 // NATIONAL SUMMARY DASHBOARD
 // ══════════════════════════════════════════════════════════════════
-function NationalSummaryDashboard() {
+function NationalSummaryDashboard({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
   const latestAudit = getLatestAuditSummary();
   const prevAudit = nationalSummary.auditSummaries[1];
   const latestBudget = getLatestBudgetSummary();
 
   return (
     <div className="space-y-5">
+      {/* Top Actions Bar */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">National Dashboard</h2>
+          <p className="text-xs text-stone-500">Evidence-based overview of Kenya's 47 county governments</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <ExportButton
+            variant="outline"
+            size="sm"
+            label="Export CSV"
+            onClick={() => exportCountiesToCSV()}
+          />
+          <button
+            onClick={() => onNavigate('compareEnhanced')}
+            className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+          >
+            <GitCompare className="h-3.5 w-3.5" />
+            Compare Counties
+          </button>
+        </div>
+      </div>
+
       {/* Quick Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
