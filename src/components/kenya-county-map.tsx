@@ -918,6 +918,7 @@ export function KenyaMiniMap({
             govMap,
             auditMap,
             {},
+            new Map(),
           );
           const isHighlighted = highlightedCounties.includes(county.code);
 
@@ -931,7 +932,7 @@ export function KenyaMiniMap({
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  handleMiniKeyDown(county);
+                  handleClick(county);
                 }
               }}
               tabIndex={0}

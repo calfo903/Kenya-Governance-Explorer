@@ -459,3 +459,22 @@ Stage Summary:
 - county-map-page.tsx deduplicated, now imports kenyaCountyPaths from shared module
 - SVG rendering fixed with proper scale and height constraints
 - Bottom nav verified working (tab type 'countymap' exists in tab-types.ts)
+
+---
+Task ID: 20
+Agent: Main Agent
+Task: Fix all identified bugs (map tab, county maps, command palette, CSS)
+
+Work Log:
+- Fixed `handleMiniKeyDown` ReferenceError in `kenya-county-map.tsx:934` — was referencing a function defined inside `KenyaCountyMapInner` from the separate `KenyaMiniMap` component. Replaced with local `handleClick` call already available in `KenyaMiniMap` scope.
+- Fixed `resolveCountyFill` missing 6th argument in `KenyaMiniMap` — added `new Map()` as the `cecmScoreMap` parameter to match the function signature.
+- Added 19 missing tabs to `command-palette.tsx`: Insights section (rankings, milestones, fycomparison, cecm), Leadership additions (representatives, hansard), Citizen Action addition (reports), Analytics addition (compareEnhanced), entire AI Tools section (12 items).
+- Added new icon imports (Trophy, Milestone, ArrowLeftRight, GraduationCap, Mic, Search, Heart, UserRound, Brain).
+- Cleaned up duplicate `dark:bg-stone-800` CSS classes on 3 header buttons in `page.tsx`.
+- Build verification: `npx next build` passed with zero errors.
+
+Stage Summary:
+- All 4 identified bugs fixed
+- Map tab and county maps should now render correctly
+- Command palette now covers all 43 registered tabs
+- Build passes cleanly
