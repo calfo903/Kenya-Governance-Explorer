@@ -671,7 +671,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
         {/* Zoom/pan wrapper */}
         <TransformWrapper
           ref={transformRef}
-          initialScale={1}
+          initialScale={0.7}
           minScale={0.5}
           maxScale={5}
           centerOnInit={true}
@@ -686,6 +686,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
                 <svg
                   viewBox="0 0 1000 1200"
                   className="w-full h-auto select-none"
+                  style={{ maxHeight: '600px' }}
                   role="img"
                   aria-label="Interactive map of Kenya showing 47 counties. Use arrow keys to navigate, Enter or Space to select a county."
                 >

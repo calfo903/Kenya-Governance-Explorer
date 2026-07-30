@@ -439,3 +439,23 @@ Stage Summary:
 - All routes use z-ai-web-dev-sdk (LLM + Web Search) + Prisma for DB queries
 - New sidebar section "AI Tools" with emerald accent color
 - Full English + Swahili i18n support for all AI nav items
+---
+Task ID: 20
+Agent: Main Agent + Subagent
+Task: Fix county map page and bottom navigation issues
+
+Work Log:
+- Identified root cause: county-map-page.tsx had duplicate data (countyShapes, COALITION_COLORS, REGION_COLORS, AUDIT_COLORS, SIMULATED_AUDIT) with different coordinate system than kenya-county-map.tsx
+- countyShapes used ~600x700 coordinate scale, kenyaCountyPaths used 1000x1200 viewBox — causing mismatches
+- Two competing tooltips (one from KenyaCountyMap's MapTooltip, one from county-map-page's inline tooltip)
+- Removed ~145 lines of duplicate/dead data from county-map-page.tsx (716→571 lines)
+- Updated hover lookup and filteredShapes to use kenyaCountyPaths from shared module
+- Fixed audit filter to use real countyAuditData instead of SIMULATED_AUDIT
+- Fixed KenyaCountyMap: initialScale from 1→0.7, added maxHeight:600px to SVG
+- Removed inline legend since KenyaCountyMap already renders its own
+- Build verification: npx next build passes, map page chunk confirmed loading
+
+Stage Summary:
+- county-map-page.tsx deduplicated, now imports kenyaCountyPaths from shared module
+- SVG rendering fixed with proper scale and height constraints
+- Bottom nav verified working (tab type 'countymap' exists in tab-types.ts)

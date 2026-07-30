@@ -3,11 +3,11 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { all47Governors, GovernorEntry } from '@/data/governors';
-import { AUDIT_OPINIONS, REGIONS } from '@/data/types';
+import { REGIONS } from '@/data/types';
 import {
-  Map, Filter, Eye, X, ChevronDown,
+  Map, Filter, X,
   Users, MapPin, Building2, TrendingDown, AlertTriangle,
-  Layers, Search, CircleDot, ShieldCheck, ArrowRight, GitCompare, BarChart3, CheckCircle2,
+  Layers, Search, ShieldCheck, ArrowRight, GitCompare, BarChart3, CheckCircle2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,122 +15,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { KenyaCountyMap } from '@/components/kenya-county-map';
+import { KenyaCountyMap, kenyaCountyPaths, type CountyShape } from '@/components/kenya-county-map';
 import { countyAuditData } from '@/data/county-audit-data';
 import { countyBudgetData } from '@/data/county-budget-data';
 
 type ColorMode = 'coalition' | 'region' | 'audit' | 'budget' | 'population';
-type AuditOpinionKey = 'unmodified' | 'qualified' | 'adverse' | 'disclaimer';
-
-interface CountyShape {
-  name: string;
-  code: string;
-  path: string;
-  cx: number;
-  cy: number;
-}
-
-const COALITION_COLORS: Record<string, string> = {
-  'Kenya Kwanza Alliance': '#1e40af',
-  'Azimio la Umoja One Kenya Coalition': '#15803d',
-  'Independent': '#78716c',
-};
-
-const AUDIT_COLORS: Record<string, string> = {
-  unmodified: '#16a34a',
-  qualified: '#eab308',
-  adverse: '#ea580c',
-  disclaimer: '#dc2626',
-};
-
-const REGION_COLORS: Record<string, string> = {
-  Coast: '#0d9488',
-  'North Eastern': '#d97706',
-  Eastern: '#7c3aed',
-  Central: '#2563eb',
-  'Rift Valley': '#16a34a',
-  Western: '#db2777',
-  Nyanza: '#ea580c',
-  Nairobi: '#dc2626',
-};
-
-/* Simplified county boundaries as recognizable SVG paths.
-   Each county is a simplified polygon approximating the actual boundaries.
-   Coordinates scaled to a 600x700 viewport representing Kenya. */
-const countyShapes: CountyShape[] = [
-  // Coast Region
-  { name: 'Mombasa', code: '001', path: 'M 258 438 L 272 440 L 275 450 L 262 455 L 250 448 Z', cx: 262, cy: 446 },
-  { name: 'Kwale', code: '002', path: 'M 258 438 L 250 448 L 250 470 L 265 480 L 280 465 L 275 450 L 272 440 Z', cx: 262, cy: 460 },
-  { name: 'Kilifi', code: '003', path: 'M 272 440 L 275 450 L 280 465 L 265 480 L 248 490 L 228 485 L 225 465 L 235 450 L 250 448 L 258 438 Z', cx: 252, cy: 468 },
-  { name: 'Tana River', code: '004', path: 'M 265 480 L 280 465 L 300 480 L 330 495 L 345 520 L 330 530 L 295 520 L 270 510 L 248 490 Z', cx: 295, cy: 503 },
-  { name: 'Lamu', code: '005', path: 'M 345 520 L 330 495 L 340 485 L 360 490 L 375 510 L 365 530 L 345 535 Z', cx: 355, cy: 512 },
-  { name: 'Taita Taveta', code: '006', path: 'M 248 490 L 270 510 L 265 530 L 240 540 L 210 535 L 200 515 L 215 498 L 228 485 Z', cx: 232, cy: 518 },
-  // North Eastern
-  { name: 'Garissa', code: '007', path: 'M 330 495 L 345 520 L 345 535 L 380 545 L 420 540 L 440 520 L 430 490 L 400 475 L 370 480 L 345 480 L 330 470 Z', cx: 385, cy: 508 },
-  { name: 'Wajir', code: '008', path: 'M 400 475 L 430 490 L 460 480 L 500 475 L 520 490 L 510 520 L 475 530 L 440 520 L 420 540 L 380 545 L 345 535 L 365 530 L 375 510 L 360 490 L 370 480 Z', cx: 455, cy: 505 },
-  { name: 'Mandera', code: '009', path: 'M 500 475 L 520 490 L 540 470 L 570 450 L 590 440 L 590 475 L 570 500 L 540 520 L 510 520 L 520 490 Z', cx: 555, cy: 490 },
-  { name: 'Marsabit', code: '010', path: 'M 340 420 L 370 430 L 400 420 L 420 440 L 440 445 L 430 490 L 400 475 L 370 480 L 345 480 L 330 470 L 320 450 Z', cx: 388, cy: 450 },
-  { name: 'Isiolo', code: '011', path: 'M 300 410 L 330 415 L 340 420 L 320 450 L 300 445 L 280 440 L 270 425 Z', cx: 310, cy: 432 },
-  // Eastern
-  { name: 'Meru', code: '012', path: 'M 310 370 L 340 365 L 365 370 L 370 400 L 360 415 L 340 420 L 330 415 L 300 410 L 285 395 Z', cx: 328, cy: 395 },
-  { name: 'Tharaka Nithi', code: '013', path: 'M 285 395 L 300 410 L 270 425 L 260 410 L 265 390 L 275 380 Z', cx: 278, cy: 400 },
-  { name: 'Embu', code: '014', path: 'M 260 410 L 270 425 L 255 435 L 240 430 L 235 415 L 245 400 Z', cx: 252, cy: 418 },
-  { name: 'Kitui', code: '015', path: 'M 240 430 L 255 435 L 270 425 L 280 440 L 300 445 L 310 460 L 300 475 L 280 470 L 265 480 L 248 490 L 228 485 L 210 470 L 210 535 L 195 540 L 185 520 L 190 490 L 200 470 L 210 455 L 215 445 L 225 435 Z', cx: 240, cy: 463 },
-  { name: 'Machakos', code: '016', path: 'M 210 470 L 225 435 L 240 430 L 235 415 L 245 400 L 230 395 L 210 400 L 195 415 L 180 430 L 175 445 L 185 460 L 195 470 L 210 470 Z', cx: 210, cy: 432 },
-  { name: 'Makueni', code: '017', path: 'M 195 470 L 210 470 L 210 535 L 195 540 L 175 530 L 160 510 L 165 485 L 175 470 Z', cx: 186, cy: 505 },
-  // Central
-  { name: 'Nyandarua', code: '018', path: 'M 195 340 L 220 335 L 240 340 L 245 360 L 235 380 L 215 385 L 195 380 L 185 360 Z', cx: 215, cy: 360 },
-  { name: 'Nyeri', code: '019', path: 'M 220 335 L 245 330 L 260 335 L 265 355 L 260 370 L 245 380 L 235 380 L 245 360 L 240 340 Z', cx: 250, cy: 357 },
-  { name: 'Kirinyaga', code: '020', path: 'M 240 380 L 245 380 L 260 370 L 265 385 L 258 398 L 242 400 L 230 395 L 235 380 Z', cx: 248, cy: 390 },
-  { name: "Murang'a", code: '021', path: 'M 210 395 L 230 395 L 242 400 L 245 400 L 230 395 L 245 380 L 235 380 L 215 385 L 210 400 Z', cx: 230, cy: 395 },
-  { name: 'Kiambu', code: '022', path: 'M 180 370 L 195 380 L 195 340 L 215 385 L 210 395 L 210 400 L 195 415 L 180 400 L 170 385 L 168 370 Z', cx: 190, cy: 387 },
-  // Rift Valley
-  { name: 'Turkana', code: '023', path: 'M 170 250 L 220 240 L 280 245 L 330 260 L 340 280 L 330 310 L 300 320 L 260 325 L 220 330 L 190 330 L 165 310 L 155 285 Z', cx: 250, cy: 286 },
-  { name: 'West Pokot', code: '024', path: 'M 165 310 L 190 330 L 195 350 L 185 365 L 165 370 L 150 355 L 140 335 L 148 315 Z', cx: 170, cy: 340 },
-  { name: 'Samburu', code: '025', path: 'M 260 325 L 300 320 L 320 330 L 325 350 L 310 365 L 285 360 L 270 350 L 260 340 Z', cx: 294, cy: 343 },
-  { name: 'Trans Nzoia', code: '026', path: 'M 190 330 L 220 330 L 240 340 L 250 355 L 240 365 L 220 370 L 200 365 L 190 350 Z', cx: 220, cy: 347 },
-  { name: 'Uasin Gishu', code: '027', path: 'M 220 370 L 240 365 L 250 355 L 270 355 L 285 360 L 280 375 L 260 385 L 240 385 L 225 385 Z', cx: 256, cy: 372 },
-  { name: 'Elgeyo Marakwet', code: '028', path: 'M 250 355 L 260 325 L 270 350 L 270 355 Z', cx: 263, cy: 345 },
-  { name: 'Nandi', code: '029', path: 'M 225 385 L 240 385 L 260 385 L 268 400 L 255 410 L 235 408 L 220 400 Z', cx: 246, cy: 398 },
-  { name: 'Baringo', code: '030', path: 'M 260 325 L 320 330 L 325 350 L 310 365 L 340 365 L 345 380 L 325 395 L 300 400 L 285 395 L 285 375 L 310 365 L 310 365 L 285 360 L 270 355 L 260 340 Z', cx: 300, cy: 365 },
-  { name: 'Laikipia', code: '031', path: 'M 260 325 L 340 280 L 330 310 L 300 320 L 260 325 L 270 350 L 285 360 L 285 395 L 270 400 L 255 410 L 245 400 L 245 380 L 260 370 L 265 355 Z', cx: 288, cy: 350 },
-  { name: 'Nakuru', code: '032', path: 'M 220 400 L 235 408 L 255 410 L 268 400 L 280 410 L 285 430 L 275 445 L 260 445 L 240 440 L 225 430 L 215 420 Z', cx: 255, cy: 422 },
-  { name: 'Narok', code: '033', path: 'M 210 470 L 225 435 L 225 430 L 240 430 L 255 435 L 270 425 L 280 440 L 285 460 L 280 480 L 265 480 L 248 490 L 228 485 L 210 470 Z', cx: 253, cy: 460 },
-  { name: 'Kajiado', code: '034', path: 'M 160 510 L 175 530 L 195 540 L 210 535 L 210 470 L 195 470 L 175 470 L 160 470 L 145 485 L 140 500 Z', cx: 170, cy: 495 },
-  { name: 'Kericho', code: '035', path: 'M 210 400 L 215 420 L 225 430 L 215 445 L 200 450 L 185 445 L 180 430 L 190 415 Z', cx: 203, cy: 430 },
-  { name: 'Bomet', code: '036', path: 'M 185 445 L 200 450 L 215 445 L 210 470 L 195 470 L 180 470 L 175 455 Z', cx: 195, cy: 458 },
-  // Western
-  { name: 'Kakamega', code: '037', path: 'M 135 335 L 165 330 L 190 330 L 195 350 L 190 365 L 175 375 L 155 380 L 135 370 L 125 355 Z', cx: 158, cy: 353 },
-  { name: 'Vihiga', code: '038', path: 'M 135 370 L 155 380 L 170 385 L 168 395 L 155 400 L 140 395 L 128 385 L 125 375 Z', cx: 148, cy: 385 },
-  { name: 'Bungoma', code: '039', path: 'M 100 310 L 125 315 L 140 335 L 135 355 L 135 370 L 125 375 L 108 370 L 95 355 L 90 335 Z', cx: 118, cy: 345 },
-  { name: 'Busia', code: '040', path: 'M 125 375 L 140 395 L 155 400 L 160 415 L 145 425 L 130 420 L 115 410 L 105 395 L 108 380 L 120 370 Z', cx: 132, cy: 400 },
-  // Nyanza
-  { name: 'Siaya', code: '041', path: 'M 155 400 L 168 395 L 170 410 L 165 425 L 150 435 L 140 425 L 145 415 L 155 400 Z', cx: 158, cy: 415 },
-  { name: 'Kisumu', code: '042', path: 'M 155 400 L 145 415 L 140 425 L 130 420 L 120 430 L 125 445 L 140 455 L 155 450 L 165 425 L 170 410 L 168 395 L 155 400 Z', cx: 145, cy: 430 },
-  { name: 'Homa Bay', code: '043', path: 'M 165 425 L 170 410 L 185 400 L 195 415 L 195 435 L 180 450 L 165 445 L 155 450 L 150 435 L 165 425 Z', cx: 172, cy: 430 },
-  { name: 'Migori', code: '044', path: 'M 155 450 L 165 445 L 180 450 L 195 460 L 200 480 L 185 495 L 165 490 L 150 475 L 148 460 Z', cx: 170, cy: 470 },
-  { name: 'Kisii', code: '045', path: 'M 195 415 L 210 400 L 210 415 L 215 430 L 210 445 L 195 460 L 180 450 L 195 435 L 195 415 Z', cx: 203, cy: 435 },
-  { name: 'Nyamira', code: '046', path: 'M 195 400 L 210 400 L 195 415 L 180 400 L 190 390 Z', cx: 195, cy: 400 },
-  // Nairobi
-  { name: 'Nairobi City', code: '047', path: 'M 195 415 L 210 400 L 225 385 L 245 380 L 242 400 L 230 395 L 210 400 L 195 415 Z', cx: 218, cy: 400 },
-];
-
-const SIMULATED_AUDIT: Record<string, AuditOpinionKey> = {
-  'Nairobi City': 'qualified', Mombasa: 'qualified', Kwale: 'qualified', Kilifi: 'qualified',
-  Tana: 'adverse', Lamu: 'qualified', 'Taita Taveta': 'qualified',
-  Garissa: 'qualified', Wajir: 'qualified', Mandera: 'qualified', Marsabit: 'qualified', Isiolo: 'qualified',
-  Meru: 'qualified', 'Tharaka Nithi': 'qualified', Embu: 'qualified', Kitui: 'qualified',
-  Machakos: 'qualified', Makueni: 'unmodified',
-  Nyandarua: 'qualified', Nyeri: 'qualified', Kirinyaga: 'qualified', "Murang'a": 'qualified', Kiambu: 'qualified',
-  Turkana: 'qualified', 'West Pokot': 'qualified', Samburu: 'qualified', 'Trans Nzoia': 'qualified',
-  'Uasin Gishu': 'qualified', 'Elgeyo Marakwet': 'qualified', Nandi: 'qualified', Baringo: 'adverse',
-  Laikipia: 'qualified', Nakuru: 'qualified', Narok: 'qualified', Kajiado: 'qualified',
-  Kericho: 'qualified', Bomet: 'qualified',
-  Kakamega: 'qualified', Vihiga: 'qualified', Bungoma: 'qualified', Busia: 'qualified',
-  Siaya: 'qualified', Kisumu: 'qualified', 'Homa Bay': 'qualified', Migori: 'qualified',
-  Kisii: 'qualified', Nyamira: 'qualified',
-};
 
 interface CountyMapPageProps {
   onCountyDeepDive?: (countyCode: string) => void;
@@ -170,19 +59,8 @@ export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) 
     return map;
   }, []);
 
-  const getColor = (shape: CountyShape) => {
-    const gov = governorMap.get(shape.name);
-    if (colorMode === 'coalition') return gov ? COALITION_COLORS[gov.coalition] || '#9ca3af' : '#9ca3af';
-    if (colorMode === 'region') return gov ? REGION_COLORS[gov.region] || '#9ca3af' : '#9ca3af';
-    if (colorMode === 'audit') {
-      const auditKey = SIMULATED_AUDIT[shape.name] || 'qualified';
-      return AUDIT_COLORS[auditKey];
-    }
-    return '#9ca3af';
-  };
-
   const filteredShapes = useMemo(() => {
-    let shapes = countyShapes;
+    let shapes = kenyaCountyPaths;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       shapes = shapes.filter(s => s.name.toLowerCase().includes(q));
@@ -194,7 +72,11 @@ export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) 
       shapes = shapes.filter(s => governorMap.get(s.name)?.coalition === coalitionFilter);
     }
     if (auditFilter !== 'all' && colorMode === 'audit') {
-      shapes = shapes.filter(s => SIMULATED_AUDIT[s.name] === auditFilter);
+      const capitalizedOpinion = auditFilter.charAt(0).toUpperCase() + auditFilter.slice(1);
+      shapes = shapes.filter(s => {
+        const rec = countyAuditData.find(a => a.countyCode === s.code && a.financialYear === selectedFY);
+        return rec && rec.executiveOpinion === capitalizedOpinion;
+      });
     }
     // Apply quick filter
     if (quickFilter === 'adverse') {
@@ -214,7 +96,7 @@ export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) 
       shapes = shapes.filter(s => top10.includes(s.code));
     }
     return shapes;
-  }, [regionFilter, coalitionFilter, auditFilter, searchQuery, colorMode, governorMap, quickFilter, selectedFY]);
+  }, [regionFilter, coalitionFilter, auditFilter, searchQuery, colorMode, governorMap, quickFilter, selectedFY, countyAuditData, countyBudgetData]);
 
   // Quick filter counts
   const quickFilterCounts = useMemo(() => {
@@ -396,7 +278,7 @@ export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) 
                   onCountyClick={handleMapCountyClick}
                   onCountyHover={(code) => {
                     if (code) {
-                      const shape = countyShapes.find(s => s.code === code);
+                      const shape = kenyaCountyPaths.find(s => s.code === code);
                       if (shape) setHoveredCounty(shape);
                     } else {
                       setHoveredCounty(null);
@@ -424,33 +306,7 @@ export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) 
                   </div>
                 )}
               </div>
-              {/* Legend */}
-              <div className="mt-4 flex flex-wrap gap-4">
-                <div className="flex items-center gap-2">
-                  <CircleDot className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" />
-                  <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                    {colorMode === 'coalition' ? 'Coalition' : colorMode === 'region' ? 'Region' : `Audit Opinion (OAG ${selectedFY})`}
-                  </span>
-                </div>
-                {colorMode === 'coalition' && Object.entries(COALITION_COLORS).map(([name, color]) => (
-                  <div key={name} className="flex items-center gap-1.5">
-                    <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: color }} />
-                    <span className="text-[10px] text-stone-600 dark:text-stone-300">{name.length > 20 ? name.split(' ').slice(0, 2).join(' ') : name}</span>
-                  </div>
-                ))}
-                {colorMode === 'region' && Object.entries(REGION_COLORS).map(([name, color]) => (
-                  <div key={name} className="flex items-center gap-1.5">
-                    <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: color }} />
-                    <span className="text-[10px] text-stone-600 dark:text-stone-300">{name}</span>
-                  </div>
-                ))}
-                {colorMode === 'audit' && Object.entries(AUDIT_COLORS).map(([name, color]) => (
-                  <div key={name} className="flex items-center gap-1.5">
-                    <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: color }} />
-                    <span className="text-[10px] text-stone-600 dark:text-stone-300 capitalize">{name}</span>
-                  </div>
-                ))}
-              </div>
+              {/* Legend is rendered by KenyaCountyMap internally */}
             </CardContent>
           </Card>
         </div>
