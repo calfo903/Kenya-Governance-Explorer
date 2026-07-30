@@ -357,3 +357,33 @@ Stage Summary:
 - New component: `/src/components/representative-profiles-page.tsx`
 - Modified: `/src/app/page.tsx` (import, TabId, navItems, tab content, mobile nav)
 - All 47 counties × 5 representative types covered with constitutional duties
+
+---
+Task ID: 11
+Agent: Main Agent
+Task: Apply Engineering Standard — Code Quality, Security, Reliability hardening
+
+Work Log:
+- §2.1 Created `/src/lib/api-validation.ts` — Zod schemas for all 10 API routes (StoryCreateSchema, TipCreateSchema, CountiesQuerySchema, AuditsQuerySchema, BudgetQuerySchema, MzalendoQuerySchema, WeatherQuerySchema, ScorecardsQuerySchema) with reusable field validators and validateQuery/validateBody helpers
+- §3.1 Created `/src/lib/api-errors.ts` — Standardized error response builders (badRequest, unauthorized, forbidden, notFound, conflict, unprocessable, tooManyRequests, internalError) with actionable context, no internal leakage
+- §5.1 Created `/src/lib/api-logger.ts` — Structured JSON logging with automatic redaction of sensitive fields (password, token, description, experience, etc.)
+- Rewrote all 10 API routes: stories, tips, counties, audits, budget, scorecards, mzalendo, weather, news, root — all now use Zod validation, structured errors, and structured logging
+- §7.3 Added `simulated: true` and `curated: true` disclaimers to weather and news APIs to prevent misleading users
+- §6.3 Added IP-based rate limiting to POST /api/stories (10/hr) and POST /api/tips (20/hr) with configurable windows
+- §3.2 Added in-memory storage bounds (500 stories, 1000 tips) with 507 response when full
+- §5.3 Created `/api/health` endpoint — checks data module availability, reports status, version, uptime, per-module latency
+- §1.1 Extracted 10 inline components from page.tsx into 8 dedicated files: county-explorer.tsx, sources-hub.tsx, comparison-view.tsx, national-summary-dashboard.tsx, governors-tree-view.tsx, json-schema-view.tsx, source-icon.tsx, tab-types.ts
+- §1.3 Modularized county-leadership.ts (6,407→81 lines) into county-leadership-types.ts + 8 region files under /src/data/regions/
+- §4.2 Created 50 unit tests in `/src/__tests__/api-validation.test.ts` covering Zod schemas, error responses, structured logger, and rate limit constants — all passing
+- Added vitest config and test scripts to package.json
+
+Stage Summary:
+- New utility files: api-validation.ts, api-errors.ts, api-logger.ts
+- 10 API routes hardened with validation, error handling, and logging
+- 1 new endpoint: /api/health
+- page.tsx reduced from 1,628 → 844 lines (−48%)
+- county-leadership.ts reduced from 6,407 → 81 lines (−99%)
+- 8 new component files extracted from page.tsx
+- 9 new region data files + types file
+- 50 unit tests (all passing)
+- Build: clean, zero errors

@@ -1,0 +1,12 @@
+export type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema'
+  | 'whistleblower' | 'constitution' | 'xposts'
+  | 'countymap' | 'rti' | 'petition' | 'heatmap'
+  | 'manifesto' | 'tiptsubmit' | 'feedback'
+  | 'timeline' | 'budgetsim' | 'datafetcher'
+  | 'alerts' | 'procurement'
+  | 'reportcard' | 'audittrends' | 'budgetscatter'
+  | 'coalition' | 'quiz' | 'servicedelivery'
+  | 'stories' | 'cbef' | 'redflags' | 'embed'
+  | 'leadership' | 'projects' | 'mzalendo' | 'securetip' | 'compareEnhanced'
+  | 'rankings' | 'milestones' | 'fycomparison'
+  | 'representatives';
