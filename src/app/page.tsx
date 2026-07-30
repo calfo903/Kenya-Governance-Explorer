@@ -49,6 +49,9 @@ import ProjectsBrowserPage from '@/components/projects-browser-page';
 import SecureWhistleblowerModal from '@/components/secure-whistleblower-modal';
 import { DataFreshnessIndicator } from '@/components/data-freshness';
 import CommandPalette from '@/components/command-palette';
+import CountyRankingsPage from '@/components/county-rankings-page';
+import DevolutionMilestonesPage from '@/components/devolution-milestones-page';
+import FYComparisonPage from '@/components/fy-comparison-page';
 import CountyComparisonEnhanced from '@/components/county-comparison-enhanced';
 import ExportButton from '@/components/export-button';
 import { exportCountiesToCSV } from '@/lib/data-export';
@@ -75,6 +78,7 @@ import {
   Keyboard, GraduationCap,
   AlertOctagon, Calendar, Code2, Zap,
   Network, FolderOpen, Vote, ShieldCheck, Lock,
+  Trophy, Flag,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -100,7 +104,8 @@ type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema'
   | 'reportcard' | 'audittrends' | 'budgetscatter'
   | 'coalition' | 'quiz' | 'servicedelivery'
   | 'stories' | 'cbef' | 'redflags' | 'embed'
-  | 'leadership' | 'projects' | 'mzalendo' | 'securetip' | 'compareEnhanced';
+  | 'leadership' | 'projects' | 'mzalendo' | 'securetip' | 'compareEnhanced'
+  | 'rankings' | 'milestones' | 'fycomparison';
 
 interface NavItem {
   id: TabId;
@@ -152,6 +157,10 @@ const navItems: NavItem[] = [
   { id: 'mzalendo', label: 'Mzalendo Profiles', icon: Vote, section: 'Leadership & Projects' },
   { id: 'securetip', label: 'Secure Whistleblower', icon: ShieldCheck, section: 'Leadership & Projects' },
   { id: 'compareEnhanced', label: 'Comparison Matrix', icon: GitCompare, section: 'Analytics' },
+  // ── Insights ──
+  { id: 'rankings', label: 'County Rankings', icon: Trophy, section: 'Insights' },
+  { id: 'milestones', label: 'Devolution Timeline', icon: Flag, section: 'Insights' },
+  { id: 'fycomparison', label: 'FY Comparison', icon: BarChart3, section: 'Insights' },
 ];
 
 // ─── ICON MAP FOR SOURCES ────────────────────────────────────────
@@ -247,6 +256,7 @@ export default function KenyaGovernancePage() {
   const dataItems = navItems.filter(n => n.section === 'Data & Alerts');
   const analyticsItems = navItems.filter(n => n.section === 'Analytics');
   const leadershipItems = navItems.filter(n => n.section === 'Leadership & Projects');
+  const insightItems = navItems.filter(n => n.section === 'Insights');
 
   const { theme, setTheme } = useTheme();
 
@@ -449,7 +459,26 @@ export default function KenyaGovernancePage() {
 
               <Separator className="bg-stone-100" />
 
-              {/* Quick Stats */}
+              {/* Insights Section */}
+              <div>
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Insights</p>
+                {insightItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+                      activeTab === item.id
+                        ? 'bg-teal-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                    }`}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <Separator className="bg-stone-100" />
               <div className="px-3 py-2">
                 <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Quick Stats</p>
                 <div className="space-y-1.5">
@@ -620,6 +649,24 @@ export default function KenyaGovernancePage() {
                       </button>
                     ))}
                   </div>
+                  <Separator />
+                  <div>
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Insights</p>
+                    {insightItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+                          activeTab === item.id
+                            ? 'bg-teal-600 text-white'
+                            : 'text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </nav>
               </aside>
             </div>
@@ -697,6 +744,9 @@ export default function KenyaGovernancePage() {
             {activeTab === 'mzalendo' && <MzalendoPage />}
             {activeTab === 'securetip' && <SecureWhistleblowerModal />}
             {activeTab === 'compareEnhanced' && <CountyComparisonEnhanced />}
+            {activeTab === 'rankings' && <CountyRankingsPage />}
+            {activeTab === 'milestones' && <DevolutionMilestonesPage />}
+            {activeTab === 'fycomparison' && <FYComparisonPage />}
           </main>
 
           {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
