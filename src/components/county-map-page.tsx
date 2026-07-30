@@ -15,8 +15,11 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { KenyaCountyMap } from '@/components/kenya-county-map';
+import { countyAuditData } from '@/data/county-audit-data';
+import { countyBudgetData } from '@/data/county-budget-data';
 
-type ColorMode = 'coalition' | 'region' | 'audit';
+type ColorMode = 'coalition' | 'region' | 'audit' | 'budget' | 'population';
 type AuditOpinionKey = 'unmodified' | 'qualified' | 'adverse' | 'disclaimer';
 
 interface CountyShape {
@@ -215,6 +218,8 @@ export default function CountyMapPage() {
                   <SelectItem value="coalition">Coalition</SelectItem>
                   <SelectItem value="region">Region</SelectItem>
                   <SelectItem value="audit">Audit Opinion</SelectItem>
+                  <SelectItem value="budget">Budget Absorption</SelectItem>
+                  <SelectItem value="population">Population</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={regionFilter} onValueChange={setRegionFilter}>
@@ -258,45 +263,23 @@ export default function CountyMapPage() {
           <Card className="border-stone-200 bg-white overflow-hidden">
             <CardContent className="p-4">
               <div className="relative bg-stone-50 rounded-lg overflow-hidden" style={{ minHeight: '500px' }}>
-                <svg viewBox="0 0 620 580" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
-                  {/* Background */}
-                  <rect x="0" y="0" width="620" height="580" fill="#fafaf9" />
-                  {/* County paths */}
-                  {countyShapes.map(shape => {
-                    const gov = governorMap.get(shape.name);
-                    const isFiltered = filteredShapes.includes(shape);
-                    const isHovered = hoveredCounty?.name === shape.name;
-                    const isSelected = selectedCounty?.county === shape.name;
-                    return (
-                      <g key={shape.code}>
-                        <path
-                          d={shape.path}
-                          fill={isFiltered ? getColor(shape) : '#d6d3d1'}
-                          stroke={isHovered || isSelected ? '#1e293b' : '#a8a29e'}
-                          strokeWidth={isHovered || isSelected ? 2 : 0.8}
-                          className="cursor-pointer transition-all duration-150"
-                          opacity={isFiltered ? 1 : 0.25}
-                          onMouseEnter={() => setHoveredCounty(shape)}
-                          onMouseLeave={() => setHoveredCounty(null)}
-                          onClick={() => gov && setSelectedCounty(gov)}
-                        />
-                        {/* Label for larger counties */}
-                        <text
-                          x={shape.cx}
-                          y={shape.cy}
-                          textAnchor="middle"
-                          className="pointer-events-none select-none"
-                          fontSize="5"
-                          fill="white"
-                          fontWeight="500"
-                          opacity={isHovered ? 1 : 0.85}
-                        >
-                          {shape.name.length > 10 ? shape.name.split(' ').map(w => w[0]).join('') : shape.name}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
+                <KenyaCountyMap
+                  colorMode={colorMode}
+                  onCountyClick={(code, name) => {
+                    const gov = all47Governors.find(g => g.code === code);
+                    if (gov) setSelectedCounty(gov);
+                  }}
+                  onCountyHover={(code) => {
+                    if (code) {
+                      const shape = countyShapes.find(s => s.code === code);
+                      if (shape) setHoveredCounty(shape);
+                    } else {
+                      setHoveredCounty(null);
+                    }
+                  }}
+                  highlightedCounties={selectedCounty ? [selectedCounty.code] : []}
+                  showLabels={true}
+                />
                 {/* Tooltip */}
                 {hoveredCounty && (
                   <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-stone-200 p-3 max-w-52 z-10">
@@ -393,6 +376,7 @@ export default function CountyMapPage() {
                         <p className="text-xs text-stone-800">{selectedCounty.capital}</p>
                       </div>
                     </div>
+                    <Separator />
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       <div className="p-2 bg-stone-50 rounded-lg">
                         <p className="text-[9px] text-stone-500 uppercase tracking-wider">Population</p>
@@ -412,15 +396,52 @@ export default function CountyMapPage() {
                       </div>
                     </div>
                     <Separator />
-                    <div className="p-2.5 bg-amber-50 rounded-lg border border-amber-100">
-                      <div className="flex items-start gap-1.5">
-                        <ShieldCheck className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
-                        <p className="text-[10px] text-amber-700 leading-relaxed">
-                          Simulated audit opinion shown for demonstration. For the actual OAG FY 2024/25 opinion, see{' '}
-                          <a href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="underline font-medium">oagkenya.go.ke</a>
-                        </p>
-                      </div>
-                    </div>
+                    {/* Real audit & budget data */}
+                    {(() => {
+                      const auditRec = countyAuditData.find(a => a.countyCode === selectedCounty.code && a.financialYear === 'FY 2024/25');
+                      const budgetRec = countyBudgetData.find(b => b.countyCode === selectedCounty.code && b.financialYear === 'FY 2024/25');
+                      return (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-semibold text-stone-600">FY 2024/25 Data</p>
+                          {auditRec && (
+                            <div className="flex items-start gap-2">
+                              <ShieldCheck className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+                              <div>
+                                <p className="text-[10px] text-stone-500">OAG Audit Opinion</p>
+                                <Badge className={`text-[9px] h-5 mt-0.5 ${auditRec.executiveOpinion === 'Unmodified' ? 'bg-green-100 text-green-800' : auditRec.executiveOpinion === 'Qualified' ? 'bg-yellow-100 text-yellow-800' : auditRec.executiveOpinion === 'Adverse' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'}`}>
+                                  {auditRec.executiveOpinion || 'Pending'}
+                                </Badge>
+                              </div>
+                            </div>
+                          )}
+                          {budgetRec && (
+                            <>
+                              <div className="flex items-start gap-2">
+                                <TrendingDown className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+                                <div>
+                                  <p className="text-[10px] text-stone-500">Dev Budget Absorption</p>
+                                  <p className="text-xs font-bold text-stone-800">{budgetRec.devAbsorptionRate}%</p>
+                                </div>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <Building2 className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+                                <div>
+                                  <p className="text-[10px] text-stone-500">Total Budget</p>
+                                  <p className="text-xs font-bold text-stone-800">KSh {budgetRec.totalBudget}B</p>
+                                </div>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <AlertTriangle className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
+                                <div>
+                                  <p className="text-[10px] text-stone-500">Pending Bills</p>
+                                  <p className="text-xs font-bold text-stone-800">KSh {budgetRec.pendingBills}M</p>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ) : (

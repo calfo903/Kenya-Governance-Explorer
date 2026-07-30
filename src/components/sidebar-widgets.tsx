@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { KenyaMiniMap } from '@/components/kenya-county-map';
 import {
   LineChart,
   Line,
@@ -607,6 +608,42 @@ export function RiskForecastWidget({ projectId }: RiskForecastWidgetProps) {
             {recommendation}
           </p>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── 7. SidebarMiniMap ──────────────────────────────────────────────
+
+export function SidebarMiniMap({ onCountyClick }: { onCountyClick?: (countyCode: string) => void }) {
+  const [colorMode, setColorMode] = useState<'coalition' | 'region' | 'audit'>('region');
+
+  return (
+    <Card className="border-stone-200 bg-white">
+      <CardContent className="p-2.5 space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">Kenya Map</p>
+          <div className="flex items-center gap-1">
+            {(['region', 'coalition', 'audit'] as const).map(mode => (
+              <button
+                key={mode}
+                onClick={() => setColorMode(mode)}
+                className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium transition-colors ${
+                  colorMode === mode
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                }`}
+              >
+                {mode === 'region' ? 'Region' : mode === 'coalition' ? 'Party' : 'Audit'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <KenyaMiniMap
+          colorMode={colorMode}
+          onCountyClick={onCountyClick}
+          className="w-full rounded-md cursor-pointer"
+        />
       </CardContent>
     </Card>
   );

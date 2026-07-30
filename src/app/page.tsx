@@ -52,10 +52,11 @@ import CommandPalette from '@/components/command-palette';
 import CountyRankingsPage from '@/components/county-rankings-page';
 import DevolutionMilestonesPage from '@/components/devolution-milestones-page';
 import FYComparisonPage from '@/components/fy-comparison-page';
+import { KenyaMiniMap } from '@/components/kenya-county-map';
 import CountyComparisonEnhanced from '@/components/county-comparison-enhanced';
 import ExportButton from '@/components/export-button';
 import { exportCountiesToCSV } from '@/lib/data-export';
-import { WeatherWidget, CitizenAuditorDashboard, AIInsightsWidget, ProjectVelocityChart, RiskForecastWidget } from '@/components/sidebar-widgets';
+import { WeatherWidget, CitizenAuditorDashboard, AIInsightsWidget, ProjectVelocityChart, RiskForecastWidget, SidebarMiniMap } from '@/components/sidebar-widgets';
 import { useTheme } from 'next-themes';
 
 // ─── ICONS ────────────────────────────────────────────────────────
@@ -504,6 +505,7 @@ export default function KenyaGovernancePage() {
               {/* Sidebar Widgets */}
               <div className="px-3 py-2 space-y-3">
                 <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Live Widgets</p>
+                <SidebarMiniMap onCountyClick={(code) => { setSelectedCounty(code); setActiveTab('county'); }} />
                 <WeatherWidget lat={-1.2921} lng={36.8219} location="Nairobi" />
                 <CitizenAuditorDashboard />
                 <AIInsightsWidget />
