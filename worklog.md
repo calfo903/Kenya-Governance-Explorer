@@ -271,3 +271,40 @@ Stage Summary:
 - 4 existing files modified: page.tsx, county-leadership-tree.tsx, worklog.md
 - New features: Command Palette (Ctrl+K), Search/Filter Leadership, Data Quality Badges, County Stats Bar, Radar Chart Comparison, Score Matrix, CSV Export, Mobile Sidebar Completeness
 - All 30 navigation items (29 existing + 1 new Comparison Matrix) working across all sidebar sections
+
+---
+Task ID: 9
+Agent: Main Agent + Sub-agents
+Task: Add interactive preview map enhancements - Zoom/Pan, Rich Tooltips, Temporal Audit Slider, Shift+Click Comparison, Deep-Dive Navigation
+
+Work Log:
+- Installed react-zoom-pan-pinch for zoom/pan support on SVG map
+- Enhanced kenya-county-map.tsx (659→832 lines):
+  - Added TransformWrapper/TransformComponent for zoom (0.5x-5x) and pan with mouse drag
+  - Added overlay zoom controls (ZoomIn, ZoomOut, Reset) at bottom-right
+  - Enhanced tooltip with colored audit opinion badge, budget absorption progress bar, total budget, region badge
+  - Added animated color transitions (0.6s ease) when switching color modes
+  - Added transform: scale(1.02) hover animation on county paths
+  - Added financialYear prop for temporal audit data filtering
+  - Added selectedCounties prop with glow-pulse animation for multi-selected counties
+  - Converted to forwardRef with useImperativeHandle exposing zoomToCounty(code) method
+  - Exported KenyaCountyMapHandle type
+  - KenyaMiniMap left unchanged
+- Enhanced county-map-page.tsx (473→715 lines):
+  - Added temporal FY selector (FY 2022/23, FY 2023/24, FY 2024/25) as pill buttons, visible in audit mode
+  - Added Shift+Click multi-select with sticky comparison bar (glass/blur effect) at bottom
+  - Added quick filter chips: Adverse Audit, Top 5 Budget Absorption, Largest Population with counts
+  - Added "Deep Dive →" button in county details panel calling onCountyDeepDive callback
+  - Added 4 stat footer cards: Counties Colored, Current Filter, Selected for Comparison, Audit Coverage
+  - Added animated fade-in transition when color mode changes (key={colorMode})
+- Updated page.tsx: Wired CountyMapPage onCountyDeepDive to navigate to County Deep-Dive tab with pre-selected county
+- Build verified: 14 pages generated, zero compilation errors
+
+Stage Summary:
+- Map now supports zoom/pan (scroll to zoom, drag to pan, overlay buttons)
+- Rich tooltips show audit badge, budget bar, and region at a glance
+- Temporal slider lets users compare audit opinions across FY 2022/23→2024/25
+- Shift+Click selects multiple counties for comparison with sticky bar
+- "Deep Dive" button navigates from map to County Deep-Dive tab
+- Quick filter chips for adverse audit, top budget absorption, largest population
+- All 47 county paths preserved exactly, all existing props work unchanged

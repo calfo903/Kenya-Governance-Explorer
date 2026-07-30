@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { all47Governors, GovernorEntry } from '@/data/governors';
 import { AUDIT_OPINIONS, REGIONS } from '@/data/types';
 import {
   Map, Filter, Eye, X, ChevronDown,
   Users, MapPin, Building2, TrendingDown, AlertTriangle,
-  Layers, Search, CircleDot, ShieldCheck,
+  Layers, Search, CircleDot, ShieldCheck, ArrowRight, GitCompare, BarChart3, CheckCircle2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -131,7 +131,11 @@ const SIMULATED_AUDIT: Record<string, AuditOpinionKey> = {
   Kisii: 'qualified', Nyamira: 'qualified',
 };
 
-export default function CountyMapPage() {
+interface CountyMapPageProps {
+  onCountyDeepDive?: (countyCode: string) => void;
+}
+
+export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) {
   const [colorMode, setColorMode] = useState<ColorMode>('coalition');
   const [regionFilter, setRegionFilter] = useState<string>('all');
   const [coalitionFilter, setCoalitionFilter] = useState<string>('all');
@@ -139,6 +143,24 @@ export default function CountyMapPage() {
   const [hoveredCounty, setHoveredCounty] = useState<CountyShape | null>(null);
   const [selectedCounty, setSelectedCounty] = useState<GovernorEntry | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFY, setSelectedFY] = useState('FY 2024/25');
+  const [multiSelectedCounties, setMultiSelectedCounties] = useState<string[]>([]);
+  const [quickFilter, setQuickFilter] = useState<string | null>(null);
+
+  const FINANCIAL_YEARS = ['FY 2022/23', 'FY 2023/24', 'FY 2024/25'];
+
+  // Track shift key for multi-select
+  const shiftHeldRef = useRef(false);
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Shift') shiftHeldRef.current = true; };
+    const onKeyUp = (e: KeyboardEvent) => { if (e.key === 'Shift') shiftHeldRef.current = false; };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, []);
 
   const governorMap = useMemo(() => {
     const map = new Map<string, GovernorEntry>();
@@ -172,8 +194,62 @@ export default function CountyMapPage() {
     if (auditFilter !== 'all' && colorMode === 'audit') {
       shapes = shapes.filter(s => SIMULATED_AUDIT[s.name] === auditFilter);
     }
+    // Apply quick filter
+    if (quickFilter === 'adverse') {
+      shapes = shapes.filter(s => {
+        const rec = countyAuditData.find(a => a.countyCode === s.code && a.financialYear === selectedFY);
+        return rec && rec.executiveOpinion === 'Adverse';
+      });
+    } else if (quickFilter === 'top5-budget') {
+      const budgetForFY = countyBudgetData
+        .filter(b => b.financialYear === selectedFY)
+        .sort((a, b) => b.devAbsorptionRate - a.devAbsorptionRate)
+        .slice(0, 5)
+        .map(b => b.countyCode);
+      shapes = shapes.filter(s => budgetForFY.includes(s.code));
+    } else if (quickFilter === 'largest-pop') {
+      const top10 = [...all47Governors].sort((a, b) => b.population - a.population).slice(0, 10).map(g => g.code);
+      shapes = shapes.filter(s => top10.includes(s.code));
+    }
     return shapes;
-  }, [regionFilter, coalitionFilter, auditFilter, searchQuery, colorMode, governorMap]);
+  }, [regionFilter, coalitionFilter, auditFilter, searchQuery, colorMode, governorMap, quickFilter, selectedFY]);
+
+  // Quick filter counts
+  const quickFilterCounts = useMemo(() => {
+    const adverseCount = countyAuditData.filter(a => a.financialYear === selectedFY && a.executiveOpinion === 'Adverse').length;
+    return {
+      'adverse': adverseCount,
+      'top5-budget': 5,
+      'largest-pop': 10,
+    };
+  }, [selectedFY]);
+
+  const QUICK_FILTERS = [
+    { key: 'adverse', label: 'Adverse Audit', icon: AlertTriangle },
+    { key: 'top5-budget', label: 'Top 5 Budget Absorption', icon: BarChart3 },
+    { key: 'largest-pop', label: 'Largest Population', icon: Users },
+  ];
+
+  // Audit coverage for selected FY
+  const auditCoverage = useMemo(() => {
+    const uniqueCounties = new Set(countyAuditData.filter(a => a.financialYear === selectedFY).map(a => a.countyCode));
+    return uniqueCounties.size;
+  }, [selectedFY]);
+
+  const handleMapCountyClick = useCallback((code: string, name: string) => {
+    if (shiftHeldRef.current) {
+      setMultiSelectedCounties(prev =>
+        prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+      );
+    } else {
+      const gov = all47Governors.find(g => g.code === code);
+      if (gov) setSelectedCounty(gov);
+    }
+  }, []);
+
+  const removeMultiSelected = useCallback((code: string) => {
+    setMultiSelectedCounties(prev => prev.filter(c => c !== code));
+  }, []);
 
   return (
     <div className="space-y-5">
@@ -254,6 +330,53 @@ export default function CountyMapPage() {
               )}
             </div>
           </div>
+          {/* Quick Filter Chips */}
+          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-stone-100">
+            <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider self-center mr-1">
+              <Filter className="h-3 w-3 inline mr-1" />Quick Filters:
+            </span>
+            {QUICK_FILTERS.map(qf => (
+              <button
+                key={qf.key}
+                onClick={() => setQuickFilter(prev => prev === qf.key ? null : qf.key)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+                  quickFilter === qf.key
+                    ? 'bg-stone-800 text-white border-stone-800'
+                    : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                }`}
+              >
+                <qf.icon className="h-3 w-3" />
+                {qf.label}
+                <span className={`ml-0.5 text-[9px] px-1.5 py-0.5 rounded-full ${
+                  quickFilter === qf.key ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-500'
+                }`}>
+                  {quickFilterCounts[qf.key as keyof typeof quickFilterCounts]}
+                </span>
+                {quickFilter === qf.key && <X className="h-2.5 w-2.5 ml-0.5" />}
+              </button>
+            ))}
+          </div>
+          {/* Temporal FY Selector - visible in audit mode */}
+          {colorMode === 'audit' && (
+            <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-stone-100">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider self-center mr-1">
+                Financial Year:
+              </span>
+              {FINANCIAL_YEARS.map(fy => (
+                <button
+                  key={fy}
+                  onClick={() => setSelectedFY(fy)}
+                  className={`px-4 py-1.5 rounded-full text-[11px] font-semibold border transition-all ${
+                    selectedFY === fy
+                      ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                      : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                  }`}
+                >
+                  {fy}
+                </button>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -263,12 +386,13 @@ export default function CountyMapPage() {
           <Card className="border-stone-200 bg-white overflow-hidden">
             <CardContent className="p-4">
               <div className="relative bg-stone-50 rounded-lg overflow-hidden" style={{ minHeight: '500px' }}>
+                {/* Animated transition wrapper */}
+                <div key={colorMode} className="animate-in fade-in duration-300">
                 <KenyaCountyMap
                   colorMode={colorMode}
-                  onCountyClick={(code, name) => {
-                    const gov = all47Governors.find(g => g.code === code);
-                    if (gov) setSelectedCounty(gov);
-                  }}
+                  financialYear={selectedFY}
+                  selectedCounties={multiSelectedCounties}
+                  onCountyClick={handleMapCountyClick}
                   onCountyHover={(code) => {
                     if (code) {
                       const shape = countyShapes.find(s => s.code === code);
@@ -280,6 +404,7 @@ export default function CountyMapPage() {
                   highlightedCounties={selectedCounty ? [selectedCounty.code] : []}
                   showLabels={true}
                 />
+                </div>
                 {/* Tooltip */}
                 {hoveredCounty && (
                   <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-stone-200 p-3 max-w-52 z-10">
@@ -303,7 +428,7 @@ export default function CountyMapPage() {
                 <div className="flex items-center gap-2">
                   <CircleDot className="h-3.5 w-3.5 text-stone-500" />
                   <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
-                    {colorMode === 'coalition' ? 'Coalition' : colorMode === 'region' ? 'Region' : 'Audit Opinion (OAG FY 2024/25)'}
+                    {colorMode === 'coalition' ? 'Coalition' : colorMode === 'region' ? 'Region' : `Audit Opinion (OAG ${selectedFY})`}
                   </span>
                 </div>
                 {colorMode === 'coalition' && Object.entries(COALITION_COLORS).map(([name, color]) => (
@@ -398,11 +523,11 @@ export default function CountyMapPage() {
                     <Separator />
                     {/* Real audit & budget data */}
                     {(() => {
-                      const auditRec = countyAuditData.find(a => a.countyCode === selectedCounty.code && a.financialYear === 'FY 2024/25');
-                      const budgetRec = countyBudgetData.find(b => b.countyCode === selectedCounty.code && b.financialYear === 'FY 2024/25');
+                      const auditRec = countyAuditData.find(a => a.countyCode === selectedCounty.code && a.financialYear === selectedFY);
+                      const budgetRec = countyBudgetData.find(b => b.countyCode === selectedCounty.code && b.financialYear === selectedFY);
                       return (
                         <div className="space-y-2">
-                          <p className="text-[10px] font-semibold text-stone-600">FY 2024/25 Data</p>
+                          <p className="text-[10px] font-semibold text-stone-600">{selectedFY} Data</p>
                           {auditRec && (
                             <div className="flex items-start gap-2">
                               <ShieldCheck className="h-3.5 w-3.5 text-stone-400 mt-0.5 shrink-0" />
@@ -442,6 +567,16 @@ export default function CountyMapPage() {
                         </div>
                       );
                     })()}
+                    {/* Deep Dive Button */}
+                    <Button
+                      size="sm"
+                      className="w-full mt-3 gap-2"
+                      onClick={() => onCountyDeepDive?.(selectedCounty.code)}
+                    >
+                      <MapPin className="h-3.5 w-3.5" />
+                      Deep Dive
+                      <ArrowRight className="h-3.5 w-3.5 ml-auto" />
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -455,14 +590,121 @@ export default function CountyMapPage() {
         </div>
       </div>
 
-      {/* Stats footer */}
+      {/* Comparison Bar - shows when 2+ counties are shift-selected */}
+      {multiSelectedCounties.length >= 2 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-t border-stone-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+            <GitCompare className="h-4 w-4 text-stone-500 shrink-0" />
+            <div className="flex-1 flex items-center gap-2 overflow-x-auto">
+              <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider shrink-0">
+                Comparing ({multiSelectedCounties.length}):
+              </span>
+              {multiSelectedCounties.map(code => {
+                const gov = all47Governors.find(g => g.code === code);
+                return (
+                  <Badge
+                    key={code}
+                    variant="secondary"
+                    className="text-[11px] h-7 pr-1 pl-2.5 gap-1.5 shrink-0"
+                  >
+                    {gov?.county || code}
+                    <button
+                      onClick={() => removeMultiSelected(code)}
+                      className="h-4 w-4 rounded-full hover:bg-stone-300/50 flex items-center justify-center transition-colors"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </Badge>
+                );
+              })}
+            </div>
+            <Button
+              size="sm"
+              className="shrink-0 gap-1.5 h-8 text-xs"
+              variant="default"
+              onClick={() => {
+                setMultiSelectedCounties([]);
+              }}
+            >
+              <GitCompare className="h-3.5 w-3.5" />
+              Compare Counties
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="shrink-0 h-8 text-xs text-stone-500"
+              onClick={() => setMultiSelectedCounties([])}
+            >
+              Clear All
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Map Statistics Footer Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="border-stone-200 bg-white">
+          <CardContent className="py-3 px-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                <Layers className="h-4 w-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-[10px] text-stone-500 uppercase tracking-wider">Counties Colored</p>
+                <p className="text-sm font-bold text-stone-800">{filteredShapes.length} <span className="text-[10px] font-normal text-stone-400">/ 47</span></p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-stone-200 bg-white">
+          <CardContent className="py-3 px-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+                <Filter className="h-4 w-4 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-[10px] text-stone-500 uppercase tracking-wider">Current Filter</p>
+                <p className="text-sm font-bold text-stone-800">{quickFilter ? QUICK_FILTERS.find(f => f.key === quickFilter)?.label || quickFilter : 'None'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-stone-200 bg-white">
+          <CardContent className="py-3 px-4">
+            <div className="flex items-center gap-2">
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${multiSelectedCounties.length >= 2 ? 'bg-blue-50' : 'bg-stone-50'}`}>
+                <GitCompare className={`h-4 w-4 ${multiSelectedCounties.length >= 2 ? 'text-blue-600' : 'text-stone-400'}`} />
+              </div>
+              <div>
+                <p className="text-[10px] text-stone-500 uppercase tracking-wider">Selected for Comparison</p>
+                <p className={`text-sm font-bold ${multiSelectedCounties.length >= 2 ? 'text-blue-700' : 'text-stone-800'}`}>{multiSelectedCounties.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-stone-200 bg-white">
+          <CardContent className="py-3 px-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-4 w-4 text-violet-600" />
+              </div>
+              <div>
+                <p className="text-[10px] text-stone-500 uppercase tracking-wider">Audit Coverage</p>
+                <p className="text-sm font-bold text-stone-800">{auditCoverage} <span className="text-[10px] font-normal text-stone-400">/ 47 ({selectedFY})</span></p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Disclaimer */}
       <Card className="border-stone-200 bg-stone-50">
         <CardContent className="py-3 px-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
             <p className="text-[10px] text-stone-600 leading-relaxed">
               <span className="font-bold">Note:</span> County boundary shapes are simplified approximations for visualization. Coalition data from IEBC 2022 results.
-              Audit opinions based on OAG FY 2024/25 summary (1 unmodified, 44 qualified, 2 adverse, 0 disclaimer for county executives).
+              Audit opinions based on OAG {selectedFY} summary. Hold <kbd className="px-1 py-0.5 bg-stone-200 rounded text-[9px] font-mono">Shift</kbd> + Click to select counties for comparison.
             </p>
           </div>
         </CardContent>

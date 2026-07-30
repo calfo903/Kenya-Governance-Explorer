@@ -711,7 +711,14 @@ export default function KenyaGovernancePage() {
             {activeTab === 'whistleblower' && <WhistleblowerPage />}
             {activeTab === 'constitution' && <ConstitutionPage />}
             {activeTab === 'xposts' && <PoliticalXPostsPage />}
-            {activeTab === 'countymap' && <CountyMapPage />}
+            {activeTab === 'countymap' && (
+              <CountyMapPage
+                onCountyDeepDive={(code) => {
+                  setSelectedCounty(code);
+                  setActiveTab('county');
+                }}
+              />
+            )}
             {activeTab === 'rti' && <RtiGeneratorPage />}
             {activeTab === 'petition' && <PetitionBuilderPage />}
             {activeTab === 'heatmap' && <CorruptionHeatmapPage />}
