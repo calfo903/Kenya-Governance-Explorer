@@ -9,4 +9,6 @@ export type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'sch
   | 'stories' | 'cbef' | 'redflags' | 'embed'
   | 'leadership' | 'projects' | 'mzalendo' | 'securetip' | 'compareEnhanced'
   | 'rankings' | 'milestones' | 'fycomparison'
-  | 'representatives' | 'reports' | 'hansard' | 'cecm';
+  | 'representatives' | 'reports' | 'hansard' | 'cecm'
+  | 'aiChat' | 'aiBudgetAnomaly' | 'aiNews' | 'aiRtiLetter' | 'aiReportIntel' | 'aiCompareInsights'
+  | 'aiHansard' | 'aiQuiz' | 'aiSearch' | 'aiSentiment' | 'aiProfile' | 'aiProcurementRisk';

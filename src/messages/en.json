@@ -56,7 +56,8 @@
       "dataAlerts": "Data & Alerts",
       "analytics": "Analytics",
       "leadershipProjects": "Leadership & Projects",
-      "insights": "Insights"
+      "insights": "Insights",
+      "aiTools": "AI Tools"
     },
     "items": {
       "summary": "National Summary",
@@ -101,7 +102,19 @@
       "fycomparison": "FY Comparison",
       "reports": "Report Tracker",
       "hansard": "Assembly Hansard",
-      "cecm": "CECM Performance"
+      "cecm": "CECM Performance",
+      "aiChat": "AI Chat Assistant",
+      "aiBudgetAnomaly": "Budget Anomaly AI",
+      "aiNews": "AI News Briefing",
+      "aiRtiLetter": "AI RTI Letter",
+      "aiReportIntel": "Report Intelligence",
+      "aiCompareInsights": "Compare Insights",
+      "aiHansard": "Hansard AI Summary",
+      "aiQuiz": "AI Quiz Engine",
+      "aiSearch": "AI Smart Search",
+      "aiSentiment": "Governor Sentiment",
+      "aiProfile": "County AI Profile",
+      "aiProcurementRisk": "Procurement AI Risk"
     },
     "mobileBottom": {
       "home": "Home",

@@ -67,6 +67,18 @@ import ComparisonView from '@/components/comparison-view';
 import JsonSchemaView from '@/components/json-schema-view';
 import AssemblyHansardPage from '@/components/assembly-hansard-page';
 import CECMPerformancePage from '@/components/cecm-performance-page';
+import AIChatPage from '@/components/ai-chat-page';
+import AIBudgetAnomalyPage from '@/components/ai-budget-anomaly-page';
+import AINewsPage from '@/components/ai-news-page';
+import AIRTILetterPage from '@/components/ai-rti-letter-page';
+import AIReportIntelPage from '@/components/ai-report-intel-page';
+import AICompareInsightsPage from '@/components/ai-compare-insights-page';
+import AIHansardPage from '@/components/ai-hansard-page';
+import AIQuizPage from '@/components/ai-quiz-page';
+import AISearchPage from '@/components/ai-search-page';
+import AISentimentPage from '@/components/ai-sentiment-page';
+import AIProfilePage from '@/components/ai-profile-page';
+import AIProcurementRiskPage from '@/components/ai-procurement-risk-page';
 
 // ─── ICONS ────────────────────────────────────────────────────────
 import {
@@ -89,6 +101,7 @@ import {
   AlertOctagon, Calendar, Code2, Zap,
   Network, FolderOpen, Vote, ShieldCheck, Lock,
   Trophy, Flag, FileBarChart, Award,
+  Bot, Brain, Sparkles, Newspaper,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -155,6 +168,19 @@ const navItemDefs: NavItem[] = [
   { id: 'milestones', labelKey: 'nav.items.milestones', icon: Flag, sectionKey: 'nav.sections.insights' },
   { id: 'fycomparison', labelKey: 'nav.items.fycomparison', icon: BarChart3, sectionKey: 'nav.sections.insights' },
   { id: 'cecm', labelKey: 'nav.items.cecm', icon: Award, sectionKey: 'nav.sections.insights' },
+  // ── AI Tools ──
+  { id: 'aiChat', labelKey: 'nav.items.aiChat', icon: Bot, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiBudgetAnomaly', labelKey: 'nav.items.aiBudgetAnomaly', icon: TrendingDown, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiNews', labelKey: 'nav.items.aiNews', icon: Newspaper, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiRtiLetter', labelKey: 'nav.items.aiRtiLetter', icon: FileText, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiReportIntel', labelKey: 'nav.items.aiReportIntel', icon: Brain, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiCompareInsights', labelKey: 'nav.items.aiCompareInsights', icon: Sparkles, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiHansard', labelKey: 'nav.items.aiHansard', icon: BookOpen, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiQuiz', labelKey: 'nav.items.aiQuiz', icon: GraduationCap, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiSearch', labelKey: 'nav.items.aiSearch', icon: Search, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiSentiment', labelKey: 'nav.items.aiSentiment', icon: TrendingUp, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiProfile', labelKey: 'nav.items.aiProfile', icon: MapPin, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiProcurementRisk', labelKey: 'nav.items.aiProcurementRisk', icon: AlertTriangle, sectionKey: 'nav.sections.aiTools' },
 ];
 
 // ══════════════════════════════════════════════════════════════════
@@ -248,6 +274,7 @@ function PageContent() {
   const analyticsItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.analytics');
   const leadershipItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.leadershipProjects');
   const insightItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.insights');
+  const aiItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.aiTools');
 
   // Section labels lookup
   const sectionLabels = useMemo(() => ({
@@ -258,6 +285,7 @@ function PageContent() {
     'nav.sections.analytics': t('nav.sections.analytics'),
     'nav.sections.leadershipProjects': t('nav.sections.leadershipProjects'),
     'nav.sections.insights': t('nav.sections.insights'),
+    'nav.sections.aiTools': t('nav.sections.aiTools'),
   }), [t]);
 
   // Helper to get localized label for a nav item
@@ -419,6 +447,10 @@ function PageContent() {
               {renderSidebarSection(insightItems, 'nav.sections.insights', 'bg-teal-600')}
 
               <Separator className="bg-stone-100 dark:bg-stone-700" />
+
+              {renderSidebarSection(aiItems, 'nav.sections.aiTools', 'bg-emerald-600')}
+
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
               <div className="px-3 py-2">
                 <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">{t('sidebar.quickStats')}</p>
                 <div className="space-y-1.5">
@@ -496,6 +528,8 @@ function PageContent() {
                   {renderMobileSidebarSection(leadershipItems, 'nav.sections.leadershipProjects', 'bg-rose-600')}
                   <Separator />
                   {renderMobileSidebarSection(insightItems, 'nav.sections.insights', 'bg-teal-600')}
+                  <Separator />
+                  {renderMobileSidebarSection(aiItems, 'nav.sections.aiTools', 'bg-emerald-600')}
                 </nav>
               </aside>
             </div>
@@ -587,6 +621,18 @@ function PageContent() {
             {activeTab === 'hansard' && <AssemblyHansardPage />}
             {activeTab === 'cecm' && <CECMPerformancePage />}
             {activeTab === 'representatives' && <RepresentativeProfilesPage />}
+            {activeTab === 'aiChat' && <AIChatPage />}
+            {activeTab === 'aiBudgetAnomaly' && <AIBudgetAnomalyPage />}
+            {activeTab === 'aiNews' && <AINewsPage />}
+            {activeTab === 'aiRtiLetter' && <AIRTILetterPage />}
+            {activeTab === 'aiReportIntel' && <AIReportIntelPage />}
+            {activeTab === 'aiCompareInsights' && <AICompareInsightsPage />}
+            {activeTab === 'aiHansard' && <AIHansardPage />}
+            {activeTab === 'aiQuiz' && <AIQuizPage />}
+            {activeTab === 'aiSearch' && <AISearchPage />}
+            {activeTab === 'aiSentiment' && <AISentimentPage />}
+            {activeTab === 'aiProfile' && <AIProfilePage />}
+            {activeTab === 'aiProcurementRisk' && <AIProcurementRiskPage />}
           </main>
 
           {/* ══════════ MOBILE BOTTOM NAV ══════════ */}

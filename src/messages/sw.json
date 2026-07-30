@@ -56,7 +56,8 @@
       "dataAlerts": "Data na Tahadhari",
       "analytics": "Uchambuzi",
       "leadershipProjects": "Uongozi na Miradi",
-      "insights": "Mawasiliano"
+      "insights": "Mawasiliano",
+      "aiTools": "Vifaa vya AI"
     },
     "items": {
       "summary": "Muhtasari wa Kitaifa",
@@ -101,7 +102,19 @@
       "fycomparison": "Linganisha ya Mwaka wa Fedha",
       "reports": "Kufuatilia Ripoti",
       "hansard": "Hansard ya Bunge la Kaunti",
-      "cecm": "Utendaji wa CECM"
+      "cecm": "Utendaji wa CECM",
+      "aiChat": "Msaidizi wa AI",
+      "aiBudgetAnomaly": "AI ya Tatizo la Bajeti",
+      "aiNews": "Taarifa ya AI",
+      "aiRtiLetter": "Barua ya RTI ya AI",
+      "aiReportIntel": "Upelelezi wa AI",
+      "aiCompareInsights": "Ulinganishaji wa AI",
+      "aiHansard": "Muhtasari wa Hansard AI",
+      "aiQuiz": "Uswali wa AI",
+      "aiSearch": "Utafutaji wa AI",
+      "aiSentiment": "Hisia za Gavana",
+      "aiProfile": "Wasifu wa Kaunti AI",
+      "aiProcurementRisk": "Hatari ya Ununuzi AI"
     },
     "mobileBottom": {
       "home": "Nyumbani",
