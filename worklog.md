@@ -534,3 +534,37 @@ Stage Summary:
 - Auth modal: register/login with password strength, auto-download after auth
 - `<DownloadLink>` component available for use across any page to gate external links
 - All external links can now be replaced with `<DownloadLink href="...">` to require registration
+
+---
+Task ID: 23
+Agent: Main Agent
+Task: Wire DownloadLink gate into all existing external links across the app
+
+Work Log:
+- Scanned all .tsx/.ts files under /home/z/my-project/src/ for raw `<a href="https://...">` external links
+- Found 30 raw external `<a>` tags across 14 component files (none using DownloadLink)
+- Found 6 window.open() calls across 5 files (all dynamic navigational/search/social-share — left as-is)
+- 3 files already properly used DownloadLink (sources-hub.tsx, county-explorer.tsx, data-fetcher-page.tsx)
+- Created Python script to automate the replacement across all 14 files
+- For each file: added `import DownloadLink from '@/components/download-link'` and replaced `<a>` with `<DownloadLink>`
+- Verified all 30 replacements across 14 files:
+  - page.tsx (1: kenyalaw.org)
+  - citizen-feedback-page.tsx (3: oagkenya, cob, tikenya)
+  - anonymous-tip-page.tsx (2: eacc)
+  - constitution-page.tsx (1: kenyalaw)
+  - manifesto-tracker-page.tsx (2: cob, oagkenya)
+  - rti-generator-page.tsx (1: caj)
+  - procurement-monitor-page.tsx (7: ppip, ppra, eacc, kenyalaw)
+  - fy-comparison-page.tsx (3: oagkenya, cob, cra)
+  - audit-trends-page.tsx (1: oagkenya)
+  - budget-simulator-page.tsx (1: cob)
+  - corruption-heatmap-page.tsx (4: oagkenya, cob, eacc, tikenya)
+  - service-delivery-page.tsx (1: cob)
+  - procurement-redflags-page.tsx (2: eacc, ppra)
+  - budget-scatter-page.tsx (1: cob)
+- Build verification: npx next build — all routes registered, zero errors
+
+Stage Summary:
+- 30 external links across 14 files now gated behind the download/auth proxy
+- window.open() calls left untouched (dynamic search URLs and social sharing — not file downloads)
+- Build passes cleanly with zero errors

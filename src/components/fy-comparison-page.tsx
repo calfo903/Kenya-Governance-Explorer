@@ -21,6 +21,7 @@ import { countyAuditData, getCountyAuditRecords } from '@/data/county-audit-data
 import { countyBudgetData, getCountyBudget } from '@/data/county-budget-data';
 import { all47Governors } from '@/data/governors';
 
+import DownloadLink from '@/components/download-link';
 const FINANCIAL_YEARS = ['FY 2022/23', 'FY 2023/24', 'FY 2024/25'];
 
 const OPINION_COLORS: Record<string, string> = {
@@ -590,9 +591,9 @@ export default function FYComparisonPage() {
           <CardTitle className="text-xs font-semibold text-stone-500 dark:text-stone-400">Data Sources</CardTitle>
         </CardHeader>
         <CardContent className="text-[11px] text-stone-500 dark:text-stone-400 space-y-1">
-          <p>Audit opinions: Office of the Auditor-General (OAG) of Kenya — <a href="https://www.oagkenya.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">oagkenya.go.ke</a></p>
-          <p>Budget absorption: Controller of Budget (CoB) CBIRR Reports — <a href="https://cob.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">cob.go.ke</a></p>
-          <p>Equitable share: Commission on Revenue Allocation (CRA) — <a href="https://www.cra.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">cra.go.ke</a></p>
+          <p>Audit opinions: Office of the Auditor-General (OAG) of Kenya — <DownloadLink href="https://www.oagkenya.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">oagkenya.go.ke</DownloadLink></p>
+          <p>Budget absorption: Controller of Budget (CoB) CBIRR Reports — <DownloadLink href="https://cob.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">cob.go.ke</DownloadLink></p>
+          <p>Equitable share: Commission on Revenue Allocation (CRA) — <DownloadLink href="https://www.cra.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">cra.go.ke</DownloadLink></p>
         </CardContent>
       </Card>
     </div>

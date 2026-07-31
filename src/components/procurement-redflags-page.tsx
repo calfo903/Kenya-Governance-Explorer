@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+import DownloadLink from '@/components/download-link';
 interface RedFlag {
   id: string;
   county: string;
@@ -142,7 +143,7 @@ export default function ProcurementRedFlagsPage() {
             <Info className="h-3.5 w-3.5 text-stone-400 dark:text-stone-500 mt-0.5 shrink-0" />
             <p className="text-stone-500 dark:text-stone-400">
               Red flags identified through analysis of PPRA procurement reports, OAG special audit reports, EACC investigation records, and CoB budget reviews.
-              Supplier names may be redacted where investigations are ongoing. Report procurement irregularities to <a href="https://eacc.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">EACC</a> or <a href="https://ppra.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">PPRA</a>.
+              Supplier names may be redacted where investigations are ongoing. Report procurement irregularities to <DownloadLink href="https://eacc.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">EACC</DownloadLink> or <DownloadLink href="https://ppra.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">PPRA</DownloadLink>.
             </p>
           </div>
         </CardContent>

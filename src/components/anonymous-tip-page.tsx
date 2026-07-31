@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 
+import DownloadLink from '@/components/download-link';
 const CATEGORIES = [
   { value: 'corruption', label: 'Corruption / Bribery', description: 'Offering or accepting bribes, abuse of office for personal gain' },
   { value: 'fraud', label: 'Financial Fraud', description: 'Falsification of records, forgery, financial misrepresentation' },
@@ -188,7 +189,7 @@ export default function AnonymousTipPage() {
                   </div>
                   <div className="flex items-start gap-1.5">
                     <ExternalLink className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-                    <a href="https://www.eacc.go.ke/report-corruption" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">Online portal: eacc.go.ke/report-corruption</a>
+                    <DownloadLink href="https://www.eacc.go.ke/report-corruption" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">Online portal: eacc.go.ke/report-corruption</DownloadLink>
                   </div>
                   <div className="flex items-start gap-1.5">
                     <Phone className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
@@ -203,7 +204,7 @@ export default function AnonymousTipPage() {
                 <div className="flex items-start gap-2">
                   <Info className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400 shrink-0 mt-0.5" />
                   <p className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
-                    <span className="font-bold">Privacy notice:</span> Tips submitted through this form are for demonstration purposes. For official EACC reporting, use the channels listed above or visit <a href="https://www.eacc.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">eacc.go.ke</a>. All data is processed locally in your browser.
+                    <span className="font-bold">Privacy notice:</span> Tips submitted through this form are for demonstration purposes. For official EACC reporting, use the channels listed above or visit <DownloadLink href="https://www.eacc.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">eacc.go.ke</DownloadLink>. All data is processed locally in your browser.
                   </p>
                 </div>
               </CardContent>

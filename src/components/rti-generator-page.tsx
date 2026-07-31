@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+import DownloadLink from '@/components/download-link';
 const COUNTY_DEPARTMENTS = [
   'County Finance & Economic Planning',
   'County Health Services',
@@ -306,7 +307,7 @@ CC:
             <Scale className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300 shrink-0 mt-0.5" />
             <div className="text-[10px] text-stone-600 dark:text-stone-300 leading-relaxed">
               <span className="font-bold">Legal references:</span> Article 35 (Constitution of Kenya 2010), Access to Information Act 2016, Commission on Administrative Justice Act 2011.
-              For help with RTI requests, contact the Ombudsman: <span className="font-medium">0800-720-222 (toll-free)</span> or visit <a href="https://www.caj.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">caj.go.ke</a>.
+              For help with RTI requests, contact the Ombudsman: <span className="font-medium">0800-720-222 (toll-free)</span> or visit <DownloadLink href="https://www.caj.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">caj.go.ke</DownloadLink>.
             </div>
           </div>
         </CardContent>

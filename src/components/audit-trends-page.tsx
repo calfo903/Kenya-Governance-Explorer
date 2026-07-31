@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
+import DownloadLink from '@/components/download-link';
 // Real OAG audit opinion distribution per county over 3 years
 // Sourced from OAG Summary Reports FY 2022/23, FY 2023/24, FY 2024/25
 interface CountyAuditTrend {
@@ -116,7 +117,7 @@ export default function AuditTrendsPage() {
             <p className="text-stone-500 dark:text-stone-400">
               Data sourced from OAG Summary Reports FY 2022/23, FY 2023/24, FY 2024/25.
               Trend direction based on audit opinion hierarchy: Unmodified &gt; Qualified &gt; Adverse &gt; Disclaimer.
-              Complete county-level audit histories available at <a href="https://oagkenya.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">oagkenya.go.ke</a>.
+              Complete county-level audit histories available at <DownloadLink href="https://oagkenya.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">oagkenya.go.ke</DownloadLink>.
             </p>
           </div>
         </CardContent>

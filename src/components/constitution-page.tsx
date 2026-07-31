@@ -20,6 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import DownloadLink from '@/components/download-link';
 export default function ConstitutionPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('principles');
@@ -280,10 +281,10 @@ export default function ConstitutionPage() {
             <CardContent className="py-3 px-4">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-                <a href="https://kenyalaw.org/klr/" target="_blank" rel="noopener noreferrer"
+                <DownloadLink href="https://kenyalaw.org/klr/" target="_blank" rel="noopener noreferrer"
                   className="text-xs text-emerald-600 hover:underline flex items-center gap-1">
                   Read the full Constitution at KenyaLaw.org
-                </a>
+                </DownloadLink>
               </div>
             </CardContent>
           </Card>

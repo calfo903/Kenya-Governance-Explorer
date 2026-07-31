@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 
+import DownloadLink from '@/components/download-link';
 type DeliveryStatus = 'completed' | 'in_progress' | 'not_started' | 'blocked';
 
 interface CampaignPromise {
@@ -362,11 +363,11 @@ export default function ManifestoTrackerPage() {
             </div>
             <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-              <span>CoB Budget Implementation Reviews: <a href="https://cob.go.ke/county-budget-implementation-review-reports/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">cob.go.ke</a></span>
+              <span>CoB Budget Implementation Reviews: <DownloadLink href="https://cob.go.ke/county-budget-implementation-review-reports/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">cob.go.ke</DownloadLink></span>
             </div>
             <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-              <span>OAG Audit Reports: <a href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">oagkenya.go.ke</a></span>
+              <span>OAG Audit Reports: <DownloadLink href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">oagkenya.go.ke</DownloadLink></span>
             </div>
           </div>
         </CardContent>

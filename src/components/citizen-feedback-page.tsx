@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 
+import DownloadLink from '@/components/download-link';
 interface ServiceCategory {
   id: string;
   label: string;
@@ -156,7 +157,7 @@ export default function CitizenFeedbackPage() {
             <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-[10px] text-amber-700 leading-relaxed">
               <span className="font-bold">Disclaimer:</span> This is a crowdsourced rating system for demonstration purposes. Data is stored in your browser&apos;s localStorage.
-              For official county performance data, refer to OAG audit reports (<a href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="underline">oagkenya.go.ke</a>), CoB implementation reviews (<a href="https://cob.go.ke" target="_blank" rel="noopener noreferrer" className="underline">cob.go.ke</a>), and TI-Kenya CGSR reports (<a href="https://www.tikenya.org" target="_blank" rel="noopener noreferrer" className="underline">tikenya.org</a>).
+              For official county performance data, refer to OAG audit reports (<DownloadLink href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="underline">oagkenya.go.ke</DownloadLink>), CoB implementation reviews (<DownloadLink href="https://cob.go.ke" target="_blank" rel="noopener noreferrer" className="underline">cob.go.ke</DownloadLink>), and TI-Kenya CGSR reports (<DownloadLink href="https://www.tikenya.org" target="_blank" rel="noopener noreferrer" className="underline">tikenya.org</DownloadLink>).
             </p>
           </div>
         </CardContent>

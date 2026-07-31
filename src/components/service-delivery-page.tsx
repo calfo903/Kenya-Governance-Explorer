@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 
+import DownloadLink from '@/components/download-link';
 interface ServiceMetric {
   county: string;
   code: string;
@@ -170,7 +171,7 @@ export default function ServiceDeliveryPage() {
             <Info className="h-3.5 w-3.5 text-stone-400 dark:text-stone-500 mt-0.5 shrink-0" />
             <p className="text-stone-500 dark:text-stone-400">
               Service delivery targets sourced from County Integrated Development Plans (CIDPs). Actual figures from CoB implementation reports and county budget reviews.
-              Data covers 18 sample counties. Full 47-county data available at <a href="https://cob.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">cob.go.ke</a>.
+              Data covers 18 sample counties. Full 47-county data available at <DownloadLink href="https://cob.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">cob.go.ke</DownloadLink>.
             </p>
           </div>
         </CardContent>

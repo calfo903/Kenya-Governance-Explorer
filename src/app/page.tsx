@@ -110,6 +110,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+import DownloadLink from '@/components/download-link';
 // ─── SIDEBAR NAV ITEMS (keys for i18n) ───────────────────────
 interface NavItem {
   id: TabId;
@@ -408,9 +409,9 @@ function PageContent() {
                   {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" />}
                 </button>
                 <LanguageToggle />
-                <a href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
+                <DownloadLink href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
                   <BookMarked className="h-3 w-3" aria-hidden="true" />{t('common.constitution')}
-                </a>
+                </DownloadLink>
               </div>
             </div>
           </div>

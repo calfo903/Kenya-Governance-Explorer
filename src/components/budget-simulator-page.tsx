@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 
+import DownloadLink from '@/components/download-link';
 const SECTORS = [
   { id: 'health', label: 'Health', icon: <Heart className="h-3.5 w-3.5" />, color: 'text-red-600' },
   { id: 'education', label: 'Education', icon: <BookOpen className="h-3.5 w-3.5" />, color: 'text-blue-600' },
@@ -357,7 +358,7 @@ export default function BudgetSimulatorPage() {
               <span className="font-bold">Data sources:</span> Controller of Budget (CoB) County Budget Implementation Reviews, OAG Audit Reports.
               Combined county budget: KSh 588.38B FY 2024/25. Average split: 36% development, 64% recurrent.
               KSh 72 billion in unspent development funds (CoB FY 2024/25). Budget estimates shown are approximate for simulation purposes.
-              For exact figures, consult <a href="https://cob.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">cob.go.ke</a> and individual county budget documents.
+              For exact figures, consult <DownloadLink href="https://cob.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">cob.go.ke</DownloadLink> and individual county budget documents.
             </div>
           </div>
         </CardContent>

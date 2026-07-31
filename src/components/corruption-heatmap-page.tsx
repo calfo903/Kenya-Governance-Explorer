@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 
+import DownloadLink from '@/components/download-link';
 type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
 
 interface CountyRiskData {
@@ -364,19 +365,19 @@ export default function CorruptionHeatmapPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
               <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                 <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-                <span>OAG FY 2024/25: 1 unmodified, 44 qualified, 2 adverse — <a href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">oagkenya.go.ke</a></span>
+                <span>OAG FY 2024/25: 1 unmodified, 44 qualified, 2 adverse — <DownloadLink href="https://www.oagkenya.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">oagkenya.go.ke</DownloadLink></span>
               </div>
               <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                 <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-                <span>CoB FY 2024/25: KSh 72B unspent dev funds — <a href="https://cob.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">cob.go.ke</a></span>
+                <span>CoB FY 2024/25: KSh 72B unspent dev funds — <DownloadLink href="https://cob.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">cob.go.ke</DownloadLink></span>
               </div>
               <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                 <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-                <span>EACC: 5 sitting + 11 former governors under investigation — <a href="https://eacc.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">eacc.go.ke</a></span>
+                <span>EACC: 5 sitting + 11 former governors under investigation — <DownloadLink href="https://eacc.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">eacc.go.ke</DownloadLink></span>
               </div>
               <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
                 <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-                <span>TI-Kenya CPI 2025: Score 30/100, Rank 130/182 — <a href="https://www.tikenya.org" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">tikenya.org</a></span>
+                <span>TI-Kenya CPI 2025: Score 30/100, Rank 130/182 — <DownloadLink href="https://www.tikenya.org" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">tikenya.org</DownloadLink></span>
               </div>
             </div>
             <div className="flex items-start gap-1.5 text-[10px] text-stone-500 dark:text-stone-400">

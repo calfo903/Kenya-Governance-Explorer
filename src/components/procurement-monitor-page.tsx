@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 
+import DownloadLink from '@/components/download-link';
 interface RedFlag {
   id: string;
   label: string;
@@ -101,7 +102,7 @@ export default function ProcurementMonitorPage() {
 
       {/* Data Sources */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <a href="https://www.ppip.go.ke" target="_blank" rel="noopener noreferrer" className="block">
+        <DownloadLink href="https://www.ppip.go.ke" target="_blank" rel="noopener noreferrer" className="block">
           <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer">
             <CardContent className="py-4 px-4">
               <div className="flex items-center gap-3">
@@ -116,8 +117,8 @@ export default function ProcurementMonitorPage() {
               </div>
             </CardContent>
           </Card>
-        </a>
-        <a href="https://www.ppra.go.ke" target="_blank" rel="noopener noreferrer" className="block">
+        </DownloadLink>
+        <DownloadLink href="https://www.ppra.go.ke" target="_blank" rel="noopener noreferrer" className="block">
           <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer">
             <CardContent className="py-4 px-4">
               <div className="flex items-center gap-3">
@@ -132,7 +133,7 @@ export default function ProcurementMonitorPage() {
               </div>
             </CardContent>
           </Card>
-        </a>
+        </DownloadLink>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -280,11 +281,11 @@ export default function ProcurementMonitorPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <ExternalLink className="h-3 w-3 shrink-0" />
-                  <a href="https://www.eacc.go.ke/report-corruption" target="_blank" rel="noopener noreferrer" className="underline font-bold">eacc.go.ke/report-corruption</a>
+                  <DownloadLink href="https://www.eacc.go.ke/report-corruption" target="_blank" rel="noopener noreferrer" className="underline font-bold">eacc.go.ke/report-corruption</DownloadLink>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <ExternalLink className="h-3 w-3 shrink-0" />
-                  <a href="https://www.ppra.go.ke/report" target="_blank" rel="noopener noreferrer" className="underline font-bold">PPRA Complaints Portal</a>
+                  <DownloadLink href="https://www.ppra.go.ke/report" target="_blank" rel="noopener noreferrer" className="underline font-bold">PPRA Complaints Portal</DownloadLink>
                 </div>
               </div>
             </CardContent>
@@ -299,15 +300,15 @@ export default function ProcurementMonitorPage() {
             <p className="text-[10px] font-bold text-stone-600 dark:text-stone-300 uppercase tracking-wider">Data Sources & References</p>
             <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-              <span>PPIP Portal: <a href="https://www.ppip.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">ppip.go.ke</a> — Searchable county procurement data, tender notices, and contract awards</span>
+              <span>PPIP Portal: <DownloadLink href="https://www.ppip.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">ppip.go.ke</DownloadLink> — Searchable county procurement data, tender notices, and contract awards</span>
             </div>
             <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-              <span>PPRA: <a href="https://www.ppra.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">ppra.go.ke</a> — Annual reports, debarment lists, procurement regulations</span>
+              <span>PPRA: <DownloadLink href="https://www.ppra.go.ke" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">ppra.go.ke</DownloadLink> — Annual reports, debarment lists, procurement regulations</span>
             </div>
             <div className="flex items-start gap-1.5 text-[10px] text-stone-600 dark:text-stone-300">
               <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
-              <span>PPAD Act 2015: Public Procurement and Asset Disposal Act — <a href="https://kenyalaw.org/klr/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">Full text at KenyaLaw.org</a></span>
+              <span>PPAD Act 2015: Public Procurement and Asset Disposal Act — <DownloadLink href="https://kenyalaw.org/klr/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">Full text at KenyaLaw.org</DownloadLink></span>
             </div>
           </div>
         </CardContent>

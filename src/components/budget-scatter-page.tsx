@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
+import DownloadLink from '@/components/download-link';
 interface CountyBudgetPoint {
   county: string;
   code: string;
@@ -209,7 +210,7 @@ export default function BudgetScatterPage() {
             <p className="text-stone-500 dark:text-stone-400">
               Bubble size = population. Budget figures from CoB County Budget Implementation Review Reports.
               The yellow dashed line marks the national average development absorption rate.
-              Counties above the line outperform the national average. Source: <a href="https://cob.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">cob.go.ke</a>.
+              Counties above the line outperform the national average. Source: <DownloadLink href="https://cob.go.ke/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline">cob.go.ke</DownloadLink>.
             </p>
           </div>
         </CardContent>
