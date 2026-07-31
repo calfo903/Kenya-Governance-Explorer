@@ -568,3 +568,34 @@ Stage Summary:
 - 30 external links across 14 files now gated behind the download/auth proxy
 - window.open() calls left untouched (dynamic search URLs and social sharing — not file downloads)
 - Build passes cleanly with zero errors
+
+---
+Task ID: 24
+Agent: Main Agent
+Task: Merge related tools into hub pages to reduce navigation clutter
+
+Work Log:
+- Analyzed 43 sidebar tabs across 8 sections and identified 25 pages that could be grouped into 6 themed hubs
+- Created 6 hub container components, each with horizontally scrollable pill sub-tabs and React.lazy loading:
+  1. AI Hub (ai-hub-page.tsx, 118 lines) — merges 12 AI tools into 1 page with sub-tabs
+  2. Fiscal Analysis Hub (fiscal-analysis-hub.tsx, 99 lines) — merges audit-trends + budget-scatter + fy-comparison
+  3. Procurement Hub (procurement-hub.tsx, 97 lines) — merges procurement-monitor + procurement-redflags
+  4. Performance Hub (performance-hub.tsx, 57 lines) — merges service-delivery + cecm-performance
+  5. Insights Hub (insights-hub.tsx, 60 lines) — merges rankings + milestones + coalition
+  6. Integrity Hub (integrity-hub.tsx, 65 lines) — merges whistleblower + securetip + tiptsubmit
+- Updated tab-types.ts: removed 25 old tab IDs, added 6 new hub tab IDs
+- Updated page.tsx: replaced 25 render cases with 6 hub components, removed unused imports (22 components no longer directly imported)
+- Updated command-palette.tsx: replaced 25 individual entries with 6 hub entries across all sections
+- Updated en.json: replaced 25 nav keys with 6 hub keys
+- Updated sw.json: replaced 25 nav keys with 6 hub keys (Swahili translations)
+- Each hub uses distinct color coding: AI=emerald, Fiscal=blue, Procurement=amber, Performance=purple, Insights=emerald, Integrity=red
+- Original page components preserved (not deleted) — hubs lazily import them
+- Build verification: npx next build — zero errors, all 37 API routes registered
+
+Stage Summary:
+- Sidebar tabs reduced from 43 → 36 (7 fewer top-level items)
+- 25 pages grouped into 6 themed hubs with sub-tab navigation
+- All original page components preserved and lazily loaded
+- Command palette updated from 43 → 36 entries
+- EN + SW i18n fully updated
+- Build passes cleanly

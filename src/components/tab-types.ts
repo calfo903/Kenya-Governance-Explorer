@@ -1,14 +1,12 @@
 export type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'schema'
-  | 'whistleblower' | 'constitution' | 'xposts'
+  | 'constitution' | 'xposts'
   | 'countymap' | 'rti' | 'petition' | 'heatmap'
-  | 'manifesto' | 'tiptsubmit' | 'feedback'
+  | 'manifesto' | 'feedback'
   | 'timeline' | 'budgetsim' | 'datafetcher'
-  | 'alerts' | 'procurement'
-  | 'reportcard' | 'audittrends' | 'budgetscatter'
-  | 'coalition' | 'quiz' | 'servicedelivery'
-  | 'stories' | 'cbef' | 'redflags' | 'embed'
-  | 'leadership' | 'projects' | 'mzalendo' | 'securetip' | 'compareEnhanced'
-  | 'rankings' | 'milestones' | 'fycomparison'
-  | 'representatives' | 'reports' | 'hansard' | 'cecm'
-  | 'aiChat' | 'aiBudgetAnomaly' | 'aiNews' | 'aiRtiLetter' | 'aiReportIntel' | 'aiCompareInsights'
-  | 'aiHansard' | 'aiQuiz' | 'aiSearch' | 'aiSentiment' | 'aiProfile' | 'aiProcurementRisk';
+  | 'alerts' | 'reportcard'
+  | 'quiz'
+  | 'stories' | 'cbef' | 'embed'
+  | 'leadership' | 'projects' | 'mzalendo' | 'compareEnhanced'
+  | 'representatives' | 'reports' | 'hansard'
+  // ── Merged Hub Tabs ──
+  | 'aiHub' | 'fiscalHub' | 'procurementHub' | 'performanceHub' | 'insightsHub' | 'integrityHub';

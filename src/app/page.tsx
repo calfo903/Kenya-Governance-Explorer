@@ -16,7 +16,6 @@ import {
   County, Representative, FilterState, ComparisonItem,
 } from '@/data/types';
 import type { TabId } from '@/components/tab-types';
-import WhistleblowerPage from '@/components/whistleblower-page';
 import ConstitutionPage from '@/components/constitution-page';
 import PoliticalXPostsPage from '@/components/political-x-posts-page';
 import CountyMapPage from '@/components/county-map-page';
@@ -24,23 +23,16 @@ import RtiGeneratorPage from '@/components/rti-generator-page';
 import PetitionBuilderPage from '@/components/petition-builder-page';
 import CorruptionHeatmapPage from '@/components/corruption-heatmap-page';
 import ManifestoTrackerPage from '@/components/manifesto-tracker-page';
-import AnonymousTipPage from '@/components/anonymous-tip-page';
 import CitizenFeedbackPage from '@/components/citizen-feedback-page';
 import TimelinePage from '@/components/timeline-page';
 import BudgetSimulatorPage from '@/components/budget-simulator-page';
 import DataFetcherPage from '@/components/data-fetcher-page';
 import AlertsSubscriptionPage from '@/components/alerts-subscription-page';
-import ProcurementMonitorPage from '@/components/procurement-monitor-page';
 import GovernorReportCardPage from '@/components/governor-report-card-page';
-import AuditTrendsPage from '@/components/audit-trends-page';
-import BudgetScatterPage from '@/components/budget-scatter-page';
-import CoalitionComparisonPage from '@/components/coalition-comparison-page';
 import DevolutionQuizPage from '@/components/devolution-quiz-page';
-import ServiceDeliveryPage from '@/components/service-delivery-page';
 import CitizenStoriesPage from '@/components/citizen-stories-page';
 import CitizenReportDashboard from '@/components/citizen-report-dashboard';
 import CBEFMeetingPage from '@/components/cbef-meeting-page';
-import ProcurementRedFlagsPage from '@/components/procurement-redflags-page';
 import EmbedWidgetPage from '@/components/embed-widget-page';
 import MzalendoPage from '@/components/mzalendo-page';
 import BudgetAllocationPage from '@/components/budget-allocation-page';
@@ -48,12 +40,8 @@ import RepresentativeProfilesPage from '@/components/representative-profiles-pag
 
 import CountyLeadershipTreePage from '@/components/county-leadership-tree';
 import ProjectsBrowserPage from '@/components/projects-browser-page';
-import SecureWhistleblowerModal from '@/components/secure-whistleblower-modal';
 import { DataFreshnessIndicator } from '@/components/data-freshness';
 import CommandPalette from '@/components/command-palette';
-import CountyRankingsPage from '@/components/county-rankings-page';
-import DevolutionMilestonesPage from '@/components/devolution-milestones-page';
-import FYComparisonPage from '@/components/fy-comparison-page';
 import { KenyaMiniMap } from '@/components/kenya-county-map';
 import CountyComparisonEnhanced from '@/components/county-comparison-enhanced';
 import { WeatherWidget, CitizenAuditorDashboard, AIInsightsWidget, ProjectVelocityChart, RiskForecastWidget, SidebarMiniMap } from '@/components/sidebar-widgets';
@@ -67,19 +55,14 @@ import SourcesHub from '@/components/sources-hub';
 import ComparisonView from '@/components/comparison-view';
 import JsonSchemaView from '@/components/json-schema-view';
 import AssemblyHansardPage from '@/components/assembly-hansard-page';
-import CECMPerformancePage from '@/components/cecm-performance-page';
-import AIChatPage from '@/components/ai-chat-page';
-import AIBudgetAnomalyPage from '@/components/ai-budget-anomaly-page';
-import AINewsPage from '@/components/ai-news-page';
-import AIRTILetterPage from '@/components/ai-rti-letter-page';
-import AIReportIntelPage from '@/components/ai-report-intel-page';
-import AICompareInsightsPage from '@/components/ai-compare-insights-page';
-import AIHansardPage from '@/components/ai-hansard-page';
-import AIQuizPage from '@/components/ai-quiz-page';
-import AISearchPage from '@/components/ai-search-page';
-import AISentimentPage from '@/components/ai-sentiment-page';
-import AIProfilePage from '@/components/ai-profile-page';
-import AIProcurementRiskPage from '@/components/ai-procurement-risk-page';
+
+// Hub components (merged pages)
+import AIHubPage from '@/components/ai-hub-page';
+import FiscalAnalysisHub from '@/components/fiscal-analysis-hub';
+import ProcurementHub from '@/components/procurement-hub';
+import PerformanceHub from '@/components/performance-hub';
+import InsightsHub from '@/components/insights-hub';
+import IntegrityHub from '@/components/integrity-hub';
 
 // ─── ICONS ────────────────────────────────────────────────────────
 import {
@@ -133,15 +116,13 @@ const navItemDefs: NavItem[] = [
   { id: 'budgetsim', labelKey: 'nav.items.budgetsim', icon: PieChart, sectionKey: 'nav.sections.governance' },
   { id: 'manifesto', labelKey: 'nav.items.manifesto', icon: Target, sectionKey: 'nav.sections.governance' },
   // ── Civic Tools ──
-  { id: 'whistleblower', labelKey: 'nav.items.whistleblower', icon: Eye, sectionKey: 'nav.sections.civicTools' },
-  { id: 'tiptsubmit', labelKey: 'nav.items.tiptsubmit', icon: Send, sectionKey: 'nav.sections.civicTools' },
   { id: 'constitution', labelKey: 'nav.items.constitution', icon: BookMarked, sectionKey: 'nav.sections.civicTools' },
   { id: 'xposts', labelKey: 'nav.items.xposts', icon: Volume2, sectionKey: 'nav.sections.civicTools' },
+  { id: 'integrityHub', labelKey: 'nav.items.integrityHub', icon: Eye, sectionKey: 'nav.sections.civicTools' },
   // ── Citizen Action ──
   { id: 'rti', labelKey: 'nav.items.rti', icon: FileCheck, sectionKey: 'nav.sections.citizenAction' },
   { id: 'petition', labelKey: 'nav.items.petition', icon: ClipboardList, sectionKey: 'nav.sections.citizenAction' },
   { id: 'feedback', labelKey: 'nav.items.feedback', icon: MessageSquare, sectionKey: 'nav.sections.citizenAction' },
-  { id: 'procurement', labelKey: 'nav.items.procurement', icon: ShoppingCart, sectionKey: 'nav.sections.citizenAction' },
   { id: 'reportcard', labelKey: 'nav.items.reportcard', icon: Star, sectionKey: 'nav.sections.citizenAction' },
   { id: 'quiz', labelKey: 'nav.items.quiz', icon: GraduationCap, sectionKey: 'nav.sections.citizenAction' },
   { id: 'stories', labelKey: 'nav.items.stories', icon: MessageSquare, sectionKey: 'nav.sections.citizenAction' },
@@ -151,38 +132,21 @@ const navItemDefs: NavItem[] = [
   { id: 'datafetcher', labelKey: 'nav.items.datafetcher', icon: FolderSearch, sectionKey: 'nav.sections.dataAlerts' },
   { id: 'alerts', labelKey: 'nav.items.alerts', icon: Bell, sectionKey: 'nav.sections.dataAlerts' },
   // ── Analytics ──
-  { id: 'audittrends', labelKey: 'nav.items.audittrends', icon: Zap, sectionKey: 'nav.sections.analytics' },
-  { id: 'budgetscatter', labelKey: 'nav.items.budgetscatter', icon: PieChart, sectionKey: 'nav.sections.analytics' },
-  { id: 'coalition', labelKey: 'nav.items.coalition', icon: GitCompare, sectionKey: 'nav.sections.analytics' },
-  { id: 'servicedelivery', labelKey: 'nav.items.servicedelivery', icon: Building2, sectionKey: 'nav.sections.analytics' },
-  { id: 'redflags', labelKey: 'nav.items.redflags', icon: AlertOctagon, sectionKey: 'nav.sections.analytics' },
+  { id: 'fiscalHub', labelKey: 'nav.items.fiscalHub', icon: Zap, sectionKey: 'nav.sections.analytics' },
+  { id: 'procurementHub', labelKey: 'nav.items.procurementHub', icon: ShoppingCart, sectionKey: 'nav.sections.analytics' },
+  { id: 'performanceHub', labelKey: 'nav.items.performanceHub', icon: Building2, sectionKey: 'nav.sections.analytics' },
   { id: 'embed', labelKey: 'nav.items.embed', icon: Code2, sectionKey: 'nav.sections.analytics' },
   // ── Leadership & Projects ──
   { id: 'leadership', labelKey: 'nav.items.leadership', icon: Network, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'projects', labelKey: 'nav.items.projects', icon: FolderOpen, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'representatives', labelKey: 'nav.items.representatives', icon: Wallet, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'mzalendo', labelKey: 'nav.items.mzalendo', icon: Vote, sectionKey: 'nav.sections.leadershipProjects' },
-  { id: 'securetip', labelKey: 'nav.items.securetip', icon: ShieldCheck, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'hansard', labelKey: 'nav.items.hansard', icon: BookOpen, sectionKey: 'nav.sections.leadershipProjects' },
-  { id: 'compareEnhanced', labelKey: 'nav.items.compareEnhanced', icon: GitCompare, sectionKey: 'nav.sections.analytics' },
+  { id: 'compareEnhanced', labelKey: 'nav.items.compareEnhanced', icon: GitCompare, sectionKey: 'nav.sections.leadershipProjects' },
   // ── Insights ──
-  { id: 'rankings', labelKey: 'nav.items.rankings', icon: Trophy, sectionKey: 'nav.sections.insights' },
-  { id: 'milestones', labelKey: 'nav.items.milestones', icon: Flag, sectionKey: 'nav.sections.insights' },
-  { id: 'fycomparison', labelKey: 'nav.items.fycomparison', icon: BarChart3, sectionKey: 'nav.sections.insights' },
-  { id: 'cecm', labelKey: 'nav.items.cecm', icon: Award, sectionKey: 'nav.sections.insights' },
+  { id: 'insightsHub', labelKey: 'nav.items.insightsHub', icon: Trophy, sectionKey: 'nav.sections.insights' },
   // ── AI Tools ──
-  { id: 'aiChat', labelKey: 'nav.items.aiChat', icon: Bot, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiBudgetAnomaly', labelKey: 'nav.items.aiBudgetAnomaly', icon: TrendingDown, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiNews', labelKey: 'nav.items.aiNews', icon: Newspaper, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiRtiLetter', labelKey: 'nav.items.aiRtiLetter', icon: FileText, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiReportIntel', labelKey: 'nav.items.aiReportIntel', icon: Brain, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiCompareInsights', labelKey: 'nav.items.aiCompareInsights', icon: Sparkles, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiHansard', labelKey: 'nav.items.aiHansard', icon: BookOpen, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiQuiz', labelKey: 'nav.items.aiQuiz', icon: GraduationCap, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiSearch', labelKey: 'nav.items.aiSearch', icon: Search, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiSentiment', labelKey: 'nav.items.aiSentiment', icon: TrendingUp, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiProfile', labelKey: 'nav.items.aiProfile', icon: MapPin, sectionKey: 'nav.sections.aiTools' },
-  { id: 'aiProcurementRisk', labelKey: 'nav.items.aiProcurementRisk', icon: AlertTriangle, sectionKey: 'nav.sections.aiTools' },
+  { id: 'aiHub', labelKey: 'nav.items.aiHub', icon: Bot, sectionKey: 'nav.sections.aiTools' },
 ];
 
 // ══════════════════════════════════════════════════════════════════
@@ -571,7 +535,6 @@ function PageContent() {
               />
             )}
             {activeTab === 'schema' && <JsonSchemaView />}
-            {activeTab === 'whistleblower' && <WhistleblowerPage />}
             {activeTab === 'constitution' && <ConstitutionPage />}
             {activeTab === 'xposts' && <PoliticalXPostsPage />}
             {activeTab === 'countymap' && (
@@ -586,23 +549,19 @@ function PageContent() {
             {activeTab === 'petition' && <PetitionBuilderPage />}
             {activeTab === 'heatmap' && <CorruptionHeatmapPage />}
             {activeTab === 'manifesto' && <ManifestoTrackerPage />}
-            {activeTab === 'tiptsubmit' && <AnonymousTipPage />}
             {activeTab === 'feedback' && <CitizenFeedbackPage />}
             {activeTab === 'timeline' && <TimelinePage />}
             {activeTab === 'budgetsim' && <BudgetSimulatorPage />}
             {activeTab === 'datafetcher' && <DataFetcherPage />}
             {activeTab === 'alerts' && <AlertsSubscriptionPage />}
-            {activeTab === 'procurement' && <ProcurementMonitorPage />}
+            {activeTab === 'fiscalHub' && <FiscalAnalysisHub />}
+            {activeTab === 'procurementHub' && <ProcurementHub />}
             {activeTab === 'reportcard' && <GovernorReportCardPage />}
-            {activeTab === 'audittrends' && <AuditTrendsPage />}
-            {activeTab === 'budgetscatter' && <BudgetScatterPage />}
-            {activeTab === 'coalition' && <CoalitionComparisonPage />}
             {activeTab === 'quiz' && <DevolutionQuizPage />}
-            {activeTab === 'servicedelivery' && <ServiceDeliveryPage />}
+            {activeTab === 'performanceHub' && <PerformanceHub />}
             {activeTab === 'stories' && <CitizenStoriesPage />}
             {activeTab === 'reports' && <CitizenReportDashboard />}
             {activeTab === 'cbef' && <CBEFMeetingPage />}
-            {activeTab === 'redflags' && <ProcurementRedFlagsPage />}
             {activeTab === 'embed' && <EmbedWidgetPage />}
             {activeTab === 'leadership' && <CountyLeadershipTreePage />}
             {activeTab === 'projects' && (
@@ -615,26 +574,12 @@ function PageContent() {
             </div>
             )}
             {activeTab === 'mzalendo' && <MzalendoPage />}
-            {activeTab === 'securetip' && <SecureWhistleblowerModal />}
             {activeTab === 'compareEnhanced' && <CountyComparisonEnhanced />}
-            {activeTab === 'rankings' && <CountyRankingsPage />}
-            {activeTab === 'milestones' && <DevolutionMilestonesPage />}
-            {activeTab === 'fycomparison' && <FYComparisonPage />}
             {activeTab === 'hansard' && <AssemblyHansardPage />}
-            {activeTab === 'cecm' && <CECMPerformancePage />}
             {activeTab === 'representatives' && <BudgetAllocationPage />}
-            {activeTab === 'aiChat' && <AIChatPage />}
-            {activeTab === 'aiBudgetAnomaly' && <AIBudgetAnomalyPage />}
-            {activeTab === 'aiNews' && <AINewsPage />}
-            {activeTab === 'aiRtiLetter' && <AIRTILetterPage />}
-            {activeTab === 'aiReportIntel' && <AIReportIntelPage />}
-            {activeTab === 'aiCompareInsights' && <AICompareInsightsPage />}
-            {activeTab === 'aiHansard' && <AIHansardPage />}
-            {activeTab === 'aiQuiz' && <AIQuizPage />}
-            {activeTab === 'aiSearch' && <AISearchPage />}
-            {activeTab === 'aiSentiment' && <AISentimentPage />}
-            {activeTab === 'aiProfile' && <AIProfilePage />}
-            {activeTab === 'aiProcurementRisk' && <AIProcurementRiskPage />}
+            {activeTab === 'integrityHub' && <IntegrityHub />}
+            {activeTab === 'insightsHub' && <InsightsHub />}
+            {activeTab === 'aiHub' && <AIHubPage />}
           </main>
 
           {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
