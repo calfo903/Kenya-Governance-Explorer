@@ -183,3 +183,32 @@ model CitizenTip {
   @@index([status])
   @@index([createdAt])
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Authentication & Download Tracking
+// ═══════════════════════════════════════════════════════════════════
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  downloads DownloadRecord[]
+}
+
+model DownloadRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  fileName  String
+  sourceUrl String
+  fileSize  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}

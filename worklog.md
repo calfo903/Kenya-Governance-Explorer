@@ -508,3 +508,29 @@ Stage Summary:
 - Interactive table with sort, filter, search, and expandable detail rows
 - Year-over-year comparison with national averages and trend indicators
 - All navigation labels and icons updated (EN + SW)
+
+---
+Task ID: 22
+Agent: Main Agent
+Task: Build download proxy with email registration gate
+
+Work Log:
+- Added `User` and `DownloadRecord` models to Prisma schema (email, passwordHash, download tracking)
+- Ran `prisma db push` to sync database
+- Created `src/lib/auth.ts` — scrypt password hashing, jose JWT sign/verify, input validation, SSRF-safe URL validation, filename extraction
+- Created `POST /api/auth/register` — email+name+password registration with validation, JWT cookie
+- Created `POST /api/auth/login` — credential verification, JWT cookie
+- Created `GET/DELETE /api/auth/session` — session validation and logout
+- Created `GET /api/download?url=...` — auth-gated download proxy: validates JWT, fetches remote file, streams with Content-Disposition, tracks download in DB. SSRF protection (blocks private IPs), 100MB limit, 30s fetch timeout
+- Created `src/providers/auth-provider.tsx` — React context with register/login/logout/requestDownload, session check on mount, auto-download after auth
+- Created `src/components/auth-modal.tsx` — modal with register/login modes, password visibility toggle, server error display, pending download context
+- Created `src/components/download-link.tsx` — drop-in `<a>` replacement that intercepts external clicks and routes through auth gate
+- Wired AuthProvider + AuthModal into root layout.tsx
+- Build passed with zero errors
+
+Stage Summary:
+- Full auth system: register, login, session management, logout
+- Download proxy: auth-gated, SSRF-protected, tracked in database
+- Auth modal: register/login with password strength, auto-download after auth
+- `<DownloadLink>` component available for use across any page to gate external links
+- All external links can now be replaced with `<DownloadLink href="...">` to require registration

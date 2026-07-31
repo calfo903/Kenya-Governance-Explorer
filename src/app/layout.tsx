@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
+import { AuthProvider } from "@/providers/auth-provider";
+import AuthModal from "@/components/auth-modal";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
@@ -58,11 +60,14 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <QueryProvider>
-            <OfflineIndicator />
-            {children}
-            <PwaInstallPrompt />
-            <Toaster />
-            <ServiceWorkerRegistrar />
+            <AuthProvider>
+              <OfflineIndicator />
+              {children}
+              <AuthModal />
+              <PwaInstallPrompt />
+              <Toaster />
+              <ServiceWorkerRegistrar />
+            </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>
