@@ -54,7 +54,7 @@ export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) 
   }, []);
 
   const governorMap = useMemo(() => {
-    const map = new Map<string, GovernorEntry>();
+    const map = new globalThis.Map<string, GovernorEntry>();
     all47Governors.forEach(g => map.set(g.county, g));
     return map;
   }, []);
