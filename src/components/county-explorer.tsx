@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import DownloadLink from '@/components/download-link';
 
 // ══════════════════════════════════════════════════════════════════
 // COUNTY EXPLORER
@@ -78,7 +79,7 @@ export function CountyExplorer({ countyCode, allCounties, onSelectCounty, addToC
             <Card className="border-stone-200 bg-white">
               <CardContent className="py-3 px-4 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs"><Scale className="h-4 w-4 text-emerald-600" /><span className="font-semibold">{t('county.assemblyAudit')}:</span><Badge className={`border ${getAuditColor(county.countyAssembly!.auditOpinion)}`}>{county.countyAssembly!.auditOpinion}</Badge></div>
-                {county.countyAssembly!.auditSource?.url && <a href={county.countyAssembly!.auditSource!.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:underline flex items-center gap-1"><ExternalLink className="h-3 w-3" /> {t('common.report')}</a>}
+                {county.countyAssembly!.auditSource?.url && <DownloadLink href={county.countyAssembly!.auditSource!.url} className="text-[11px] text-emerald-600 hover:underline flex items-center gap-1"><ExternalLink className="h-3 w-3" /> {t('common.report')}</DownloadLink>}
               </CardContent>
             </Card>
           )}
@@ -175,7 +176,7 @@ export function OfficialFullCard({ rep, countyName, onCompare }: { rep: Represen
                 return (
                   <Tooltip key={key}>
                     <TooltipTrigger asChild><div className={`p-2 rounded-lg border text-center ${getScoreColor(value)}`}><p className="text-[10px] opacity-75">{label}</p><p className="text-lg font-bold mt-0.5">{getScoreLabel(value)}</p></div></TooltipTrigger>
-                    <TooltipContent className="max-w-xs"><p className="text-[11px]">{label}: {getScoreLabel(value)}/100</p>{source && <p className="text-[10px] text-stone-400 mt-1">{source.source} — {source.reportTitle}<br />FY: {source.financialYear}{source.url && <> · <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-emerald-500 underline">Source</a></>}</p>}{!source && <p className="text-[10px] text-stone-400 mt-1">{t('common.noSpecificSource')}</p>}</TooltipContent>
+                    <TooltipContent className="max-w-xs"><p className="text-[11px]">{label}: {getScoreLabel(value)}/100</p>{source && <p className="text-[10px] text-stone-400 mt-1">{source.source} — {source.reportTitle}<br />FY: {source.financialYear}{source.url && <> · <DownloadLink href={source.url} className="text-emerald-500 underline">Source</DownloadLink></>}</p>}{!source && <p className="text-[10px] text-stone-400 mt-1">{t('common.noSpecificSource')}</p>}</TooltipContent>
                   </Tooltip>
                 );
               })}

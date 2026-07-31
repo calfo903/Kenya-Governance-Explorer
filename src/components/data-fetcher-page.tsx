@@ -6,6 +6,7 @@ import {
   BookOpen, Shield, BarChart3, Info, AlertCircle,
   ChevronRight, ArrowUpRight, Building2, Mail,
 } from 'lucide-react';
+import DownloadLink from '@/components/download-link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -198,9 +199,9 @@ export default function DataFetcherPage() {
                   <ChevronRight className="h-3 w-3 text-stone-400 shrink-0 mt-0.5" />
                   <div className="min-w-0 flex-1">
                     {report.url ? (
-                      <a href={report.url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline leading-relaxed">
+                      <DownloadLink href={report.url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline leading-relaxed">
                         {report.title}
-                      </a>
+                      </DownloadLink>
                     ) : (
                       <span className="leading-relaxed">{report.title}</span>
                     )}
@@ -230,15 +231,25 @@ export default function DataFetcherPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {[
-              { name: 'Kenya Open Data API', url: 'https://opendata.go.ke/api', desc: 'Socrata Open Data API for government datasets' },
-              { name: 'CoB Budget Reports', url: 'https://cob.go.ke/county-budget-implementation-review-reports/', desc: 'County budget implementation review reports' },
-              { name: 'OAG Reports Portal', url: 'https://www.oagkenya.go.ke/reports/', desc: 'All OAG audit reports (national & county)' },
-              { name: 'EACC Investigation Portal', url: 'https://www.eacc.go.ke/investigations', desc: 'Status of active investigations' },
-              { name: 'KNBS Data Portal', url: 'https://www.knbs.or.ke/data-downloads/', desc: 'Statistical data downloads' },
-              { name: 'IEBC Results Portal', url: 'https://www.iebc.or.ke/results', desc: 'Election results and voter registration data' },
-              { name: 'PPIP Procurement Portal', url: 'https://www.ppip.go.ke', desc: 'Public Procurement Information Portal — searchable county procurement data' },
-              { name: 'KenyaLaw.org', url: 'https://kenyalaw.org/klr/', desc: 'Laws, Constitution, and legal documents' },
+              { name: 'Kenya Open Data API', url: 'https://opendata.go.ke/api', desc: 'Socrata Open Data API for government datasets', downloadable: false },
+              { name: 'CoB Budget Reports', url: 'https://cob.go.ke/county-budget-implementation-review-reports/', desc: 'County budget implementation review reports', downloadable: true },
+              { name: 'OAG Reports Portal', url: 'https://www.oagkenya.go.ke/reports/', desc: 'All OAG audit reports (national & county)', downloadable: true },
+              { name: 'EACC Investigation Portal', url: 'https://www.eacc.go.ke/investigations', desc: 'Status of active investigations', downloadable: false },
+              { name: 'KNBS Data Portal', url: 'https://www.knbs.or.ke/data-downloads/', desc: 'Statistical data downloads', downloadable: true },
+              { name: 'IEBC Results Portal', url: 'https://www.iebc.or.ke/results', desc: 'Election results and voter registration data', downloadable: false },
+              { name: 'PPIP Procurement Portal', url: 'https://www.ppip.go.ke', desc: 'Public Procurement Information Portal — searchable county procurement data', downloadable: false },
+              { name: 'KenyaLaw.org', url: 'https://kenyalaw.org/klr/', desc: 'Laws, Constitution, and legal documents', downloadable: false },
             ].map(endpoint => (
+              endpoint.downloadable ? (
+                <DownloadLink key={endpoint.name} href={endpoint.url} target="_blank" rel="noopener noreferrer"
+                  className="p-2.5 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800 hover:bg-stone-100 dark:bg-stone-700 transition-colors flex items-start gap-2 group">
+                  <ExternalLink className="h-3.5 w-3.5 text-stone-400 group-hover:text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold text-emerald-700 group-hover:underline truncate">{endpoint.name}</p>
+                    <p className="text-[9px] text-stone-500 dark:text-stone-400 truncate">{endpoint.desc}</p>
+                  </div>
+                </DownloadLink>
+              ) : (
               <a key={endpoint.name} href={endpoint.url} target="_blank" rel="noopener noreferrer"
                 className="p-2.5 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-100 dark:border-stone-800 hover:bg-stone-100 dark:bg-stone-700 transition-colors flex items-start gap-2 group">
                 <ExternalLink className="h-3.5 w-3.5 text-stone-400 group-hover:text-emerald-600 shrink-0 mt-0.5" />
@@ -247,6 +258,7 @@ export default function DataFetcherPage() {
                   <p className="text-[9px] text-stone-500 dark:text-stone-400 truncate">{endpoint.desc}</p>
                 </div>
               </a>
+              )
             ))}
           </div>
         </CardContent>

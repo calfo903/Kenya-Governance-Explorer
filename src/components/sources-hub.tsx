@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SourceIcon } from '@/components/source-icon';
+import DownloadLink from '@/components/download-link';
 
 // ══════════════════════════════════════════════════════════════════
 // SOURCES HUB — NEW TAB
@@ -71,7 +72,7 @@ export default function SourcesHub() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {cat.sources.map(src => (
-                <a key={src.id} href={src.url} target="_blank" rel="noopener noreferrer"
+                <DownloadLink key={src.id} href={src.url}
                   className="group bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-4 hover:border-emerald-300 hover:shadow-sm transition-all block">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h4 className="text-xs font-semibold text-stone-900 dark:text-stone-50 group-hover:text-emerald-700 transition-colors leading-tight">{src.name}</h4>
@@ -84,7 +85,7 @@ export default function SourcesHub() {
                     ))}
                   </div>
                   <p className="text-[10px] text-stone-400 mt-2 truncate">{src.url}</p>
-                </a>
+                </DownloadLink>
               ))}
             </div>
           </div>
