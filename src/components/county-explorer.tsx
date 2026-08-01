@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import DownloadLink from '@/components/download-link';
+import RepChatWidget from '@/components/rep-chat-widget';
 
 // ══════════════════════════════════════════════════════════════════
 // COUNTY EXPLORER
@@ -154,7 +155,10 @@ export function OfficialFullCard({ rep, countyName, onCompare }: { rep: Represen
             <CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4 text-emerald-600" /> {rep.fullName}</CardTitle>
             <p className="text-xs text-stone-500">{rep.officialTitle} · {rep.politicalParty} {rep.coalition ? `(${rep.coalition})` : ''} · {rep.jurisdiction}</p>
           </div>
-          <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1" onClick={() => onCompare(rep, countyName)}><GitCompare className="h-3 w-3" /> {t('common.compare')}</Button>
+          <div className="flex items-center gap-1">
+            <RepChatWidget rep={{ name: rep.fullName, title: rep.officialTitle, county: countyName, party: rep.politicalParty, coalition: rep.coalition, bio: rep.biography }} />
+            <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1" onClick={() => onCompare(rep, countyName)}><GitCompare className="h-3 w-3" /> {t('common.compare')}</Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

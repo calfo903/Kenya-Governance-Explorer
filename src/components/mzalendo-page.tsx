@@ -24,6 +24,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import RepChatWidget from '@/components/rep-chat-widget';
 
 // ─── Constants ──────────────────────────────────────────────────
 const COALITION_COLORS: Record<string, string> = {
@@ -319,6 +320,8 @@ function MemberCard({ member }: { member: MzalendoMember }) {
             View on Mzalendo
           </a>
         )}
+        {/* AI Chat Widget */}
+        <RepChatWidget rep={{ name: member.name, title: member.position, county: member.county, party: member.party, coalition: member.coalition }} />
       </CardContent>
     </Card>
   );

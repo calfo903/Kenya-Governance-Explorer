@@ -635,3 +635,31 @@ Stage Summary:
 - Data density toggle (compact/comfortable)
 - Welcome onboarding overlay for first-time users
 - Build passes cleanly with zero errors
+
+---
+Task ID: 25
+Agent: Main Agent
+Task: Add AI chat widget to every representative across all components
+
+Work Log:
+- Created `/home/z/my-project/src/components/rep-chat-widget.tsx` — reusable floating chat widget (260 lines)
+  - Floating green trigger button with hover tooltip "Ask AI"
+  - Chat panel with emerald gradient header showing rep name + title + county
+  - Context-aware suggested questions based on role (governor/senator/mp/woman rep)
+  - Full markdown rendering, loading dots animation, retry on error
+  - Passes `systemContext` to API with all rep data for contextual AI responses
+- Updated `/home/z/my-project/src/app/api/ai/chat/route.ts` to accept optional `systemContext` parameter
+- Integrated RepChatWidget into 6 components:
+  1. `governors-tree-view.tsx` — MiniRow component (governor, deputy, senator, woman rep, speaker)
+  2. `county-explorer.tsx` — OfficialFullCard component (all 5 officials)
+  3. `county-leadership-tree.tsx` — PersonRow component (governor, deputy, secretary, speaker, senator, woman rep, MP)
+  4. `mzalendo-page.tsx` — MemberCard component (30 parliamentary profiles)
+  5. `governor-report-card-page.tsx` — Report card footer area
+  6. `representative-profiles-page.tsx` — Each profile card
+- Build passes cleanly with zero errors
+
+Stage Summary:
+- Every representative/profile card in the app now has a floating "Ask AI" button
+- Clicking opens a compact chat panel pre-loaded with contextual questions about that specific person
+- AI responses are contextualized with the official's name, title, county, party, coalition, and bio
+- Widget is self-contained — easy to add to any future component with just `<RepChatWidget rep={{...}} />`

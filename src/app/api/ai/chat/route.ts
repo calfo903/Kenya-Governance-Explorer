@@ -9,12 +9,13 @@ interface ChatMessage {
 interface ChatRequestBody {
   message: string;
   history?: ChatMessage[];
+  systemContext?: string;
 }
 
 export async function POST(request: Request) {
   try {
     const body: ChatRequestBody = await request.json();
-    const { message, history } = body;
+    const { message, history, systemContext } = body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return NextResponse.json(
@@ -38,8 +39,8 @@ export async function POST(request: Request) {
         (msg.role === 'user' || msg.role === 'assistant')
     );
 
-    // Use the default governance system prompt from the AI service
-    const response = await chatCompletion(message.trim(), undefined, validHistory);
+    // Use custom system context if provided, otherwise default governance prompt
+    const response = await chatCompletion(message.trim(), systemContext || undefined, validHistory);
     const messageCount = validHistory.length + 1; // existing history + new message
 
     return NextResponse.json({

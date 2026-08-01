@@ -22,6 +22,7 @@ import {
   Search, Shuffle, ChevronsUpDown, ChevronsDownUp, Globe,
   IdCard,
 } from 'lucide-react';
+import RepChatWidget from '@/components/rep-chat-widget';
 
 // ─── County List (all 47) ──────────────────────────────────────────
 
@@ -334,16 +335,18 @@ function PersonRow({
   coalition,
   role,
   icon,
+  countyName,
 }: {
   name: string;
   party?: string;
   coalition?: string;
   role: string;
   icon?: React.ReactNode;
+  countyName?: string;
 }) {
   const isPlaceholder = name.includes('(TBD)');
   return (
-    <div className="flex items-center gap-2.5 py-1.5 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 dark:bg-gray-900 dark:hover:bg-gray-900 dark:bg-gray-900 transition-colors">
+    <div className="relative flex items-center gap-2.5 py-1.5 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 dark:bg-gray-900 dark:hover:bg-gray-900 dark:bg-gray-900 transition-colors">
       {icon ? (
         <span className="shrink-0">{icon}</span>
       ) : (
@@ -380,6 +383,9 @@ function PersonRow({
           <span className="text-[10px] text-gray-400">· {role}</span>
         </div>
       </div>
+      {!isPlaceholder && (
+        <RepChatWidget rep={{ name, title: role, county: countyName, party, coalition }} />
+      )}
     </div>
   );
 }
@@ -823,6 +829,7 @@ export default function CountyLeadershipTreePage() {
                         party={currentCounty.governor.politicalParty}
                         coalition={currentCounty.governor.coalition}
                         role="Governor"
+                        countyName={currentCounty.countyName}
                       />
                     )}
                     {currentCounty.deputyGovernor && (
@@ -831,12 +838,14 @@ export default function CountyLeadershipTreePage() {
                         party={currentCounty.deputyGovernor.politicalParty}
                         coalition={currentCounty.deputyGovernor.coalition}
                         role="Deputy Governor"
+                        countyName={currentCounty.countyName}
                       />
                     )}
                     {currentCounty.countySecretary && (
                       <PersonRow
                         name={currentCounty.countySecretary.fullName}
                         role="County Secretary"
+                        countyName={currentCounty.countyName}
                       />
                     )}
                     {currentCounty.cecMembers && currentCounty.cecMembers.length > 0 && (
@@ -878,6 +887,7 @@ export default function CountyLeadershipTreePage() {
                         party={currentCounty.assembly.speaker.politicalParty}
                         coalition={currentCounty.assembly.speaker.coalition}
                         role="Speaker"
+                        countyName={currentCounty.countyName}
                       />
                     )}
                     {currentCounty.assembly && (
@@ -900,6 +910,7 @@ export default function CountyLeadershipTreePage() {
                         party={currentCounty.senator.politicalParty}
                         coalition={currentCounty.senator.coalition}
                         role="Senator"
+                        countyName={currentCounty.countyName}
                       />
                     )}
                     {currentCounty.womanRep && (
@@ -908,6 +919,7 @@ export default function CountyLeadershipTreePage() {
                         party={currentCounty.womanRep.politicalParty}
                         coalition={currentCounty.womanRep.coalition}
                         role="Woman Representative"
+                        countyName={currentCounty.countyName}
                       />
                     )}
                   </TreeNode>
@@ -939,6 +951,7 @@ export default function CountyLeadershipTreePage() {
                                 party={constituency.mp.politicalParty}
                                 coalition={constituency.mp.coalition}
                                 role="Member of Parliament"
+                                countyName={currentCounty.countyName}
                               />
                             )}
                             {constituency.wards && constituency.wards.length > 0 && (

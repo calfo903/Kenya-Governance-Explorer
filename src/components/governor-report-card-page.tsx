@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import RepChatWidget from '@/components/rep-chat-widget';
 
 export default function GovernorReportCardPage() {
   const [selectedCounty, setSelectedCounty] = React.useState<string>('034');
@@ -165,6 +166,10 @@ export default function GovernorReportCardPage() {
           <p className="text-[9px] text-stone-400 dark:text-stone-500 uppercase tracking-wider">Kenya Governance Explorer · 2022–2027</p>
           <p className="text-[9px] text-stone-400 dark:text-stone-500 mt-1">Data: OAG · CoB · IEBC · TI-Kenya</p>
           <p className="text-[9px] text-stone-300 dark:text-stone-600 mt-1">Verified: 2026-07-28</p>
+        </div>
+        {/* AI Chat Widget */}
+        <div className="flex justify-end mt-3">
+          <RepChatWidget rep={{ name: governor.name, title: 'Governor', county: governor.county, party: governor.party, coalition: governor.coalition }} />
         </div>
       </div>
 

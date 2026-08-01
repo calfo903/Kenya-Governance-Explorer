@@ -1,0 +1,652 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useMemo } from 'react';
+     4→import { MzalendoMember } from '@/data/types';
+     5→import { mzalendoMembers, getAllMembers, getMembersByGender, getMembersByCounty } from '@/data/mzalendo-members';
+     6→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+     7→import { Badge } from '@/components/ui/badge';
+     8→import { Button } from '@/components/ui/button';
+     9→import { Input } from '@/components/ui/input';
+    10→import { Progress } from '@/components/ui/progress';
+    11→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    12→import { Separator } from '@/components/ui/separator';
+    13→import {
+    14→  Search, ExternalLink, User, Users, BarChart3, CheckCircle2,
+    15→  XCircle, Minus, Globe, Filter, Vote, Building2, TrendingUp,
+    16→  GraduationCap, MapPin, Calendar, ArrowUpDown,
+    17→} from 'lucide-react';
+    18→import {
+    19→  Collapsible,
+    20→  CollapsibleContent,
+    21→  CollapsibleTrigger,
+    22→} from '@/components/ui/collapsible';
+    23→import {
+    24→  ChevronDown,
+    25→  ChevronUp,
+    26→} from 'lucide-react';
+    27→
+    28→// ─── Constants ──────────────────────────────────────────────────
+    29→const COALITION_COLORS: Record<string, string> = {
+    30→  'Kenya Kwanza Alliance': 'bg-emerald-100 text-emerald-800 border-emerald-300',
+    31→  'Azimio la Umoja One Kenya Coalition': 'bg-blue-100 text-blue-800 border-blue-300',
+    32→  'Independent': 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600',
+    33→};
+    34→
+    35→const COALITION_DOT_COLORS: Record<string, string> = {
+    36→  'Kenya Kwanza Alliance': 'bg-emerald-500',
+    37→  'Azimio la Umoja One Kenya Coalition': 'bg-blue-500',
+    38→  'Independent': 'bg-gray-500',
+    39→};
+    40→
+    41→function getAttendanceColor(rate: number): string {
+    42→  if (rate > 85) return 'text-emerald-600';
+    43→  if (rate >= 70) return 'text-amber-600';
+    44→  return 'text-red-600';
+    45→}
+    46→
+    47→function getAttendanceBarColor(rate: number): string {
+    48→  if (rate > 85) return '[&>div]:!bg-emerald-500';
+    49→  if (rate >= 70) return '[&>div]:!bg-amber-500';
+    50→  return '[&>div]:!bg-red-500';
+    51→}
+    52→
+    53→function getAttendanceBadgeClass(rate: number): string {
+    54→  if (rate > 85) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    55→  if (rate >= 70) return 'bg-amber-100 text-amber-700 border-amber-200';
+    56→  return 'bg-red-100 text-red-700 border-red-200';
+    57→}
+    58→
+    59→function formatBillDate(dateStr: string): string {
+    60→  const d = new Date(dateStr);
+    61→  return d.toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' });
+    62→}
+    63→
+    64→function getVoteIcon(vote: 'aye' | 'nay' | 'absent') {
+    65→  switch (vote) {
+    66→    case 'aye':
+    67→      return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />;
+    68→    case 'nay':
+    69→      return <XCircle className="h-3.5 w-3.5 text-red-600" />;
+    70→    case 'absent':
+    71→      return <Minus className="h-3.5 w-3.5 text-gray-400" />;
+    72→  }
+    73→}
+    74→
+    75→function getVoteLabel(vote: 'aye' | 'nay' | 'absent') {
+    76→  switch (vote) {
+    77→    case 'aye': return 'Aye';
+    78→    case 'nay': return 'Nay';
+    79→    case 'absent': return 'Absent';
+    80→  }
+    81→}
+    82→
+    83→// ─── County list derived from data ──────────────────────────────
+    84→function getUniqueCounties(members: MzalendoMember[]): string[] {
+    85→  const counties = new Set(members.map(m => m.county));
+    86→  return Array.from(counties).sort();
+    87→}
+    88→
+    89→// ─── Gender Icon ────────────────────────────────────────────────
+    90→function GenderIcon({ gender }: { gender: 'male' | 'female' }) {
+    91→  return (
+    92→    <span className={`inline-flex items-center justify-center rounded-full h-6 w-6 text-xs font-medium ${
+    93→      gender === 'female'
+    94→        ? 'bg-pink-100 text-pink-700'
+    95→        : 'bg-sky-100 text-sky-700'
+    96→    }`}>
+    97→      {gender === 'female' ? '♀' : '♂'}
+    98→    </span>
+    99→  );
+   100→}
+   101→
+   102→// ─── Social Links ──────────────────────────────────────────────
+   103→function SocialLinks({ social }: { social: MzalendoMember['socialMedia'] }) {
+   104→  if (!social) return null;
+   105→  const hasAny = social.x || social.facebook || social.instagram || social.website;
+   106→  if (!hasAny) return null;
+   107→
+   108→  return (
+   109→    <div className="flex items-center gap-2 mt-2">
+   110→      {social.x && (
+   111→        <a
+   112→          href={`https://x.com/${social.x.replace('@', '')}`}
+   113→          target="_blank"
+   114→          rel="noopener noreferrer"
+   115→          className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+   116→          aria-label="X (Twitter) profile"
+   117→        >
+   118→          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+   119→            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+   120→          </svg>
+   121→          <span className="hidden sm:inline">{social.x}</span>
+   122→        </a>
+   123→      )}
+   124→      {social.facebook && (
+   125→        <a
+   126→          href={`https://facebook.com${social.facebook}`}
+   127→          target="_blank"
+   128→          rel="noopener noreferrer"
+   129→          className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+   130→          aria-label="Facebook profile"
+   131→        >
+   132→          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+   133→            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+   134→          </svg>
+   135→        </a>
+   136→      )}
+   137→      {social.instagram && (
+   138→        <a
+   139→          href={`https://instagram.com/${social.instagram.replace('@', '')}`}
+   140→          target="_blank"
+   141→          rel="noopener noreferrer"
+   142→          className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+   143→          aria-label="Instagram profile"
+   144→        >
+   145→          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+   146→            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+   147→          </svg>
+   148→        </a>
+   149→      )}
+   150→      {social.website && (
+   151→        <a
+   152→          href={social.website}
+   153→          target="_blank"
+   154→          rel="noopener noreferrer"
+   155→          className="inline-flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+   156→          aria-label="Official website"
+   157→        >
+   158→          <Globe className="h-3.5 w-3.5" />
+   159→          <span className="hidden sm:inline">Website</span>
+   160→        </a>
+   161→      )}
+   162→    </div>
+   163→  );
+   164→}
+   165→
+   166→// ─── Vote Record (Expandable) ──────────────────────────────────
+   167→function VoteRecordSection({ member }: { member: MzalendoMember }) {
+   168→  const [open, setOpen] = useState(false);
+   169→  const record = member.voteRecord;
+   170→
+   171→  if (!record) return (
+   172→    <p className="text-xs text-stone-400 dark:text-stone-500 mt-2 italic">
+   173→      Vote record data not available
+   174→    </p>
+   175→  );
+   176→
+   177→  return (
+   178→    <Collapsible open={open} onOpenChange={setOpen}>
+   179→      <CollapsibleTrigger asChild>
+   180→        <Button
+   181→          variant="ghost"
+   182→          size="sm"
+   183→          className="w-full mt-2 h-8 text-xs gap-1.5 text-stone-600 dark:text-stone-300 dark:text-stone-400 hover:text-stone-900 dark:text-stone-50 dark:hover:text-stone-100 justify-start px-2"
+   184→        >
+   185→          <Vote className="h-3.5 w-3.5" />
+   186→          Vote Record
+   187→          {open ? <ChevronUp className="h-3.5 w-3.5 ml-auto" /> : <ChevronDown className="h-3.5 w-3.5 ml-auto" />}
+   188→        </Button>
+   189→      </CollapsibleTrigger>
+   190→      <CollapsibleContent>
+   191→        <div className="mt-2 space-y-3 p-3 bg-stone-50 dark:bg-stone-800 dark:bg-stone-900 rounded-lg border border-stone-100 dark:border-stone-800">
+   192→          {/* Stats */}
+   193→          <div className="flex items-center justify-between">
+   194→            <div className="flex items-center gap-4">
+   195→              <div className="flex items-center gap-1.5">
+   196→                <Vote className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" />
+   197→                <span className="text-xs font-medium text-stone-600 dark:text-stone-300 dark:text-stone-400">Total Votes</span>
+   198→              </div>
+   199→              <span className="text-sm font-bold text-stone-800 dark:text-stone-100 dark:text-stone-200">{record.totalVotes}</span>
+   200→            </div>
+   201→            <Badge variant="outline" className={`text-xs ${getAttendanceBadgeClass(record.attendanceRate)}`}>
+   202→              {record.attendanceRate}% attendance
+   203→            </Badge>
+   204→          </div>
+   205→
+   206→          {/* Attendance bar */}
+   207→          <div className="space-y-1">
+   208→            <div className="flex items-center justify-between">
+   209→              <span className="text-xs text-stone-500 dark:text-stone-400">Attendance</span>
+   210→              <span className={`text-xs font-semibold ${getAttendanceColor(record.attendanceRate)}`}>
+   211→                {record.attendanceRate}%
+   212→              </span>
+   213→            </div>
+   214→            <Progress value={record.attendanceRate} className={`h-2 ${getAttendanceBarColor(record.attendanceRate)}`} />
+   215→          </div>
+   216→
+   217→          <Separator />
+   218→
+   219→          {/* Recent bills */}
+   220→          <div className="space-y-2">
+   221→            <h4 className="text-xs font-semibold text-stone-600 dark:text-stone-300">Recent Bills</h4>
+   222→            <div className="space-y-1.5">
+   223→              {record.recentBills.map((bill, idx) => (
+   224→                <div
+   225→                  key={idx}
+   226→                  className="flex items-start gap-2 text-xs"
+   227→                >
+   228→                  <span className="mt-0.5 shrink-0">{getVoteIcon(bill.vote)}</span>
+   229→                  <div className="flex-1 min-w-0">
+   230→                    <p className="text-stone-700 dark:text-stone-200 dark:text-stone-300 leading-snug truncate">
+   231→                      {bill.billTitle}
+   232→                    </p>
+   233→                    <p className="text-stone-400 dark:text-stone-500 mt-0.5">
+   234→                      {formatBillDate(bill.date)} · <span className={
+   235→                        bill.vote === 'aye' ? 'text-emerald-600' :
+   236→                        bill.vote === 'nay' ? 'text-red-600' : 'text-gray-400'
+   237→                      }>{getVoteLabel(bill.vote)}</span>
+   238→                    </p>
+   239→                  </div>
+   240→                </div>
+   241→              ))}
+   242→            </div>
+   243→          </div>
+   244→        </div>
+   245→      </CollapsibleContent>
+   246→    </Collapsible>
+   247→  );
+   248→}
+   249→
+   250→// ─── Member Card ───────────────────────────────────────────────
+   251→function MemberCard({ member }: { member: MzalendoMember }) {
+   252→  const coalitionLabel = member.coalition === 'Kenya Kwanza Alliance'
+   253→    ? 'Kenya Kwanza'
+   254→    : member.coalition === 'Azimio la Umoja One Kenya Coalition'
+   255→      ? 'Azimio'
+   256→      : member.coalition || 'Unknown';
+   257→
+   258→  return (
+   259→    <Card className="hover:shadow-md transition-shadow duration-200 border-stone-200 dark:border-stone-700 dark:bg-stone-900">
+   260→      <CardHeader className="pb-3">
+   261→        <div className="flex items-start justify-between gap-2">
+   262→          <div className="flex items-center gap-2 min-w-0">
+   263→            <GenderIcon gender={member.gender} />
+   264→            <div className="min-w-0">
+   265→              <CardTitle className="text-sm font-bold leading-tight text-stone-900 dark:text-stone-50 dark:text-stone-100 truncate">
+   266→                {member.name}
+   267→              </CardTitle>
+   268→              <CardDescription className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 leading-snug">
+   269→                {member.position}
+   270→              </CardDescription>
+   271→            </div>
+   272→          </div>
+   273→        </div>
+   274→      </CardHeader>
+   275→
+   276→      <CardContent className="space-y-2 pt-0">
+   277→        {/* County + Age */}
+   278→        <div className="flex flex-wrap items-center gap-2">
+   279→          <Badge variant="outline" className="text-xs gap-1 bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300">
+   280→            <MapPin className="h-3 w-3" />
+   281→            {member.county}
+   282→          </Badge>
+   283→          {member.age && (
+   284→            <Badge variant="outline" className="text-xs gap-1 bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300">
+   285→              <Calendar className="h-3 w-3" />
+   286→              {member.age} yrs
+   287→            </Badge>
+   288→          )}
+   289→        </div>
+   290→
+   291→        {/* Party + Coalition badges */}
+   292→        <div className="flex flex-wrap items-center gap-1.5">
+   293→          <Badge className="text-xs font-medium bg-stone-800 text-stone-50 dark:bg-stone-200 dark:text-stone-800">
+   294→            {member.party}
+   295→          </Badge>
+   296→          {member.coalition && (
+   297→            <Badge variant="outline" className={`text-xs ${COALITION_COLORS[member.coalition] || 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600'}`}>
+   298→              <span className={`inline-block h-2 w-2 rounded-full mr-1 ${COALITION_DOT_COLORS[member.coalition] || 'bg-gray-500'}`} />
+   299→              {coalitionLabel}
+   300→            </Badge>
+   301→          )}
+   302→        </div>
+   303→
+   304→        {/* Social Links */}
+   305→        <SocialLinks social={member.socialMedia} />
+   306→
+   307→        {/* Vote Record */}
+   308→        <VoteRecordSection member={member} />
+   309→
+   310→        {/* Mzalendo profile link */}
+   311→        {member.profileUrl && (
+   312→          <a
+   313→            href={member.profileUrl}
+   314→            target="_blank"
+   315→            rel="noopener noreferrer"
+   316→            className="inline-flex items-center gap-1.5 mt-2 text-xs text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium transition-colors"
+   317→          >
+   318→            <ExternalLink className="h-3 w-3" />
+   319→            View on Mzalendo
+   320→          </a>
+   321→        )}
+   322→      </CardContent>
+   323→    </Card>
+   324→  );
+   325→}
+   326→
+   327→// ─── Statistics Panel ───────────────────────────────────────────
+   328→function StatisticsPanel({ members }: { members: MzalendoMember[] }) {
+   329→  const totalMembers = members.length;
+   330→  const maleCount = members.filter(m => m.gender === 'male').length;
+   331→  const femaleCount = members.filter(m => m.gender === 'female').length;
+   332→
+   333→  const coalitions = useMemo(() => {
+   334→    const counts: Record<string, number> = {};
+   335→    members.forEach(m => {
+   336→      const c = m.coalition || 'Unknown';
+   337→      counts[c] = (counts[c] || 0) + 1;
+   338→    });
+   339→    return counts;
+   340→  }, [members]);
+   341→
+   342→  const membersWithAttendance = members.filter(m => m.voteRecord);
+   343→  const avgAttendance = membersWithAttendance.length > 0
+   344→    ? Math.round(membersWithAttendance.reduce((sum, m) => sum + (m.voteRecord?.attendanceRate || 0), 0) / membersWithAttendance.length)
+   345→    : 0;
+   346→
+   347→  return (
+   348→    <Card className="border-stone-200 dark:border-stone-700 dark:bg-stone-900">
+   349→      <CardHeader className="pb-3">
+   350→        <CardTitle className="text-sm font-bold flex items-center gap-2 text-stone-900 dark:text-stone-50 dark:text-stone-100">
+   351→          <BarChart3 className="h-4 w-4 text-emerald-600" />
+   352→          Overview Statistics
+   353→        </CardTitle>
+   354→        <CardDescription className="text-xs text-stone-500 dark:text-stone-400">
+   355→          Based on {totalMembers} members in the current dataset
+   356→        </CardDescription>
+   357→      </CardHeader>
+   358→      <CardContent>
+   359→        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+   360→          {/* Total */}
+   361→          <div className="text-center space-y-1">
+   362→            <div className="flex items-center justify-center gap-1.5">
+   363→              <Users className="h-4 w-4 text-stone-400" />
+   364→              <span className="text-2xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{totalMembers}</span>
+   365→            </div>
+   366→            <p className="text-xs text-stone-500 dark:text-stone-400">Total Members</p>
+   367→          </div>
+   368→
+   369→          {/* Gender ratio */}
+   370→          <div className="text-center space-y-1">
+   371→            <div className="flex items-center justify-center gap-2">
+   372→              <span className="text-lg font-bold text-sky-600 dark:text-sky-400">{maleCount}</span>
+   373→              <span className="text-stone-300 dark:text-stone-600">/</span>
+   374→              <span className="text-lg font-bold text-pink-600 dark:text-pink-400">{femaleCount}</span>
+   375→            </div>
+   376→            <p className="text-xs text-stone-500 dark:text-stone-400">Male / Female</p>
+   377→          </div>
+   378→
+   379→          {/* Coalition distribution */}
+   380→          <div className="text-center space-y-1">
+   381→            <div className="flex items-center justify-center gap-1 flex-wrap">
+   382→              {Object.entries(coalitions).map(([name, count]) => {
+   383→                const label = name === 'Kenya Kwanza Alliance'
+   384→                  ? 'KK'
+   385→                  : name === 'Azimio la Umoja One Kenya Coalition'
+   386→                    ? 'AZ'
+   387→                    : 'IND';
+   388→                const color = COALITION_DOT_COLORS[name] || 'bg-gray-500';
+   389→                return (
+   390→                  <span key={name} className="flex items-center gap-0.5 text-xs">
+   391→                    <span className={`h-2 w-2 rounded-full ${color}`} />
+   392→                    <span className="font-semibold text-stone-700 dark:text-stone-200 dark:text-stone-300">{count}</span>
+   393→                    <span className="text-stone-400 dark:text-stone-500">{label}</span>
+   394→                  </span>
+   395→                );
+   396→              })}
+   397→            </div>
+   398→            <p className="text-xs text-stone-500 dark:text-stone-400">Coalitions</p>
+   399→          </div>
+   400→
+   401→          {/* Average attendance */}
+   402→          <div className="text-center space-y-1">
+   403→            <span className={`text-2xl font-bold ${getAttendanceColor(avgAttendance)}`}>
+   404→              {avgAttendance}%
+   405→            </span>
+   406→            <p className="text-xs text-stone-500 dark:text-stone-400">Avg Attendance</p>
+   407→          </div>
+   408→        </div>
+   409→
+   410→        {/* Gender visual bar */}
+   411→        <div className="mt-4">
+   412→          <div className="flex h-2 rounded-full overflow-hidden">
+   413→            {totalMembers > 0 && (
+   414→              <>
+   415→                <div
+   416→                  className="bg-sky-400 dark:bg-sky-500 transition-all"
+   417→                  style={{ width: `${(maleCount / totalMembers) * 100}%` }}
+   418→                />
+   419→                <div
+   420→                  className="bg-pink-400 dark:bg-pink-500 transition-all"
+   421→                  style={{ width: `${(femaleCount / totalMembers) * 100}%` }}
+   422→                />
+   423→              </>
+   424→            )}
+   425→          </div>
+   426→          <div className="flex items-center justify-between mt-1.5">
+   427→            <span className="text-xs text-stone-400 dark:text-stone-500 flex items-center gap-1">
+   428→              <span className="h-2 w-2 rounded-full bg-sky-400 dark:bg-sky-500" /> Male {totalMembers > 0 ? Math.round((maleCount / totalMembers) * 100) : 0}%
+   429→            </span>
+   430→            <span className="text-xs text-stone-400 dark:text-stone-500 flex items-center gap-1">
+   431→              Female {totalMembers > 0 ? Math.round((femaleCount / totalMembers) * 100) : 0}% <span className="h-2 w-2 rounded-full bg-pink-400 dark:bg-pink-500" />
+   432→            </span>
+   433→          </div>
+   434→        </div>
+   435→
+   436→        {/* Coalition visual bar */}
+   437→        {Object.keys(coalitions).length > 0 && (
+   438→          <div className="mt-3">
+   439→            <div className="flex h-2 rounded-full overflow-hidden">
+   440→              {Object.entries(coalitions).map(([name, count]) => (
+   441→                <div
+   442→                  key={name}
+   443→                  className={`transition-all ${COALITION_DOT_COLORS[name] || 'bg-gray-500'}`}
+   444→                  style={{ width: `${(count / totalMembers) * 100}%` }}
+   445→                />
+   446→              ))}
+   447→            </div>
+   448→            <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
+   449→              {Object.entries(coalitions).map(([name, count]) => {
+   450→                const label = name === 'Kenya Kwanza Alliance'
+   451→                  ? 'Kenya Kwanza'
+   452→                  : name === 'Azimio la Umoja One Kenya Coalition'
+   453→                    ? 'Azimio'
+   454→                    : name;
+   455→                const pct = totalMembers > 0 ? Math.round((count / totalMembers) * 100) : 0;
+   456→                return (
+   457→                  <span key={name} className="text-xs text-stone-400 dark:text-stone-500 flex items-center gap-1">
+   458→                    <span className={`h-2 w-2 rounded-full ${COALITION_DOT_COLORS[name] || 'bg-gray-500'}`} />
+   459→                    {label} {pct}%
+   460→                  </span>
+   461→                );
+   462→              })}
+   463→            </div>
+   464→          </div>
+   465→        )}
+   466→      </CardContent>
+   467→    </Card>
+   468→  );
+   469→}
+   470→
+   471→// ─── Main Component ────────────────────────────────────────────
+   472→export default function MzalendoPage() {
+   473→  const [searchQuery, setSearchQuery] = useState('');
+   474→  const [genderFilter, setGenderFilter] = useState<string>('all');
+   475→  const [coalitionFilter, setCoalitionFilter] = useState<string>('all');
+   476→  const [countyFilter, setCountyFilter] = useState<string>('all');
+   477→  const [showStats, setShowStats] = useState(true);
+   478→
+   479→  const allMembers = getAllMembers();
+   480→  const counties = useMemo(() => getUniqueCounties(allMembers), [allMembers]);
+   481→
+   482→  const filteredMembers = useMemo(() => {
+   483→    return allMembers.filter(member => {
+   484→      // Search filter
+   485→      if (searchQuery.trim()) {
+   486→        const q = searchQuery.toLowerCase();
+   487→        if (
+   488→          !member.name.toLowerCase().includes(q) &&
+   489→          !member.position.toLowerCase().includes(q) &&
+   490→          !member.county.toLowerCase().includes(q) &&
+   491→          !member.party.toLowerCase().includes(q)
+   492→        ) {
+   493→          return false;
+   494→        }
+   495→      }
+   496→
+   497→      // Gender filter
+   498→      if (genderFilter !== 'all' && member.gender !== genderFilter) {
+   499→        return false;
+   500→      }
+   501→
+   502→      // Coalition filter
+   503→      if (coalitionFilter !== 'all') {
+   504→        if (coalitionFilter === 'Independent') {
+   505→          if (member.coalition !== 'Independent') return false;
+   506→        } else if (coalitionFilter === 'Kenya Kwanza Alliance') {
+   507→          if (member.coalition !== 'Kenya Kwanza Alliance') return false;
+   508→        } else if (coalitionFilter === 'Azimio la Umoja One Kenya Coalition') {
+   509→          if (member.coalition !== 'Azimio la Umoja One Kenya Coalition') return false;
+   510→        }
+   511→      }
+   512→
+   513→      // County filter
+   514→      if (countyFilter !== 'all' && member.county !== countyFilter) {
+   515→        return false;
+   516→      }
+   517→
+   518→      return true;
+   519→    });
+   520→  }, [allMembers, searchQuery, genderFilter, coalitionFilter, countyFilter]);
+   521→
+   522→  const hasActiveFilters = searchQuery.trim() !== '' || genderFilter !== 'all' || coalitionFilter !== 'all' || countyFilter !== 'all';
+   523→
+   524→  function clearFilters() {
+   525→    setSearchQuery('');
+   526→    setGenderFilter('all');
+   527→    setCoalitionFilter('all');
+   528→    setCountyFilter('all');
+   529→  }
+   530→
+   531→  return (
+   532→    <div className="space-y-6">
+   533→      {/* Page Header */}
+   534→      <div>
+   535→        <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
+   536→          <GraduationCap className="h-5 w-5 text-emerald-600" />
+   537→          Mzalendo Parliament Profiles
+   538→        </h2>
+   539→        <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+   540→          Browse Kenyan parliament members — track voting records, attendance, and coalition affiliations
+   541→        </p>
+   542→      </div>
+   543→
+   544→      {/* Statistics Panel */}
+   545→      <StatisticsPanel members={allMembers} />
+   546→
+   547→      {/* Filters */}
+   548→      <Card className="border-stone-200 dark:border-stone-700 dark:bg-stone-900">
+   549→        <CardHeader className="pb-3">
+   550→          <div className="flex items-center justify-between">
+   551→            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-stone-800 dark:text-stone-100 dark:text-stone-200">
+   552→              <Filter className="h-4 w-4 text-emerald-600" />
+   553→              Filters
+   554→            </CardTitle>
+   555→            {hasActiveFilters && (
+   556→              <Button variant="ghost" size="sm" className="h-7 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:text-stone-200 dark:text-stone-400 dark:hover:text-stone-200" onClick={clearFilters}>
+   557→                Clear all
+   558→              </Button>
+   559→            )}
+   560→          </div>
+   561→        </CardHeader>
+   562→        <CardContent>
+   563→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+   564→            {/* Search */}
+   565→            <div className="relative">
+   566→              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-stone-400" />
+   567→              <Input
+   568→                placeholder="Search by name, position, county..."
+   569→                value={searchQuery}
+   570→                onChange={e => setSearchQuery(e.target.value)}
+   571→                className="h-9 text-xs pl-8 border-stone-200 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200"
+   572→              />
+   573→            </div>
+   574→
+   575→            {/* Gender */}
+   576→            <Select value={genderFilter} onValueChange={setGenderFilter}>
+   577→              <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200">
+   578→                <SelectValue placeholder="Gender" />
+   579→              </SelectTrigger>
+   580→              <SelectContent>
+   581→                <SelectItem value="all">All Genders</SelectItem>
+   582→                <SelectItem value="male">Male</SelectItem>
+   583→                <SelectItem value="female">Female</SelectItem>
+   584→              </SelectContent>
+   585→            </Select>
+   586→
+   587→            {/* Coalition */}
+   588→            <Select value={coalitionFilter} onValueChange={setCoalitionFilter}>
+   589→              <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200">
+   590→                <SelectValue placeholder="Coalition" />
+   591→              </SelectTrigger>
+   592→              <SelectContent>
+   593→                <SelectItem value="all">All Coalitions</SelectItem>
+   594→                <SelectItem value="Kenya Kwanza Alliance">Kenya Kwanza</SelectItem>
+   595→                <SelectItem value="Azimio la Umoja One Kenya Coalition">Azimio</SelectItem>
+   596→                <SelectItem value="Independent">Independent</SelectItem>
+   597→              </SelectContent>
+   598→            </Select>
+   599→
+   600→            {/* County */}
+   601→            <Select value={countyFilter} onValueChange={setCountyFilter}>
+   602→              <SelectTrigger className="h-9 text-xs border-stone-200 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200">
+   603→                <SelectValue placeholder="County" />
+   604→              </SelectTrigger>
+   605→              <SelectContent className="max-h-64">
+   606→                <SelectItem value="all">All Counties</SelectItem>
+   607→                {counties.map(c => (
+   608→                  <SelectItem key={c} value={c}>{c}</SelectItem>
+   609→                ))}
+   610→              </SelectContent>
+   611→            </Select>
+   612→          </div>
+   613→
+   614→          {/* Result count */}
+   615→          <p className="text-xs text-stone-400 dark:text-stone-500 mt-3">
+   616→            Showing {filteredMembers.length} of {allMembers.length} members
+   617→          </p>
+   618→        </CardContent>
+   619→      </Card>
+   620→
+   621→      {/* Members Grid */}
+   622→      {filteredMembers.length === 0 ? (
+   623→        <Card className="border-stone-200 dark:border-stone-700 dark:bg-stone-900 py-12">
+   624→          <CardContent className="text-center">
+   625→            <Search className="h-8 w-8 text-stone-300 dark:text-stone-600 mx-auto mb-3" />
+   626→            <p className="text-sm font-medium text-stone-500 dark:text-stone-400">No members found</p>
+   627→            <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">
+   628→              Try adjusting your filters or search query
+   629→            </p>
+   630→            {hasActiveFilters && (
+   631→              <Button
+   632→                variant="outline"
+   633→                size="sm"
+   634→                className="mt-4 h-8 text-xs"
+   635→                onClick={clearFilters}
+   636→              >
+   637→                Clear Filters
+   638→              </Button>
+   639→            )}
+   640→          </CardContent>
+   641→        </Card>
+   642→      ) : (
+   643→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   644→          {filteredMembers.map(member => (
+   645→            <MemberCard key={member.id} member={member} />
+   646→          ))}
+   647→        </div>
+   648→      )}
+   649→    </div>
+   650→  );
+   651→}
+   652→

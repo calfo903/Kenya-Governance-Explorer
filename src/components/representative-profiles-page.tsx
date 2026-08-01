@@ -20,6 +20,7 @@ import {
   Search, ChevronRight, ChevronDown, GraduationCap, BookOpen, Vote,
   Gavel, ClipboardList, Calendar, FileText, TrendingUp,
 } from 'lucide-react';
+import RepChatWidget from '@/components/rep-chat-widget';
 
 // ─── TYPES ───────────────────────────────────────────────────────
 
@@ -588,6 +589,7 @@ export default function RepresentativeProfilesPage() {
                                   </div>
                                 </CollapsibleContent>
                               </Collapsible>
+                              <RepChatWidget rep={{ name: profile.name, title: profile.title, county: profile.county, party: profile.party, coalition: profile.coalition, bio: profile.bio }} />
                             </CardContent>
                           </Card>
                         );
