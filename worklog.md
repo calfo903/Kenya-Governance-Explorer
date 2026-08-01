@@ -663,3 +663,27 @@ Stage Summary:
 - Clicking opens a compact chat panel pre-loaded with contextual questions about that specific person
 - AI responses are contextualized with the official's name, title, county, party, coalition, and bio
 - Widget is self-contained — easy to add to any future component with just `<RepChatWidget rep={{...}} />`
+
+---
+Task ID: 26
+Agent: Main Agent
+Task: Add topbar with Kenyan flag logo, replace Alerts with Search in bottom nav
+
+Work Log:
+- Created `/home/z/my-project/src/components/kenyan-flag-logo.tsx` — SVG Kenyan flag with shield + spear motif, black/red/green stripes with white borders, configurable size
+- Redesigned header in page.tsx into a two-row topbar:
+  - Row 1: Kenyan flag logo + app title + Search (Ctrl+K) + Dark mode + Language toggle
+  - Row 2: Quick-access pill tabs for 12 most relevant features (Dashboard, Counties, AI Tools, Deep Dive, Compare, Fiscal, Leadership, RTI Letter, Budget Sim, Mzalendo, Risk Map, Map)
+- Active topbar pill tab highlights with emerald bg + white text
+- On mobile, topbar pills show icons only (labels hidden)
+- Replaced bottom nav "Alerts" button with "Search" button that opens command palette
+- Added Kenyan flag logo to the dashboard hero banner in national-summary-dashboard.tsx
+- Updated i18n: en.json + sw.json with topbar.* labels and nav.mobileBottom.search key
+- Removed compact mode toggle and constitution link from header (moved context to sidebar/topbar pills)
+- Build passes cleanly
+
+Stage Summary:
+- Topbar with Kenyan flag + 12 quick-access feature pills + utility buttons
+- Bottom nav: Home | AI | Counties | Budget | Search (replaced Alerts)
+- Kenyan flag visible in topbar header and dashboard hero section
+- Bilingual support (EN + SW) for all new labels

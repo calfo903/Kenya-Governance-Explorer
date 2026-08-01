@@ -96,6 +96,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 import DownloadLink from '@/components/download-link';
 import WelcomeOnboarding from '@/components/welcome-onboarding';
+import KenyanFlagLogo from '@/components/kenyan-flag-logo';
 // ─── SIDEBAR NAV ITEMS (keys for i18n) ───────────────────────
 interface NavItem {
   id: TabId;
@@ -399,31 +400,30 @@ function PageContent() {
         </a>
         <WelcomeOnboarding />
 
-        {/* ══════════ HEADER ══════════ */}
+        {/* ══════════ HEADER / TOPBAR ══════════ */}
         <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50">
+          {/* ── Top row: Logo + Actions ── */}
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="py-3 flex items-center justify-between gap-4">
+            <div className="py-2.5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                   aria-label="Open navigation menu"
-                  className="lg:hidden h-9 w-9 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
+                  className="lg:hidden h-9 w-9 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 transition-colors"
                 >
                   <Menu className="h-4 w-4 text-stone-600 dark:text-stone-300" aria-hidden="true" />
                 </button>
-                <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0" aria-hidden="true">
-                  <Shield className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
+                <KenyanFlagLogo size={32} />
+                <div className="min-w-0">
+                  <h1 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight truncate">
                     {t('app.title')}
                   </h1>
-                  <p className="text-xs sm:text-sm text-stone-500">
+                  <p className="text-[10px] sm:text-xs text-stone-500 hidden sm:block">
                     {t('app.subtitle')}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {comparisonList.length > 0 && (
                   <Badge variant="secondary" className="text-[10px] h-6 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                     {t('app.headerCompare', { count: comparisonList.length })}
@@ -432,29 +432,58 @@ function PageContent() {
                 <button
                   onClick={() => commandPaletteRef.current?.open()}
                   aria-label={t('app.searchShortcut')}
-                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
+                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 transition-colors"
                 >
                   <Keyboard className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                   aria-label={t('app.darkModeShortcut')}
-                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
+                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 transition-colors"
                 >
                   {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" />}
                 </button>
-                <button
-                  onClick={() => setCompact(!compact)}
-                  aria-label={compact ? 'Switch to comfortable layout' : 'Switch to compact layout'}
-                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
-                  title={compact ? 'Comfortable mode' : 'Compact mode'}
-                >
-                  {compact ? <AlignJustify className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" /> : <AlignCenter className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" />}
-                </button>
                 <LanguageToggle />
-                <DownloadLink href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
-                  <BookMarked className="h-3 w-3" aria-hidden="true" />{t('common.constitution')}
-                </DownloadLink>
+              </div>
+            </div>
+          </div>
+          {/* ── Quick-access feature tabs ── */}
+          <div className="border-t border-stone-100 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-800/50 backdrop-blur-sm">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="overflow-x-auto scrollbar-none">
+                <nav className="flex items-center gap-1 py-1.5" aria-label="Quick access features">
+                  {[
+                    { id: 'summary' as TabId, icon: BarChart3, labelKey: 'topbar.dashboard' },
+                    { id: 'tree' as TabId, icon: TreePine, labelKey: 'topbar.counties' },
+                    { id: 'aiHub' as TabId, icon: Bot, labelKey: 'topbar.ai' },
+                    { id: 'county' as TabId, icon: MapPin, labelKey: 'topbar.deepDive' },
+                    { id: 'compare' as TabId, icon: GitCompare, labelKey: 'topbar.compare' },
+                    { id: 'fiscalHub' as TabId, icon: Zap, labelKey: 'topbar.fiscal' },
+                    { id: 'leadership' as TabId, icon: Network, labelKey: 'topbar.leadership' },
+                    { id: 'rti' as TabId, icon: FileCheck, labelKey: 'topbar.rti' },
+                    { id: 'budgetsim' as TabId, icon: PieChart, labelKey: 'topbar.budget' },
+                    { id: 'mzalendo' as TabId, icon: Vote, labelKey: 'topbar.mzalendo' },
+                    { id: 'heatmap' as TabId, icon: Thermometer, labelKey: 'topbar.heatmap' },
+                    { id: 'countymap' as TabId, icon: Map, labelKey: 'topbar.map' },
+                  ].map(item => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className={`inline-flex items-center gap-1.5 shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap ${
+                          isActive
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-700/60'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">{t(item.labelKey)}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
               </div>
             </div>
           </div>
@@ -709,7 +738,6 @@ function PageContent() {
                 { id: 'aiHub' as TabId, icon: Bot, labelKey: 'nav.mobileBottom.ai' },
                 { id: 'tree' as TabId, icon: TreePine, labelKey: 'nav.mobileBottom.counties' },
                 { id: 'representatives' as TabId, icon: Wallet, labelKey: 'nav.mobileBottom.reps' },
-                { id: 'alerts' as TabId, icon: Bell, labelKey: 'nav.mobileBottom.alerts' },
               ].map(item => (
                 <button
                   key={item.id}
@@ -725,6 +753,14 @@ function PageContent() {
                   <span className="text-[9px] font-medium">{t(item.labelKey)}</span>
                 </button>
               ))}
+              {/* Search button — opens command palette */}
+              <button
+                onClick={() => commandPaletteRef.current?.open()}
+                className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-stone-500 dark:text-stone-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+              >
+                <Search className="h-4 w-4" aria-hidden="true" />
+                <span className="text-[9px] font-medium">{t('nav.mobileBottom.search')}</span>
+              </button>
             </div>
           </nav>
         </div>

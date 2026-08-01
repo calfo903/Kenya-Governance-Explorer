@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import ExportButton from '@/components/export-button';
 import { exportCountiesToCSV } from '@/lib/data-export';
 import type { TabId } from './tab-types';
+import KenyanFlagLogo from '@/components/kenyan-flag-logo';
 
 // ══════════════════════════════════════════════════════════════════
 // ANIMATED COUNTER HOOK
@@ -80,6 +81,9 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
         <div className="relative px-6 py-8 sm:px-10 sm:py-10">
           {/* Hero title */}
           <div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <KenyanFlagLogo size={44} className="drop-shadow-lg" />
+            </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Kenya Devolution at a Glance</h2>
             <p className="text-xs text-emerald-100">Real-time national summary of county governance performance</p>
           </div>

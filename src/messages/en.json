@@ -102,8 +102,22 @@
       "ai": "AI",
       "counties": "Counties",
       "reps": "Budget",
-      "alerts": "Alerts"
+      "search": "Search"
     }
+  },
+  "topbar": {
+    "dashboard": "Dashboard",
+    "counties": "Counties",
+    "ai": "AI Tools",
+    "deepDive": "Deep Dive",
+    "compare": "Compare",
+    "fiscal": "Fiscal",
+    "leadership": "Leadership",
+    "rti": "RTI Letter",
+    "budget": "Budget Sim",
+    "mzalendo": "Mzalendo",
+    "heatmap": "Risk Map",
+    "map": "Map"
   },
   "sidebar": {
     "quickStats": "Quick Stats",

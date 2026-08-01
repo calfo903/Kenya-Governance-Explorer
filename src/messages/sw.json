@@ -102,8 +102,22 @@
       "ai": "AI",
       "counties": "Kaunti",
       "reps": "Fedha",
-      "alerts": "Tahadhari"
+      "search": "Tafuta"
     }
+  },
+  "topbar": {
+    "dashboard": "Dashibodi",
+    "counties": "Kaunti",
+    "ai": "Zana za AI",
+    "deepDive": "Uchunguzi",
+    "compare": "Linganisha",
+    "fiscal": "Fedha",
+    "leadership": "Uongozi",
+    "rti": "Barua ya RTI",
+    "budget": "Bajeti",
+    "mzalendo": "Mzalendo",
+    "heatmap": "Ramani ya Hatari",
+    "map": "Ramani"
   },
   "sidebar": {
     "quickStats": "Takwimu za Haraka",
