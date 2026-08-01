@@ -99,7 +99,7 @@
     },
     "mobileBottom": {
       "home": "Home",
-      "map": "Map",
+      "ai": "AI",
       "counties": "Counties",
       "reps": "Budget",
       "alerts": "Alerts"

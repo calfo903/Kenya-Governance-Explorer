@@ -706,7 +706,7 @@ function PageContent() {
             <div className="flex items-center justify-around">
               {[
                 { id: 'summary' as TabId, icon: BarChart3, labelKey: 'nav.mobileBottom.home' },
-                { id: 'countymap' as TabId, icon: Map, labelKey: 'nav.mobileBottom.map' },
+                { id: 'aiHub' as TabId, icon: Bot, labelKey: 'nav.mobileBottom.ai' },
                 { id: 'tree' as TabId, icon: TreePine, labelKey: 'nav.mobileBottom.counties' },
                 { id: 'representatives' as TabId, icon: Wallet, labelKey: 'nav.mobileBottom.reps' },
                 { id: 'alerts' as TabId, icon: Bell, labelKey: 'nav.mobileBottom.alerts' },
