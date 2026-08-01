@@ -16,6 +16,12 @@ const SUBTABS = [
 
 export default function IntegrityHub() {
   const [activeTab, setActiveTab] = useState<string>('whistleblower');
+  const [contentKey, setContentKey] = useState(0);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    setContentKey(prev => prev + 1);
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
@@ -39,7 +45,7 @@ export default function IntegrityHub() {
         {SUBTABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? 'bg-red-600 text-white shadow-sm'
@@ -54,11 +60,13 @@ export default function IntegrityHub() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-          {activeTab === 'whistleblower' && <WhistleblowerPage />}
-          {activeTab === 'securetip' && <SecureWhistleblowerModal />}
-          {activeTab === 'tiptsubmit' && <AnonymousTipPage />}
-        </Suspense>
+        <div key={contentKey} className="animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            {activeTab === 'whistleblower' && <WhistleblowerPage />}
+            {activeTab === 'securetip' && <SecureWhistleblowerModal />}
+            {activeTab === 'tiptsubmit' && <AnonymousTipPage />}
+          </Suspense>
+        </div>
       </div>
     </div>
   );

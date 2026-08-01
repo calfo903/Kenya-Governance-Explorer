@@ -1,0 +1,765 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useMemo } from 'react';
+     4→import { useTranslations } from 'next-intl';
+     5→import { I18nProvider } from '@/i18n/i18n-provider';
+     6→import { LanguageToggle } from '@/components/language-toggle';
+     7→import { useLocaleStore } from '@/i18n/locale-store';
+     8→import {
+     9→  all47Governors, getPlaceholderCounties,
+    10→} from '@/data/governors';
+    11→import { kajiadoCounty } from '@/data/kajiado-county';
+    12→import { getCountyAuditRecords } from '@/data/county-audit-data';
+    13→import { getCountyBudget } from '@/data/county-budget-data';
+    14→import { allSources } from '@/data/sources';
+    15→import {
+    16→  County, Representative, FilterState, ComparisonItem,
+    17→} from '@/data/types';
+    18→import type { TabId } from '@/components/tab-types';
+    19→import ConstitutionPage from '@/components/constitution-page';
+    20→import PoliticalXPostsPage from '@/components/political-x-posts-page';
+    21→import CountyMapPage from '@/components/county-map-page';
+    22→import RtiGeneratorPage from '@/components/rti-generator-page';
+    23→import PetitionBuilderPage from '@/components/petition-builder-page';
+    24→import CorruptionHeatmapPage from '@/components/corruption-heatmap-page';
+    25→import ManifestoTrackerPage from '@/components/manifesto-tracker-page';
+    26→import CitizenFeedbackPage from '@/components/citizen-feedback-page';
+    27→import TimelinePage from '@/components/timeline-page';
+    28→import BudgetSimulatorPage from '@/components/budget-simulator-page';
+    29→import DataFetcherPage from '@/components/data-fetcher-page';
+    30→import AlertsSubscriptionPage from '@/components/alerts-subscription-page';
+    31→import GovernorReportCardPage from '@/components/governor-report-card-page';
+    32→import DevolutionQuizPage from '@/components/devolution-quiz-page';
+    33→import CitizenStoriesPage from '@/components/citizen-stories-page';
+    34→import CitizenReportDashboard from '@/components/citizen-report-dashboard';
+    35→import CBEFMeetingPage from '@/components/cbef-meeting-page';
+    36→import EmbedWidgetPage from '@/components/embed-widget-page';
+    37→import MzalendoPage from '@/components/mzalendo-page';
+    38→import BudgetAllocationPage from '@/components/budget-allocation-page';
+    39→import RepresentativeProfilesPage from '@/components/representative-profiles-page';
+    40→
+    41→import CountyLeadershipTreePage from '@/components/county-leadership-tree';
+    42→import ProjectsBrowserPage from '@/components/projects-browser-page';
+    43→import { DataFreshnessIndicator } from '@/components/data-freshness';
+    44→import CommandPalette from '@/components/command-palette';
+    45→import { KenyaMiniMap } from '@/components/kenya-county-map';
+    46→import CountyComparisonEnhanced from '@/components/county-comparison-enhanced';
+    47→import { WeatherWidget, CitizenAuditorDashboard, AIInsightsWidget, ProjectVelocityChart, RiskForecastWidget, SidebarMiniMap } from '@/components/sidebar-widgets';
+    48→import { useTheme } from 'next-themes';
+    49→
+    50→// Extracted components
+    51→import NationalSummaryDashboard from '@/components/national-summary-dashboard';
+    52→import GovernorsTreeView from '@/components/governors-tree-view';
+    53→import { CountyExplorer } from '@/components/county-explorer';
+    54→import SourcesHub from '@/components/sources-hub';
+    55→import ComparisonView from '@/components/comparison-view';
+    56→import JsonSchemaView from '@/components/json-schema-view';
+    57→import AssemblyHansardPage from '@/components/assembly-hansard-page';
+    58→
+    59→// Hub components (merged pages)
+    60→import AIHubPage from '@/components/ai-hub-page';
+    61→import FiscalAnalysisHub from '@/components/fiscal-analysis-hub';
+    62→import ProcurementHub from '@/components/procurement-hub';
+    63→import PerformanceHub from '@/components/performance-hub';
+    64→import InsightsHub from '@/components/insights-hub';
+    65→import IntegrityHub from '@/components/integrity-hub';
+    66→
+    67→// ─── ICONS ────────────────────────────────────────────────────────
+    68→import {
+    69→  Shield, Search, Filter,
+    70→  Users, MapPin, Building2, Scale, FileText,
+    71→  BarChart3, GitCompare, TreePine, Database,
+    72→  ExternalLink, AlertTriangle, CheckCircle2,
+    73→  XCircle, Globe, Phone, Mail,
+    74→  Landmark, User, GripVertical, Star,
+    75→  Library, ChevronDown, ChevronRight, Leaf, Gavel,
+    76→  Radio, Megaphone, BookOpen, Hand, Layers,
+    77→  ArrowRight, TrendingUp, TrendingDown, Minus,
+    78→  Eye, BookMarked, Menu, X, Volume2,
+    79→  Map, MailWarning, MessageSquare, Bell,
+    80→  Thermometer, FileOutput, ClipboardList,
+    81→  Receipt, Hash, Send, Timer,
+    82→  FolderSearch, ShoppingCart, AlertCircle,
+    83→  PieChart, Clock, FileCheck, Target, Sun, Moon,
+    84→  Keyboard, GraduationCap,
+    85→  AlertOctagon, Calendar, Code2, Zap,
+    86→  Network, FolderOpen, Vote, ShieldCheck, Lock,
+    87→  Trophy, Flag, FileBarChart, Award,
+    88→  Bot, Brain, Sparkles, Newspaper, Wallet,
+    89→} from 'lucide-react';
+    90→
+    91→// ─── shadcn/ui ───────────────────────────────────────────────────
+    92→import { Badge } from '@/components/ui/badge';
+    93→import { Separator } from '@/components/ui/separator';
+    94→import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+    95→
+    96→import DownloadLink from '@/components/download-link';
+    97→// ─── SIDEBAR NAV ITEMS (keys for i18n) ───────────────────────
+    98→interface NavItem {
+    99→  id: TabId;
+   100→  labelKey: string;
+   101→  icon: React.ElementType;
+   102→  sectionKey: string;
+   103→}
+   104→
+   105→const navItemDefs: NavItem[] = [
+   106→  // ── Governance ──
+   107→  { id: 'summary', labelKey: 'nav.items.summary', icon: BarChart3, sectionKey: 'nav.sections.governance' },
+   108→  { id: 'tree', labelKey: 'nav.items.tree', icon: TreePine, sectionKey: 'nav.sections.governance' },
+   109→  { id: 'countymap', labelKey: 'nav.items.countymap', icon: Map, sectionKey: 'nav.sections.governance' },
+   110→  { id: 'county', labelKey: 'nav.items.county', icon: MapPin, sectionKey: 'nav.sections.governance' },
+   111→  { id: 'compare', labelKey: 'nav.items.compare', icon: GitCompare, sectionKey: 'nav.sections.governance' },
+   112→  { id: 'heatmap', labelKey: 'nav.items.heatmap', icon: Thermometer, sectionKey: 'nav.sections.governance' },
+   113→  { id: 'sources', labelKey: 'nav.items.sources', icon: Library, sectionKey: 'nav.sections.governance' },
+   114→  { id: 'schema', labelKey: 'nav.items.schema', icon: Database, sectionKey: 'nav.sections.governance' },
+   115→  { id: 'timeline', labelKey: 'nav.items.timeline', icon: Clock, sectionKey: 'nav.sections.governance' },
+   116→  { id: 'budgetsim', labelKey: 'nav.items.budgetsim', icon: PieChart, sectionKey: 'nav.sections.governance' },
+   117→  { id: 'manifesto', labelKey: 'nav.items.manifesto', icon: Target, sectionKey: 'nav.sections.governance' },
+   118→  // ── Civic Tools ──
+   119→  { id: 'constitution', labelKey: 'nav.items.constitution', icon: BookMarked, sectionKey: 'nav.sections.civicTools' },
+   120→  { id: 'xposts', labelKey: 'nav.items.xposts', icon: Volume2, sectionKey: 'nav.sections.civicTools' },
+   121→  { id: 'integrityHub', labelKey: 'nav.items.integrityHub', icon: Eye, sectionKey: 'nav.sections.civicTools' },
+   122→  // ── Citizen Action ──
+   123→  { id: 'rti', labelKey: 'nav.items.rti', icon: FileCheck, sectionKey: 'nav.sections.citizenAction' },
+   124→  { id: 'petition', labelKey: 'nav.items.petition', icon: ClipboardList, sectionKey: 'nav.sections.citizenAction' },
+   125→  { id: 'feedback', labelKey: 'nav.items.feedback', icon: MessageSquare, sectionKey: 'nav.sections.citizenAction' },
+   126→  { id: 'reportcard', labelKey: 'nav.items.reportcard', icon: Star, sectionKey: 'nav.sections.citizenAction' },
+   127→  { id: 'quiz', labelKey: 'nav.items.quiz', icon: GraduationCap, sectionKey: 'nav.sections.citizenAction' },
+   128→  { id: 'stories', labelKey: 'nav.items.stories', icon: MessageSquare, sectionKey: 'nav.sections.citizenAction' },
+   129→  { id: 'reports', labelKey: 'nav.items.reports', icon: FileBarChart, sectionKey: 'nav.sections.citizenAction' },
+   130→  { id: 'cbef', labelKey: 'nav.items.cbef', icon: Calendar, sectionKey: 'nav.sections.citizenAction' },
+   131→  // ── Data & Alerts ──
+   132→  { id: 'datafetcher', labelKey: 'nav.items.datafetcher', icon: FolderSearch, sectionKey: 'nav.sections.dataAlerts' },
+   133→  { id: 'alerts', labelKey: 'nav.items.alerts', icon: Bell, sectionKey: 'nav.sections.dataAlerts' },
+   134→  // ── Analytics ──
+   135→  { id: 'fiscalHub', labelKey: 'nav.items.fiscalHub', icon: Zap, sectionKey: 'nav.sections.analytics' },
+   136→  { id: 'procurementHub', labelKey: 'nav.items.procurementHub', icon: ShoppingCart, sectionKey: 'nav.sections.analytics' },
+   137→  { id: 'performanceHub', labelKey: 'nav.items.performanceHub', icon: Building2, sectionKey: 'nav.sections.analytics' },
+   138→  { id: 'embed', labelKey: 'nav.items.embed', icon: Code2, sectionKey: 'nav.sections.analytics' },
+   139→  // ── Leadership & Projects ──
+   140→  { id: 'leadership', labelKey: 'nav.items.leadership', icon: Network, sectionKey: 'nav.sections.leadershipProjects' },
+   141→  { id: 'projects', labelKey: 'nav.items.projects', icon: FolderOpen, sectionKey: 'nav.sections.leadershipProjects' },
+   142→  { id: 'representatives', labelKey: 'nav.items.representatives', icon: Wallet, sectionKey: 'nav.sections.leadershipProjects' },
+   143→  { id: 'mzalendo', labelKey: 'nav.items.mzalendo', icon: Vote, sectionKey: 'nav.sections.leadershipProjects' },
+   144→  { id: 'hansard', labelKey: 'nav.items.hansard', icon: BookOpen, sectionKey: 'nav.sections.leadershipProjects' },
+   145→  { id: 'compareEnhanced', labelKey: 'nav.items.compareEnhanced', icon: GitCompare, sectionKey: 'nav.sections.leadershipProjects' },
+   146→  // ── Insights ──
+   147→  { id: 'insightsHub', labelKey: 'nav.items.insightsHub', icon: Trophy, sectionKey: 'nav.sections.insights' },
+   148→  // ── AI Tools ──
+   149→  { id: 'aiHub', labelKey: 'nav.items.aiHub', icon: Bot, sectionKey: 'nav.sections.aiTools' },
+   150→];
+   151→
+   152→// ══════════════════════════════════════════════════════════════════
+   153→// MAIN PAGE
+   154→// ══════════════════════════════════════════════════════════════════
+   155→export default function KenyaGovernancePage() {
+   156→  return (
+   157→    <I18nProvider>
+   158→      <PageContent />
+   159→    </I18nProvider>
+   160→  );
+   161→}
+   162→
+   163→function PageContent() {
+   164→  const t = useTranslations();
+   165→  const locale = useLocaleStore((s) => s.locale);
+   166→  const [activeTab, setActiveTab] = useState<TabId>('summary');
+   167→  const [selectedCounty, setSelectedCounty] = useState<string>('034');
+   168→  const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
+   169→  const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
+   170→  const [filters, setFilters] = useState<FilterState>({});
+   171→  const [sidebarOpen, setSidebarOpen] = useState(false);
+   172→  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['nav.sections.civicTools', 'nav.sections.citizenAction', 'nav.sections.dataAlerts', 'nav.sections.analytics', 'nav.sections.leadershipProjects', 'nav.sections.insights']));
+   173→  const toggleSection = (sectionKey: string) => {
+   174→    setCollapsedSections(prev => {
+   175→      const next = new Set(prev);
+   176→      if (next.has(sectionKey)) { next.delete(sectionKey); } else { next.add(sectionKey); }
+   177→      return next;
+   178→    });
+   179→  };
+   180→  const commandPaletteRef = React.useRef<{ open: () => void; close: () => void }>(null);
+   181→
+   182→  // Localized nav items
+   183→  const navItems = useMemo(() => navItemDefs.map(def => ({
+   184→    ...def,
+   185→    label: t(def.labelKey),
+   186→  })), [t]);
+   187→
+   188→  const allCounties = useMemo((): County[] => {
+   189→    const placeholders = getPlaceholderCounties();
+   190→    return placeholders.map((c) => {
+   191→      if (c.code === '034') return kajiadoCounty;
+   192→      // Inject real audit opinion from county-audit-data
+   193→      const auditRecords = getCountyAuditRecords(c.code);
+   194→      const latestAudit = auditRecords.find(a => a.financialYear === 'FY 2024/25');
+   195→      const latestBudget = getCountyBudget(c.code, 'FY 2024/25');
+   196→      return {
+   197→        ...c,
+   198→        executiveAuditOpinion: latestAudit?.executiveOpinion || undefined,
+   199→        executiveAuditSource: latestAudit?.source,
+   200→        developmentAbsorptionRate: latestBudget?.devAbsorptionRate || undefined,
+   201→        developmentAbsorptionSource: latestBudget ? {
+   202→          source: latestBudget.source.source,
+   203→          reportTitle: latestBudget.source.reportTitle,
+   204→          financialYear: latestBudget.source.financialYear,
+   205→          url: latestBudget.source.url,
+   206→          accessedDate: latestBudget.source.accessedDate,
+   207→        } : undefined,
+   208→        dataAvailability: 'partial' as const,
+   209→        dataAvailabilityNote: `Audit opinion: ${latestAudit?.executiveOpinion || 'pending'} (FY 2024/25). Budget absorption: ${latestBudget?.devAbsorptionRate ?? 'pending'}%. Full official data from oagkenya.go.ke and cob.go.ke.`,
+   210→      };
+   211→    });
+   212→  }, []);
+   213→
+   214→  const toggleCounty = (code: string) => {
+   215→    const next = new Set(expandedCounties);
+   216→    if (next.has(code)) next.delete(code); else next.add(code);
+   217→    setExpandedCounties(next);
+   218→  };
+   219→
+   220→  const addToComparison = (rep: Representative, countyName: string) => {
+   221→    if (comparisonList.length >= 4) return;
+   222→    if (comparisonList.find(c => c.representative.id === rep.id)) return;
+   223→    setComparisonList([...comparisonList, { representative: rep, countyName }]);
+   224→  };
+   225→
+   226→  const removeFromComparison = (id: string) => {
+   227→    setComparisonList(comparisonList.filter(c => c.representative.id !== id));
+   228→  };
+   229→
+   230→  const filteredGovernors = useMemo(() => {
+   231→    return all47Governors.filter((g) => {
+   232→      if (filters.region && g.region !== filters.region) return false;
+   233→      if (filters.coalition && g.coalition !== filters.coalition) return false;
+   234→      if (filters.party && g.party !== filters.party) return false;
+   235→      if (filters.keyword) {
+   236→        const kw = filters.keyword.toLowerCase();
+   237→        if (!g.name.toLowerCase().includes(kw) && !g.county.toLowerCase().includes(kw)) return false;
+   238→      }
+   239→      return true;
+   240→    });
+   241→  }, [filters]);
+   242→
+   243→  // Group nav items by section
+   244→  const governanceItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.governance');
+   245→  const civicItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.civicTools');
+   246→  const citizenItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.citizenAction');
+   247→  const dataItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.dataAlerts');
+   248→  const analyticsItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.analytics');
+   249→  const leadershipItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.leadershipProjects');
+   250→  const insightItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.insights');
+   251→  const aiItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.aiTools');
+   252→
+   253→  // Section labels lookup
+   254→  const sectionLabels = useMemo(() => ({
+   255→    'nav.sections.governance': t('nav.sections.governance'),
+   256→    'nav.sections.civicTools': t('nav.sections.civicTools'),
+   257→    'nav.sections.citizenAction': t('nav.sections.citizenAction'),
+   258→    'nav.sections.dataAlerts': t('nav.sections.dataAlerts'),
+   259→    'nav.sections.analytics': t('nav.sections.analytics'),
+   260→    'nav.sections.leadershipProjects': t('nav.sections.leadershipProjects'),
+   261→    'nav.sections.insights': t('nav.sections.insights'),
+   262→    'nav.sections.aiTools': t('nav.sections.aiTools'),
+   263→  }), [t]);
+   264→
+   265→  // Helper to get localized label for a nav item
+   266→  const getItemLabel = (id: TabId) => navItems.find(n => n.id === id)?.label ?? id;
+   267→
+   268→  // Breadcrumb items generator
+   269→  const getBreadcrumbItems = (tab: TabId): { id: TabId; label: string }[] => {
+   270→    const navDef = navItemDefs.find(n => n.id === tab);
+   271→    if (!navDef) return [{ id: tab, label: tab }];
+   272→
+   273→    // For hub tabs (aiHub, fiscalHub, etc.) — just show the hub label as leaf
+   274→    if (tab === 'summary') return [{ id: 'summary', label: 'Home' }];
+   275→
+   276→    // Get the section label for the parent
+   277→    const parentLabel = getSectionLabel(navDef.sectionKey);
+   278→    const tabLabel = getItemLabel(tab);
+   279→
+   280→    return [{ id: navItemDefs.find(n => n.sectionKey === navDef.sectionKey)?.id ?? tab, label: parentLabel }, { id: tab, label: tabLabel }];
+   281→  };
+   282→
+   283→  // Helper to get localized section label
+   284→  const getSectionLabel = (sectionKey: string) => sectionLabels[sectionKey] ?? sectionKey;
+   285→
+   286→  // Sidebar section renderer helper
+   287→  const renderSidebarSection = (items: NavItem[], sectionKey: string, activeColor: string) => (
+   288→    <div>
+   289→      <button onClick={() => toggleSection(sectionKey)} className="flex items-center justify-between w-full px-3 py-1.5">
+   290→        <div className="flex items-center gap-1.5">
+   291→          <div className={`h-1.5 w-1.5 rounded-full ${activeColor.replace('bg-', 'bg-').replace('-600', '-500')}`} />
+   292→          <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</span>
+   293→        </div>
+   294→        <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform duration-200 ${collapsedSections.has(sectionKey) ? '-rotate-90' : ''}`} />
+   295→      </button>
+   296→      <div className={`overflow-hidden transition-all duration-200 ${collapsedSections.has(sectionKey) ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'}`}>
+   297→        {items.map((item) => (
+   298→          <button
+   299→            key={item.id}
+   300→            onClick={() => setActiveTab(item.id)}
+   301→            aria-current={activeTab === item.id ? 'page' : undefined}
+   302→            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+   303→              activeTab === item.id
+   304→                ? `${activeColor} text-white shadow-sm`
+   305→                : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
+   306→            }`}
+   307→          >
+   308→            <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+   309→            <span>{getItemLabel(item.id)}</span>
+   310→          </button>
+   311→        ))}
+   312→      </div>
+   313→    </div>
+   314→  );
+   315→
+   316→  // Mobile sidebar section renderer helper
+   317→  const renderMobileSidebarSection = (items: NavItem[], sectionKey: string, activeColor: string) => (
+   318→    <div>
+   319→      <button onClick={() => toggleSection(sectionKey)} className="flex items-center justify-between w-full px-3 py-1.5">
+   320→        <div className="flex items-center gap-1.5">
+   321→          <div className={`h-1.5 w-1.5 rounded-full ${activeColor.replace('bg-', 'bg-').replace('-600', '-500')}`} />
+   322→          <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</span>
+   323→        </div>
+   324→        <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform duration-200 ${collapsedSections.has(sectionKey) ? '-rotate-90' : ''}`} />
+   325→      </button>
+   326→      <div className={`overflow-hidden transition-all duration-200 ${collapsedSections.has(sectionKey) ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'}`}>
+   327→        {items.map((item) => (
+   328→          <button
+   329→            key={item.id}
+   330→            onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+   331→            aria-current={activeTab === item.id ? 'page' : undefined}
+   332→            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+   333→              activeTab === item.id
+   334→                ? `${activeColor} text-white`
+   335→                : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
+   336→            }`}
+   337→          >
+   338→            <item.icon className="h-4 w-4" aria-hidden="true" />
+   339→            <span>{getItemLabel(item.id)}</span>
+   340→          </button>
+   341→        ))}
+   342→      </div>
+   343→    </div>
+   344→  );
+   345→
+   346→  const { theme, setTheme } = useTheme();
+   347→
+   348→  // Keyboard shortcuts
+   349→  React.useEffect(() => {
+   350→    const handler = (e: KeyboardEvent) => {
+   351→      if (e.key === 'Escape') { setSidebarOpen(false); return; }
+   352→      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); commandPaletteRef.current?.open(); return; }
+   353→      if ((e.ctrlKey || e.metaKey) && e.key === 'd') { e.preventDefault(); setTheme(theme === 'dark' ? 'light' : 'dark'); return; }
+   354→      if (e.key === '?' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+   355→        alert('Keyboard Shortcuts:\nCtrl+K: Search\nCtrl+D: Toggle Dark Mode\nEsc: Close panels\n?: This help');
+   356→      }
+   357→    };
+   358→    window.addEventListener('keydown', handler);
+   359→    return () => window.removeEventListener('keydown', handler);
+   360→  }, [theme, setTheme]);
+   361→
+   362→  return (
+   363→    <TooltipProvider>
+   364→      <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950">
+   365→        {/* ══════════ SKIP NAVIGATION ══════════ */}
+   366→        <a href="#main-content" className="skip-to-content">
+   367→          Skip to main content
+   368→        </a>
+   369→
+   370→        {/* ══════════ HEADER ══════════ */}
+   371→        <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50">
+   372→          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+   373→            <div className="py-3 flex items-center justify-between gap-4">
+   374→              <div className="flex items-center gap-3">
+   375→                <button
+   376→                  onClick={() => setSidebarOpen(!sidebarOpen)}
+   377→                  aria-label="Open navigation menu"
+   378→                  className="lg:hidden h-9 w-9 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
+   379→                >
+   380→                  <Menu className="h-4 w-4 text-stone-600 dark:text-stone-300" aria-hidden="true" />
+   381→                </button>
+   382→                <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0" aria-hidden="true">
+   383→                  <Shield className="h-4 w-4 text-white" />
+   384→                </div>
+   385→                <div>
+   386→                  <h1 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
+   387→                    {t('app.title')}
+   388→                  </h1>
+   389→                  <p className="text-xs sm:text-sm text-stone-500">
+   390→                    {t('app.subtitle')}
+   391→                  </p>
+   392→                </div>
+   393→              </div>
+   394→              <div className="flex items-center gap-2">
+   395→                {comparisonList.length > 0 && (
+   396→                  <Badge variant="secondary" className="text-[10px] h-6 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+   397→                    {t('app.headerCompare', { count: comparisonList.length })}
+   398→                  </Badge>
+   399→                )}
+   400→                <button
+   401→                  onClick={() => commandPaletteRef.current?.open()}
+   402→                  aria-label={t('app.searchShortcut')}
+   403→                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
+   404→                >
+   405→                  <Keyboard className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" />
+   406→                </button>
+   407→                <button
+   408→                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+   409→                  aria-label={t('app.darkModeShortcut')}
+   410→                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
+   411→                >
+   412→                  {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" />}
+   413→                </button>
+   414→                <LanguageToggle />
+   415→                <DownloadLink href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
+   416→                  <BookMarked className="h-3 w-3" aria-hidden="true" />{t('common.constitution')}
+   417→                </DownloadLink>
+   418→              </div>
+   419→            </div>
+   420→          </div>
+   421→        </header>
+   422→
+   423→        {/* ══════════ BREADCRUMB ══════════ */}
+   424→        <div className="bg-white dark:bg-stone-900 border-b border-stone-100 dark:border-stone-800">
+   425→          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5">
+   426→            <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs">
+   427→              <ChevronRight className="h-3 w-3 text-stone-400 rotate-180" />
+   428→              {getBreadcrumbItems(activeTab).map((item, i) => (
+   429→                <React.Fragment key={item.id}>
+   430→                  {i > 0 && <ChevronRight className="h-3 w-3 text-stone-400" />}
+   431→                  {i < getBreadcrumbItems(activeTab).length - 1 ? (
+   432→                    <button onClick={() => setActiveTab(item.id)} className="text-stone-500 hover:text-emerald-600 transition-colors">
+   433→                      {item.label}
+   434→                    </button>
+   435→                  ) : (
+   436→                    <span className="text-stone-900 dark:text-stone-100 font-medium">{item.label}</span>
+   437→                  )}
+   438→                </React.Fragment>
+   439→              ))}
+   440→            </nav>
+   441→          </div>
+   442→        </div>
+   443→
+   444→        {/* ══════════ LAYOUT: SIDEBAR + MAIN ══════════ */}
+   445→        <div className="flex flex-1">
+   446→          {/* Sidebar - Desktop (always visible on lg+) */}
+   447→          <aside className="hidden lg:flex flex-col w-60 border-r border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 shrink-0 sticky top-[52px] h-[calc(100vh-52px)] overflow-y-auto">
+   448→            <nav aria-label="Main navigation" className="flex-1 py-3 px-2 space-y-4">
+   449→              {renderSidebarSection(governanceItems, 'nav.sections.governance', 'bg-emerald-600')}
+   450→
+   451→              <Separator className="bg-stone-100 dark:bg-stone-700" />
+   452→
+   453→              {renderSidebarSection(civicItems, 'nav.sections.civicTools', 'bg-blue-600')}
+   454→
+   455→              <Separator className="bg-stone-100 dark:bg-stone-700" />
+   456→
+   457→              {renderSidebarSection(citizenItems, 'nav.sections.citizenAction', 'bg-amber-600')}
+   458→
+   459→              <Separator className="bg-stone-100 dark:bg-stone-700" />
+   460→
+   461→              {renderSidebarSection(dataItems, 'nav.sections.dataAlerts', 'bg-purple-600')}
+   462→
+   463→              <Separator className="bg-stone-100 dark:bg-stone-700" />
+   464→
+   465→              {renderSidebarSection(analyticsItems, 'nav.sections.analytics', 'bg-indigo-600')}
+   466→
+   467→              <Separator className="bg-stone-100 dark:bg-stone-700" />
+   468→
+   469→              {renderSidebarSection(leadershipItems, 'nav.sections.leadershipProjects', 'bg-rose-600')}
+   470→
+   471→              <Separator className="bg-stone-100 dark:bg-stone-700" />
+   472→
+   473→              {renderSidebarSection(insightItems, 'nav.sections.insights', 'bg-teal-600')}
+   474→
+   475→              <Separator className="bg-stone-100 dark:bg-stone-700" />
+   476→
+   477→              {renderSidebarSection(aiItems, 'nav.sections.aiTools', 'bg-emerald-600')}
+   478→
+   479→              <Separator className="bg-stone-100 dark:bg-stone-700" />
+   480→              <div className="px-3 py-2">
+   481→                <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">{t('sidebar.quickStats')}</p>
+   482→                <div className="space-y-1.5">
+   483→                  <div className="flex items-center justify-between text-[10px]">
+   484→                    <span className="text-stone-500 dark:text-stone-400">{t('sidebar.counties')}</span>
+   485→                    <span className="font-bold text-stone-700 dark:text-stone-200">47</span>
+   486→                  </div>
+   487→                  <div className="flex items-center justify-between text-[10px]">
+   488→                    <span className="text-stone-500 dark:text-stone-400">{t('sidebar.dataSources')}</span>
+   489→                    <span className="font-bold text-stone-700 dark:text-stone-200">{allSources.length}</span>
+   490→                  </div>
+   491→                  <div className="flex items-center justify-between text-[10px]">
+   492→                    <span className="text-stone-500 dark:text-stone-400">{t('sidebar.term')}</span>
+   493→                    <span className="font-bold text-stone-700 dark:text-stone-200">2022–2027</span>
+   494→                  </div>
+   495→                </div>
+   496→                {/* Data Freshness */}
+   497→                <div className="mt-3 pt-2 border-t border-stone-100 dark:border-stone-800">
+   498→                  <DataFreshnessIndicator compact />
+   499→                </div>
+   500→              </div>
+   501→
+   502→              {/* Sidebar Widgets */}
+   503→              <div className="px-3 py-2 space-y-3">
+   504→                <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{t('sidebar.liveWidgets')}</p>
+   505→                <SidebarMiniMap onCountyClick={(code) => { setSelectedCounty(code); setActiveTab('county'); }} />
+   506→                <WeatherWidget lat={-1.2921} lng={36.8219} location="Nairobi" />
+   507→                <CitizenAuditorDashboard />
+   508→                <AIInsightsWidget />
+   509→              </div>
+   510→
+   511→              {/* Primary Sources Links */}
+   512→              <div className="px-3 py-2 mt-auto">
+   513→                <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">{t('sidebar.primarySources')}</p>
+   514→                <div className="space-y-1">
+   515→                  {[
+   516→                    { label: 'OAG Kenya', url: 'https://oagkenya.go.ke/' },
+   517→                    { label: 'Controller of Budget', url: 'https://cob.go.ke/' },
+   518→                    { label: 'TI-Kenya', url: 'https://tikenya.org/' },
+   519→                    { label: 'IEBC', url: 'https://www.iebc.or.ke/' },
+   520→                    { label: 'EACC', url: 'https://eacc.go.ke/' },
+   521→                  ].map(s => (
+   522→                    <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
+   523→                      className="flex items-center gap-1.5 text-[10px] text-stone-500 dark:text-stone-400 hover:text-emerald-600 transition-colors">
+   524→                      <ExternalLink className="h-2.5 w-2.5" aria-hidden="true" /> {s.label}
+   525→                    </a>
+   526→                  ))}
+   527→                </div>
+   528→              </div>
+   529→            </nav>
+   530→          </aside>
+   531→
+   532→          {/* Mobile Sidebar Overlay */}
+   533→          {sidebarOpen && (
+   534→            <div className="lg:hidden fixed inset-0 z-50">
+   535→              <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
+   536→              <aside className="absolute left-0 top-0 bottom-0 w-72 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-700 flex flex-col shadow-xl z-50">
+   537→                <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-stone-700">
+   538→                  <span className="text-sm font-bold text-stone-800 dark:text-stone-100">{t('common.navigation')}</span>
+   539→                  <button onClick={() => setSidebarOpen(false)} aria-label="Close navigation menu" className="h-8 w-8 rounded-lg hover:bg-stone-100 dark:bg-stone-700 flex items-center justify-center">
+   540→                    <X className="h-4 w-4 text-stone-500 dark:text-stone-400" aria-hidden="true" />
+   541→                  </button>
+   542→                </div>
+   543→                <nav aria-label="Main navigation" className="flex-1 py-3 px-2 space-y-4 overflow-y-auto">
+   544→                  {renderMobileSidebarSection(governanceItems, 'nav.sections.governance', 'bg-emerald-600')}
+   545→                  <Separator />
+   546→                  {renderMobileSidebarSection(civicItems, 'nav.sections.civicTools', 'bg-blue-600')}
+   547→                  <Separator />
+   548→                  {renderMobileSidebarSection(citizenItems, 'nav.sections.citizenAction', 'bg-amber-600')}
+   549→                  <Separator />
+   550→                  {renderMobileSidebarSection(dataItems, 'nav.sections.dataAlerts', 'bg-purple-600')}
+   551→                  <Separator />
+   552→                  {renderMobileSidebarSection(analyticsItems, 'nav.sections.analytics', 'bg-indigo-600')}
+   553→                  <Separator />
+   554→                  {renderMobileSidebarSection(leadershipItems, 'nav.sections.leadershipProjects', 'bg-rose-600')}
+   555→                  <Separator />
+   556→                  {renderMobileSidebarSection(insightItems, 'nav.sections.insights', 'bg-teal-600')}
+   557→                  <Separator />
+   558→                  {renderMobileSidebarSection(aiItems, 'nav.sections.aiTools', 'bg-emerald-600')}
+   559→                </nav>
+   560→              </aside>
+   561→            </div>
+   562→          )}
+   563→
+   564→          {/* ══════════ MAIN CONTENT ══════════ */}
+   565→          <main id="main-content" className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full">
+   566→            {activeTab === 'summary' && <NationalSummaryDashboard onNavigate={setActiveTab} />}
+   567→            {activeTab === 'tree' && (
+   568→              <GovernorsTreeView
+   569→                governors={filteredGovernors}
+   570→                expandedCounties={expandedCounties}
+   571→                toggleCounty={toggleCounty}
+   572→                allCounties={allCounties}
+   573→                filters={filters}
+   574→                setFilters={setFilters}
+   575→                addToComparison={addToComparison}
+   576→                comparisonList={comparisonList}
+   577→              />
+   578→            )}
+   579→            {activeTab === 'county' && (
+   580→              <CountyExplorer
+   581→                countyCode={selectedCounty}
+   582→                allCounties={allCounties}
+   583→                onSelectCounty={setSelectedCounty}
+   584→                addToComparison={addToComparison}
+   585→                comparisonList={comparisonList}
+   586→              />
+   587→            )}
+   588→            {activeTab === 'sources' && <SourcesHub />}
+   589→            {activeTab === 'compare' && (
+   590→              <ComparisonView
+   591→                comparisonList={comparisonList}
+   592→                removeFromComparison={removeFromComparison}
+   593→                addToComparison={addToComparison}
+   594→                allCounties={allCounties}
+   595→              />
+   596→            )}
+   597→            {activeTab === 'schema' && <JsonSchemaView />}
+   598→            {activeTab === 'constitution' && <ConstitutionPage />}
+   599→            {activeTab === 'xposts' && <PoliticalXPostsPage />}
+   600→            {activeTab === 'countymap' && (
+   601→              <CountyMapPage
+   602→                onCountyDeepDive={(code) => {
+   603→                  setSelectedCounty(code);
+   604→                  setActiveTab('county');
+   605→                }}
+   606→              />
+   607→            )}
+   608→            {activeTab === 'rti' && <RtiGeneratorPage />}
+   609→            {activeTab === 'petition' && <PetitionBuilderPage />}
+   610→            {activeTab === 'heatmap' && <CorruptionHeatmapPage />}
+   611→            {activeTab === 'manifesto' && <ManifestoTrackerPage />}
+   612→            {activeTab === 'feedback' && <CitizenFeedbackPage />}
+   613→            {activeTab === 'timeline' && <TimelinePage />}
+   614→            {activeTab === 'budgetsim' && <BudgetSimulatorPage />}
+   615→            {activeTab === 'datafetcher' && <DataFetcherPage />}
+   616→            {activeTab === 'alerts' && <AlertsSubscriptionPage />}
+   617→            {activeTab === 'fiscalHub' && <FiscalAnalysisHub />}
+   618→            {activeTab === 'procurementHub' && <ProcurementHub />}
+   619→            {activeTab === 'reportcard' && <GovernorReportCardPage />}
+   620→            {activeTab === 'quiz' && <DevolutionQuizPage />}
+   621→            {activeTab === 'performanceHub' && <PerformanceHub />}
+   622→            {activeTab === 'stories' && <CitizenStoriesPage />}
+   623→            {activeTab === 'reports' && <CitizenReportDashboard />}
+   624→            {activeTab === 'cbef' && <CBEFMeetingPage />}
+   625→            {activeTab === 'embed' && <EmbedWidgetPage />}
+   626→            {activeTab === 'leadership' && <CountyLeadershipTreePage />}
+   627→            {activeTab === 'projects' && (
+   628→            <div className="space-y-4">
+   629→              <ProjectsBrowserPage />
+   630→              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   631→                <ProjectVelocityChart projectRef="PRJ-034-001" />
+   632→                <RiskForecastWidget projectId="PRJ-034-001" />
+   633→              </div>
+   634→            </div>
+   635→            )}
+   636→            {activeTab === 'mzalendo' && <MzalendoPage />}
+   637→            {activeTab === 'compareEnhanced' && <CountyComparisonEnhanced />}
+   638→            {activeTab === 'hansard' && <AssemblyHansardPage />}
+   639→            {activeTab === 'representatives' && <BudgetAllocationPage />}
+   640→            {activeTab === 'integrityHub' && <IntegrityHub />}
+   641→            {activeTab === 'insightsHub' && <InsightsHub />}
+   642→            {activeTab === 'aiHub' && <AIHubPage />}
+   643→          </main>
+   644→
+   645→          {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
+   646→          <nav aria-label="Quick navigation" className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 z-50 px-2 py-1.5">
+   647→            <div className="flex items-center justify-around">
+   648→              {[
+   649→                { id: 'summary' as TabId, icon: BarChart3, labelKey: 'nav.mobileBottom.home' },
+   650→                { id: 'countymap' as TabId, icon: Map, labelKey: 'nav.mobileBottom.map' },
+   651→                { id: 'tree' as TabId, icon: TreePine, labelKey: 'nav.mobileBottom.counties' },
+   652→                { id: 'representatives' as TabId, icon: Wallet, labelKey: 'nav.mobileBottom.reps' },
+   653→                { id: 'alerts' as TabId, icon: Bell, labelKey: 'nav.mobileBottom.alerts' },
+   654→              ].map(item => (
+   655→                <button
+   656→                  key={item.id}
+   657→                  onClick={() => { setActiveTab(item.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+   658→                  aria-current={activeTab === item.id ? 'page' : undefined}
+   659→                  className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors ${
+   660→                    activeTab === item.id
+   661→                      ? 'text-emerald-600 dark:text-emerald-400'
+   662→                      : 'text-stone-500 dark:text-stone-400'
+   663→                  }`}
+   664→                >
+   665→                  <item.icon className="h-4 w-4" aria-hidden="true" />
+   666→                  <span className="text-[9px] font-medium">{t(item.labelKey)}</span>
+   667→                </button>
+   668→              ))}
+   669→            </div>
+   670→          </nav>
+   671→        </div>
+   672→
+   673→        {/* ══════════ FOOTER ══════════ */}
+   674→        <footer className="bg-stone-900 text-stone-400 py-6 mt-auto">
+   675→          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   676→            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
+   677→              <div>
+   678→                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">{t('footer.primarySources')}</h3>
+   679→                <ul className="space-y-1.5 text-xs">
+   680→                  {[
+   681→                    { label: 'OAG', url: 'https://oagkenya.go.ke/' },
+   682→                    { label: 'CoB', url: 'https://cob.go.ke/' },
+   683→                    { label: 'TI-Kenya', url: 'https://tikenya.org/' },
+   684→                    { label: 'IEBC', url: 'https://www.iebc.or.ke/' },
+   685→                    { label: 'EACC', url: 'https://eacc.go.ke/' },
+   686→                  ].map(s => (
+   687→                    <li key={s.label}>
+   688→                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+   689→                        <ExternalLink className="h-3 w-3" aria-hidden="true" /> {s.label}
+   690→                      </a>
+   691→                    </li>
+   692→                  ))}
+   693→                </ul>
+   694→              </div>
+   695→              <div>
+   696→                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">{t('footer.parliamentOversight')}</h3>
+   697→                <ul className="space-y-1.5 text-xs">
+   698→                  {[
+   699→                    { label: 'Parliament Hansard', url: 'https://parliament.go.ke/' },
+   700→                    { label: 'Senate CPAIC', url: 'https://parliament.go.ke/committees' },
+   701→                    { label: 'PPRA / PPIP', url: 'https://ppra.go.ke/' },
+   702→                    { label: 'CRA', url: 'https://cra.go.ke/' },
+   703→                    { label: 'PSC', url: 'https://psc.go.ke/' },
+   704→                    { label: 'CAJ Ombudsman', url: 'https://caj.go.ke/' },
+   705→                  ].map(s => (
+   706→                    <li key={s.label}>
+   707→                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+   708→                        <ExternalLink className="h-3 w-3" aria-hidden="true" /> {s.label}
+   709→                      </a>
+   710→                    </li>
+   711→                  ))}
+   712→                </ul>
+   713→              </div>
+   714→              <div>
+   715→                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">{t('footer.resourcesData')}</h3>
+   716→                <ul className="space-y-1.5 text-xs">
+   717→                  {[
+   718→                    { label: 'KNBS Statistics', url: 'https://www.knbs.or.ke/' },
+   719→                    { label: 'Kenya Open Data', url: 'https://opendata.go.ke/' },
+   720→                    { label: 'National Treasury', url: 'https://treasury.go.ke/' },
+   721→                    { label: 'NLC Land', url: 'https://nlc.go.ke/' },
+   722→                    { label: 'WASREB Water', url: 'https://wasreb.go.ke/' },
+   723→                    { label: 'KFS Forests', url: 'https://kenyaforestservice.org/' },
+   724→                  ].map(s => (
+   725→                    <li key={s.label}>
+   726→                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+   727→                        <ExternalLink className="h-3 w-3" aria-hidden="true" /> {s.label}
+   728→                      </a>
+   729→                    </li>
+   730→                  ))}
+   731→                </ul>
+   732→              </div>
+   733→              <div>
+   734→                <h3 className="font-semibold text-stone-200 text-xs uppercase tracking-wider mb-3">{t('footer.civilSociety')}</h3>
+   735→                <ul className="space-y-1.5 text-xs">
+   736→                  {[
+   737→                    { label: 'Mzalendo', url: 'https://mzalendo.com/' },
+   738→                    { label: 'PesaCheck', url: 'https://pesacheck.africa/' },
+   739→                    { label: 'Katiba Institute', url: 'https://katibainstitute.org/' },
+   740→                    { label: 'AfriCOG', url: 'https://africog.org/' },
+   741→                    { label: 'Bajeti Hub', url: 'https://bajeti.go.ke/' },
+   742→                    { label: 'IEA Kenya', url: 'https://ieakenya.or.ke/' },
+   743→                  ].map(s => (
+   744→                    <li key={s.label}>
+   745→                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+   746→                        <ExternalLink className="h-3 w-3" aria-hidden="true" /> {s.label}
+   747→                      </a>
+   748→                    </li>
+   749→                  ))}
+   750→                </ul>
+   751→              </div>
+   752→            </div>
+   753→            <Separator className="my-6 bg-stone-700" />
+   754→            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500 dark:text-stone-400">
+   755→              <p>{t('app.footerLine1')}</p>
+   756→              <p>{t('app.footerLine2', { sources: allSources.length })}</p>
+   757→            </div>
+   758→          </div>
+   759→        </footer>
+   760→      </div>
+   761→      <CommandPalette ref={commandPaletteRef} onNavigate={(tabId) => setActiveTab(tabId as TabId)} />
+   762→    </TooltipProvider>
+   763→  );
+   764→}
+   765→

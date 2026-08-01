@@ -599,3 +599,39 @@ Stage Summary:
 - Command palette updated from 43 → 36 entries
 - EN + SW i18n fully updated
 - Build passes cleanly
+
+---
+Task ID: 25
+Agent: Main Agent + 4 Subagents
+Task: Implement 12 comprehensive UI improvements across the entire application
+
+Work Log:
+- Created hero section on National Summary: gradient emerald banner with Kenya SVG pattern, 4 animated counters (47 Counties, KSh 387.4B, 1 Clean Audit, 58.3% Absorption), search bar opening command palette
+- Added breadcrumb navigation bar below header: shows parent section + current page, clickable parent links
+- Implemented collapsible sidebar sections: 6 of 8 sections default collapsed (Governance + AI Tools stay open), smooth max-height/opacity transition, chevron rotation
+- Added sidebar collapsed icon-rail mode on desktop: w-16 icon-only view with Tooltip labels, toggle button at bottom
+- Card design refresh via CSS: stat-card accent bars (5 color variants), card-lift hover effect, gradient stat backgrounds, dark mode variants
+- Better typography: page title bumped to text-lg, dashboard title to text-2xl, tabular-nums on all financial figures
+- Hub sub-tab animations: contentKey state + animate-in fade-in slide-in-from-bottom-2 on all 6 hub components
+- Micro-interactions CSS: btn-press (scale 0.96), badge-pulse (2s opacity), skeleton-shimmer (sliding gradient)
+- Page transition CSS: page-enter / page-enter-active classes
+- Data density toggle: Compact/Comfortable button in header, max-w-5xl vs max-w-7xl
+- Welcome onboarding overlay: 3 feature cards (Command Palette, Map, AI), localStorage dismiss, 1.5s delay, backdrop blur
+- Loading skeleton shimmer effect with light/dark variants
+
+Files created: welcome-onboarding.tsx
+Files modified: page.tsx, national-summary-dashboard.tsx, globals.css, ai-hub-page.tsx, fiscal-analysis-hub.tsx, procurement-hub.tsx, performance-hub.tsx, insights-hub.tsx, integrity-hub.tsx
+Build verification: npx next build — zero errors, all 37 pages generated
+
+Stage Summary:
+- 12 UI improvements implemented across 10 files
+- Hero section with animated counters and search bar
+- Collapsible + collapsible-to-icon-rail sidebar
+- Breadcrumb navigation for wayfinding
+- Card design system with accent bars, gradients, hover lift
+- Typography hierarchy improvements with tabular-nums
+- Hub sub-tab crossfade animations
+- Micro-interactions (button press, badge pulse, shimmer)
+- Data density toggle (compact/comfortable)
+- Welcome onboarding overlay for first-time users
+- Build passes cleanly with zero errors

@@ -16,6 +16,12 @@ const SUBTABS = [
 
 export default function InsightsHub() {
   const [activeTab, setActiveTab] = useState<string>('rankings');
+  const [contentKey, setContentKey] = useState(0);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    setContentKey(prev => prev + 1);
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
@@ -34,7 +40,7 @@ export default function InsightsHub() {
         {SUBTABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? 'bg-emerald-600 text-white shadow-sm'
@@ -49,11 +55,13 @@ export default function InsightsHub() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-          {activeTab === 'rankings' && <CountyRankingsPage />}
-          {activeTab === 'milestones' && <DevolutionMilestonesPage />}
-          {activeTab === 'coalition' && <CoalitionComparisonPage />}
-        </Suspense>
+        <div key={contentKey} className="animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            {activeTab === 'rankings' && <CountyRankingsPage />}
+            {activeTab === 'milestones' && <DevolutionMilestonesPage />}
+            {activeTab === 'coalition' && <CoalitionComparisonPage />}
+          </Suspense>
+        </div>
       </div>
     </div>
   );

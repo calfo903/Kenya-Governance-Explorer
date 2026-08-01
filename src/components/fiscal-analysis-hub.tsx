@@ -37,6 +37,12 @@ function LoadingSkeleton() {
 
 export default function FiscalAnalysisHub() {
   const [activeTab, setActiveTab] = useState<string>('auditTrends');
+  const [contentKey, setContentKey] = useState(0);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    setContentKey(prev => prev + 1);
+  };
 
   const activeSubTab = subTabs.find((tab) => tab.id === activeTab);
   const ActiveComponent = activeSubTab?.component;
@@ -70,7 +76,7 @@ export default function FiscalAnalysisHub() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={
                   'inline-flex items-center gap-2 shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ' +
                   (isActive
@@ -90,9 +96,11 @@ export default function FiscalAnalysisHub() {
 
       {/* Sub-tab Content */}
       <div className="flex-1 overflow-y-auto">
-        <Suspense fallback={<LoadingSkeleton />}>
-          {ActiveComponent && <ActiveComponent />}
-        </Suspense>
+        <div key={contentKey} className="animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <Suspense fallback={<LoadingSkeleton />}>
+            {ActiveComponent && <ActiveComponent />}
+          </Suspense>
+        </div>
       </div>
     </div>
   );

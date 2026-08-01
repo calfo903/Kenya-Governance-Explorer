@@ -1,18 +1,51 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   nationalSummary, getLatestAuditSummary, getLatestBudgetSummary,
   governorCoalitionDistribution,
 } from '@/data/national-summary';
 import { allSources } from '@/data/sources';
-import { MapPin, CheckCircle2, TrendingDown, AlertTriangle, Scale, BarChart3, ExternalLink, TrendingUp, Minus, GitCompare } from 'lucide-react';
+import { MapPin, CheckCircle2, TrendingDown, AlertTriangle, Scale, BarChart3, ExternalLink, TrendingUp, Minus, GitCompare, Search } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ExportButton from '@/components/export-button';
 import { exportCountiesToCSV } from '@/lib/data-export';
 import type { TabId } from './tab-types';
+
+// ══════════════════════════════════════════════════════════════════
+// ANIMATED COUNTER HOOK
+// ══════════════════════════════════════════════════════════════════
+function useAnimatedCounter(target: number, duration: number = 1500): number {
+  const [count, setCount] = useState(0);
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (target === 0) return;
+    startRef.current = performance.now();
+    const animate = (now: number) => {
+      if (!startRef.current) return;
+      const elapsed = now - startRef.current;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target * 10) / 10);
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      } else {
+        setCount(target);
+      }
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [target, duration]);
+
+  return count;
+}
 
 // ══════════════════════════════════════════════════════════════════
 // NATIONAL SUMMARY DASHBOARD
@@ -23,13 +56,83 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
   const prevAudit = nationalSummary.auditSummaries[1];
   const latestBudget = getLatestBudgetSummary();
 
+  // Animated counter values
+  const animatedCounties = useAnimatedCounter(47);
+  const animatedCleanAudit = useAnimatedCounter(1);
+  const animatedAbsorption = useAnimatedCounter(58.3);
+  const [fadeIn, setFadeIn] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFadeIn(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="space-y-5">
+      {/* ══════════ HERO BANNER ══════════ */}
+      <div className="relative rounded-2xl overflow-hidden mb-6 bg-gradient-to-r from-emerald-700 to-emerald-500 dark:from-emerald-900 dark:to-emerald-700">
+        {/* Kenya-themed pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.07]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 0h20v20H0zM20 20h20v20H20z'/%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10" />
+
+        <div className="relative px-6 py-8 sm:px-10 sm:py-10">
+          {/* Hero title */}
+          <div className="text-center mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Kenya Devolution at a Glance</h2>
+            <p className="text-xs text-emerald-100">Real-time national summary of county governance performance</p>
+          </div>
+
+          {/* Animated counters row */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+            {/* Counties */}
+            <div className="text-center">
+              <MapPin className="h-5 w-5 text-emerald-200 mx-auto mb-2" />
+              <p className="text-3xl font-bold text-white tabular-nums">{animatedCounties}</p>
+              <p className="text-xs text-emerald-100 mt-0.5">Counties</p>
+            </div>
+            {/* Equitable Share */}
+            <div className="text-center">
+              <Scale className="h-5 w-5 text-emerald-200 mx-auto mb-2" />
+              <p className={`text-3xl font-bold text-white transition-opacity duration-1000 tabular-nums ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>KSh 387.4B</p>
+              <p className="text-xs text-emerald-100 mt-0.5">Equitable Share</p>
+            </div>
+            {/* Clean Audit */}
+            <div className="text-center">
+              <CheckCircle2 className="h-5 w-5 text-emerald-200 mx-auto mb-2" />
+              <p className="text-3xl font-bold text-white tabular-nums">{animatedCleanAudit}</p>
+              <p className="text-xs text-emerald-100 mt-0.5">Clean Audit</p>
+            </div>
+            {/* Avg Dev Absorption */}
+            <div className="text-center">
+              <TrendingDown className="h-5 w-5 text-emerald-200 mx-auto mb-2" />
+              <p className="text-3xl font-bold text-white tabular-nums">{Math.round(animatedAbsorption * 10) / 10}%</p>
+              <p className="text-xs text-emerald-100 mt-0.5">Avg Dev Absorption</p>
+            </div>
+          </div>
+
+          {/* Search bar */}
+          <div className="max-w-md mx-auto">
+            <button
+              onClick={() => onNavigate('summary')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-white placeholder-emerald-200 hover:bg-white/25 transition-colors cursor-text"
+            >
+              <Search className="h-4 w-4 text-emerald-200" />
+              <span className="text-sm text-emerald-200">Search counties, tools, data...</span>
+              <kbd className="ml-auto hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 border border-white/20 text-[10px] text-emerald-200">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Top Actions Bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">{t('dashboard.nationalDashboard')}</h2>
-          <p className="text-xs text-stone-500">{t('dashboard.dashboardSubtitle')}</p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">{t('dashboard.nationalDashboard')}</h2>
+          <p className="text-sm text-stone-500">{t('dashboard.dashboardSubtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <ExportButton
@@ -51,19 +154,19 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
       {/* Quick Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: t('sidebar.counties'), value: '47', sub: t('budget.devolvedUnits'), icon: MapPin, color: 'text-emerald-600 bg-emerald-50' },
-          { label: t('budget.cleanAuditsExec'), value: latestAudit.countyExecutive.unmodified.toString(), sub: `of 47 (${latestAudit.financialYear})`, icon: CheckCircle2, color: 'text-green-600 bg-green-50' },
-          { label: t('budget.avgDevAbsorption'), value: `${latestBudget.avgDevelopmentAbsorption}%`, sub: latestBudget.period, icon: TrendingDown, color: 'text-red-600 bg-red-50' },
-          { label: t('budget.unspentFunds'), value: latestBudget.totalUnspentAmount || '—', sub: t('budget.developmentBudget'), icon: AlertTriangle, color: 'text-amber-600 bg-amber-50' },
+          { label: t('sidebar.counties'), value: '47', sub: t('budget.devolvedUnits'), icon: MapPin, color: 'text-emerald-600 bg-emerald-50', cardClass: 'stat-card card-lift stat-gradient-emerald' },
+          { label: t('budget.cleanAuditsExec'), value: latestAudit.countyExecutive.unmodified.toString(), sub: `of 47 (${latestAudit.financialYear})`, icon: CheckCircle2, color: 'text-green-600 bg-green-50', cardClass: 'stat-card card-lift stat-gradient-blue accent-blue' },
+          { label: t('budget.avgDevAbsorption'), value: `${latestBudget.avgDevelopmentAbsorption}%`, sub: latestBudget.period, icon: TrendingDown, color: 'text-red-600 bg-red-50', cardClass: 'stat-card card-lift stat-gradient-red accent-red' },
+          { label: t('budget.unspentFunds'), value: latestBudget.totalUnspentAmount || '—', sub: t('budget.developmentBudget'), icon: AlertTriangle, color: 'text-amber-600 bg-amber-50', cardClass: 'stat-card card-lift stat-gradient-amber accent-amber' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl border border-stone-200 p-4">
+          <div key={stat.label} className={`bg-white rounded-xl border border-stone-200 p-4 ${'cardClass' in stat ? stat.cardClass : ''}`}>
             <div className="flex items-center gap-2.5 mb-2">
               <div className={`h-8 w-8 rounded-lg ${stat.color} flex items-center justify-center`}>
                 <stat.icon className="h-4 w-4" />
               </div>
               <span className="text-xs text-stone-500 font-medium">{stat.label}</span>
             </div>
-            <p className="text-2xl font-bold text-stone-900 leading-tight">{stat.value}</p>
+            <p className="text-2xl font-bold text-stone-900 leading-tight"><span className="tabular-nums">{stat.value}</span></p>
             <p className="text-[11px] text-stone-400 mt-0.5">{stat.sub}</p>
           </div>
         ))}
@@ -71,7 +174,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* OAG Audit */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 bg-white card-lift">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -121,7 +224,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
                         <span className="text-[10px] font-bold text-white">{item.count}</span>
                       </div>
                     </div>
-                    <span className="text-xs w-9 text-right text-stone-500">{Math.round((item.count / 47) * 100)}%</span>
+                    <span className="text-xs w-9 text-right text-stone-500 tabular-nums">{Math.round((item.count / 47) * 100)}%</span>
                   </div>
                 ))}
               </div>
@@ -135,7 +238,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
         </Card>
 
         {/* CoB Budget */}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 bg-white card-lift">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -149,17 +252,17 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 bg-red-50 rounded-xl text-center border border-red-100">
                 <p className="text-[10px] font-medium text-red-600 uppercase tracking-wider">{t('budget.development')}</p>
-                <p className="text-3xl font-bold text-red-700 mt-0.5">{latestBudget.avgDevelopmentAbsorption}%</p>
+                <p className="text-3xl font-bold text-red-700 mt-0.5 tabular-nums">{latestBudget.avgDevelopmentAbsorption}%</p>
               </div>
               <div className="p-3 bg-emerald-50 rounded-xl text-center border border-emerald-100">
                 <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wider">{t('budget.recurrent')}</p>
-                <p className="text-3xl font-bold text-emerald-700 mt-0.5">{latestBudget.avgRecurrentAbsorption}%</p>
+                <p className="text-3xl font-bold text-emerald-700 mt-0.5 tabular-nums">{latestBudget.avgRecurrentAbsorption}%</p>
               </div>
             </div>
             {latestBudget.totalUnspentAmount && (
               <div className="p-3 bg-amber-50 rounded-xl text-center border border-amber-100">
                 <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wider">{t('budget.totalUnspent')}</p>
-                <p className="text-xl font-bold text-amber-800 mt-0.5">{latestBudget.totalUnspentAmount}</p>
+                <p className="text-xl font-bold text-amber-800 mt-0.5 tabular-nums">{latestBudget.totalUnspentAmount}</p>
               </div>
             )}
             <div className="space-y-2">
@@ -167,7 +270,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
               {latestBudget.topPerformers.map(c => (
                 <div key={c.county} className="flex justify-between items-center px-3 py-1.5 bg-green-50 rounded-lg text-xs">
                   <span className="font-medium">{c.county}</span>
-                  <span className="font-bold text-green-700">{c.rate}%</span>
+                  <span className="font-bold text-green-700 tabular-nums">{c.rate}%</span>
                 </div>
               ))}
             </div>
@@ -176,7 +279,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
               {latestBudget.bottomPerformers.map(c => (
                 <div key={c.county} className="flex justify-between items-center px-3 py-1.5 bg-red-50 rounded-lg text-xs">
                   <span className="font-medium">{c.county}</span>
-                  <span className="font-bold text-red-700">{c.rate}%</span>
+                  <span className="font-bold text-red-700 tabular-nums">{c.rate}%</span>
                 </div>
               ))}
             </div>
@@ -187,7 +290,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
       {/* YoY + Coalition + Legend */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {prevAudit && (
-          <Card className="border-stone-200 bg-white">
+          <Card className="border-stone-200 bg-white card-lift">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">{t('dashboard.yearOverYearTrend')}</CardTitle>
               <CardDescription className="text-xs">FY {prevAudit.financialYear} → {latestAudit.financialYear}</CardDescription>
@@ -203,9 +306,9 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
                   <div key={item.label} className="flex items-center justify-between text-xs">
                     <span className="text-stone-600 w-28">{item.label}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-stone-400">{item.prev}</span>
+                      <span className="text-stone-400 tabular-nums">{item.prev}</span>
                       {item.curr > item.prev ? <TrendingUp className="h-3 w-3 text-green-600" /> : item.curr < item.prev ? <TrendingDown className="h-3 w-3 text-red-600" /> : <Minus className="h-3 w-3 text-stone-400" />}
-                      <span className="font-bold">{item.curr}</span>
+                      <span className="font-bold tabular-nums">{item.curr}</span>
                     </div>
                   </div>
                 ))}
@@ -213,7 +316,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
             </CardContent>
           </Card>
         )}
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 bg-white card-lift">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">{t('dashboard.governorCoalitionSplit')}</CardTitle>
           </CardHeader>
@@ -237,7 +340,7 @@ export default function NationalSummaryDashboard({ onNavigate }: { onNavigate: (
             ))}
           </CardContent>
         </Card>
-        <Card className="border-stone-200 bg-white">
+        <Card className="border-stone-200 bg-white card-lift">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">{t('dashboard.scoreLegend')}</CardTitle>
           </CardHeader>

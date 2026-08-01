@@ -86,6 +86,7 @@ import {
   Network, FolderOpen, Vote, ShieldCheck, Lock,
   Trophy, Flag, FileBarChart, Award,
   Bot, Brain, Sparkles, Newspaper, Wallet,
+  AlignJustify, AlignCenter, ChevronLeft,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -94,6 +95,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 import DownloadLink from '@/components/download-link';
+import WelcomeOnboarding from '@/components/welcome-onboarding';
 // ─── SIDEBAR NAV ITEMS (keys for i18n) ───────────────────────
 interface NavItem {
   id: TabId;
@@ -169,6 +171,16 @@ function PageContent() {
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
   const [filters, setFilters] = useState<FilterState>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['nav.sections.civicTools', 'nav.sections.citizenAction', 'nav.sections.dataAlerts', 'nav.sections.analytics', 'nav.sections.leadershipProjects', 'nav.sections.insights']));
+  const toggleSection = (sectionKey: string) => {
+    setCollapsedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(sectionKey)) { next.delete(sectionKey); } else { next.add(sectionKey); }
+      return next;
+    });
+  };
   const commandPaletteRef = React.useRef<{ open: () => void; close: () => void }>(null);
 
   // Localized nav items
@@ -257,50 +269,108 @@ function PageContent() {
   // Helper to get localized label for a nav item
   const getItemLabel = (id: TabId) => navItems.find(n => n.id === id)?.label ?? id;
 
+  // Breadcrumb items generator
+  const getBreadcrumbItems = (tab: TabId): { id: TabId; label: string }[] => {
+    const navDef = navItemDefs.find(n => n.id === tab);
+    if (!navDef) return [{ id: tab, label: tab }];
+
+    // For hub tabs (aiHub, fiscalHub, etc.) — just show the hub label as leaf
+    if (tab === 'summary') return [{ id: 'summary', label: 'Home' }];
+
+    // Get the section label for the parent
+    const parentLabel = getSectionLabel(navDef.sectionKey);
+    const tabLabel = getItemLabel(tab);
+
+    return [{ id: navItemDefs.find(n => n.sectionKey === navDef.sectionKey)?.id ?? tab, label: parentLabel }, { id: tab, label: tabLabel }];
+  };
+
   // Helper to get localized section label
   const getSectionLabel = (sectionKey: string) => sectionLabels[sectionKey] ?? sectionKey;
 
   // Sidebar section renderer helper
   const renderSidebarSection = (items: NavItem[], sectionKey: string, activeColor: string) => (
     <div>
-      <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</p>
-      {items.map((item) => (
-        <button
-          key={item.id}
-          onClick={() => setActiveTab(item.id)}
-          aria-current={activeTab === item.id ? 'page' : undefined}
-          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
-            activeTab === item.id
-              ? `${activeColor} text-white shadow-sm`
-              : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
-          }`}
-        >
-          <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span>{getItemLabel(item.id)}</span>
+      {sidebarCollapsed ? (
+        <div className="flex justify-center py-1.5">
+          <div className={`h-1.5 w-1.5 rounded-full ${activeColor.replace('bg-', 'bg-').replace('-600', '-500')}`} />
+        </div>
+      ) : (
+        <button onClick={() => toggleSection(sectionKey)} className="flex items-center justify-between w-full px-3 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <div className={`h-1.5 w-1.5 rounded-full ${activeColor.replace('bg-', 'bg-').replace('-600', '-500')}`} />
+            <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</span>
+          </div>
+          <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform duration-200 ${collapsedSections.has(sectionKey) ? '-rotate-90' : ''}`} />
         </button>
-      ))}
+      )}
+      <div className={`overflow-hidden transition-all duration-200 ${collapsedSections.has(sectionKey) ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'}`}>
+        {items.map((item) => (
+          sidebarCollapsed ? (
+            <Tooltip key={item.id}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => { setActiveTab(item.id); }}
+                  aria-current={activeTab === item.id ? 'page' : undefined}
+                  className={`mx-auto w-10 h-10 rounded-lg flex items-center justify-center transition-colors mb-0.5 ${
+                    activeTab === item.id
+                      ? `${activeColor} text-white shadow-sm`
+                      : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-xs">
+                {getItemLabel(item.id)}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              aria-current={activeTab === item.id ? 'page' : undefined}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors mb-0.5 ${
+                activeTab === item.id
+                  ? `${activeColor} text-white shadow-sm`
+                  : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
+              }`}
+            >
+              <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>{getItemLabel(item.id)}</span>
+            </button>
+          )
+        ))}
+      </div>
     </div>
   );
 
   // Mobile sidebar section renderer helper
   const renderMobileSidebarSection = (items: NavItem[], sectionKey: string, activeColor: string) => (
     <div>
-      <p className="px-3 py-1.5 text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</p>
-      {items.map((item) => (
-        <button
-          key={item.id}
-          onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-          aria-current={activeTab === item.id ? 'page' : undefined}
-          className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
-            activeTab === item.id
-              ? `${activeColor} text-white`
-              : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
-          }`}
-        >
-          <item.icon className="h-4 w-4" aria-hidden="true" />
-          <span>{getItemLabel(item.id)}</span>
-        </button>
-      ))}
+      <button onClick={() => toggleSection(sectionKey)} className="flex items-center justify-between w-full px-3 py-1.5">
+        <div className="flex items-center gap-1.5">
+          <div className={`h-1.5 w-1.5 rounded-full ${activeColor.replace('bg-', 'bg-').replace('-600', '-500')}`} />
+          <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</span>
+        </div>
+        <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform duration-200 ${collapsedSections.has(sectionKey) ? '-rotate-90' : ''}`} />
+      </button>
+      <div className={`overflow-hidden transition-all duration-200 ${collapsedSections.has(sectionKey) ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'}`}>
+        {items.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+            aria-current={activeTab === item.id ? 'page' : undefined}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
+              activeTab === item.id
+                ? `${activeColor} text-white`
+                : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
+            }`}
+          >
+            <item.icon className="h-4 w-4" aria-hidden="true" />
+            <span>{getItemLabel(item.id)}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 
@@ -327,6 +397,7 @@ function PageContent() {
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
+        <WelcomeOnboarding />
 
         {/* ══════════ HEADER ══════════ */}
         <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50">
@@ -344,10 +415,10 @@ function PageContent() {
                   <Shield className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
+                  <h1 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
                     {t('app.title')}
                   </h1>
-                  <p className="text-[10px] sm:text-xs text-stone-500">
+                  <p className="text-xs sm:text-sm text-stone-500">
                     {t('app.subtitle')}
                   </p>
                 </div>
@@ -372,6 +443,14 @@ function PageContent() {
                 >
                   {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" aria-hidden="true" />}
                 </button>
+                <button
+                  onClick={() => setCompact(!compact)}
+                  aria-label={compact ? 'Switch to comfortable layout' : 'Switch to compact layout'}
+                  className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-center hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-800 transition-colors"
+                  title={compact ? 'Comfortable mode' : 'Compact mode'}
+                >
+                  {compact ? <AlignJustify className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" /> : <AlignCenter className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" />}
+                </button>
                 <LanguageToggle />
                 <DownloadLink href="https://kenyalaw.org/" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-1 text-[10px] text-stone-500 hover:text-emerald-600 transition-colors">
                   <BookMarked className="h-3 w-3" aria-hidden="true" />{t('common.constitution')}
@@ -381,10 +460,31 @@ function PageContent() {
           </div>
         </header>
 
+        {/* ══════════ BREADCRUMB ══════════ */}
+        <div className="bg-white dark:bg-stone-900 border-b border-stone-100 dark:border-stone-800">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs">
+              <ChevronRight className="h-3 w-3 text-stone-400 rotate-180" />
+              {getBreadcrumbItems(activeTab).map((item, i) => (
+                <React.Fragment key={item.id}>
+                  {i > 0 && <ChevronRight className="h-3 w-3 text-stone-400" />}
+                  {i < getBreadcrumbItems(activeTab).length - 1 ? (
+                    <button onClick={() => setActiveTab(item.id)} className="text-stone-500 hover:text-emerald-600 transition-colors">
+                      {item.label}
+                    </button>
+                  ) : (
+                    <span className="text-stone-900 dark:text-stone-100 font-medium">{item.label}</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </nav>
+          </div>
+        </div>
+
         {/* ══════════ LAYOUT: SIDEBAR + MAIN ══════════ */}
         <div className="flex flex-1">
           {/* Sidebar - Desktop (always visible on lg+) */}
-          <aside className="hidden lg:flex flex-col w-60 border-r border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 shrink-0 sticky top-[52px] h-[calc(100vh-52px)] overflow-y-auto">
+          <aside className={`hidden lg:flex flex-col ${sidebarCollapsed ? 'w-16' : 'w-60'} border-r border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 shrink-0 sticky top-[52px] h-[calc(100vh-52px)] overflow-y-auto transition-all duration-200`}>
             <nav aria-label="Main navigation" className="flex-1 py-3 px-2 space-y-4">
               {renderSidebarSection(governanceItems, 'nav.sections.governance', 'bg-emerald-600')}
 
@@ -417,6 +517,11 @@ function PageContent() {
               {renderSidebarSection(aiItems, 'nav.sections.aiTools', 'bg-emerald-600')}
 
               <Separator className="bg-stone-100 dark:bg-stone-700" />
+              {sidebarCollapsed ? (
+                <div className="flex justify-center py-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                </div>
+              ) : (
               <div className="px-3 py-2">
                 <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">{t('sidebar.quickStats')}</p>
                 <div className="space-y-1.5">
@@ -438,8 +543,10 @@ function PageContent() {
                   <DataFreshnessIndicator compact />
                 </div>
               </div>
+              )}
 
               {/* Sidebar Widgets */}
+              {!sidebarCollapsed && (
               <div className="px-3 py-2 space-y-3">
                 <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{t('sidebar.liveWidgets')}</p>
                 <SidebarMiniMap onCountyClick={(code) => { setSelectedCounty(code); setActiveTab('county'); }} />
@@ -447,8 +554,10 @@ function PageContent() {
                 <CitizenAuditorDashboard />
                 <AIInsightsWidget />
               </div>
+              )}
 
               {/* Primary Sources Links */}
+              {!sidebarCollapsed && (
               <div className="px-3 py-2 mt-auto">
                 <p className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">{t('sidebar.primarySources')}</p>
                 <div className="space-y-1">
@@ -466,6 +575,16 @@ function PageContent() {
                   ))}
                 </div>
               </div>
+              )}
+
+              {/* Collapse Toggle */}
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="mx-2 mb-2 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors text-[10px] text-stone-500"
+              >
+                {sidebarCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+                {!sidebarCollapsed && <span>Collapse</span>}
+              </button>
             </nav>
           </aside>
 
@@ -502,7 +621,7 @@ function PageContent() {
           )}
 
           {/* ══════════ MAIN CONTENT ══════════ */}
-          <main id="main-content" className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full">
+          <main id="main-content" data-compact={compact} className={`flex-1 ${compact ? 'max-w-7xl' : 'max-w-5xl'} mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full`}>
             {activeTab === 'summary' && <NationalSummaryDashboard onNavigate={setActiveTab} />}
             {activeTab === 'tree' && (
               <GovernorsTreeView
