@@ -9,108 +9,70 @@ interface KenyanFlagLogoProps {
   textClassName?: string;
 }
 
+// Unique IDs per instance to avoid SVG id collisions
+let _id = 0;
+
 export default function KenyanFlagLogo({ size = 36, className = '', showText = false, textClassName = '' }: KenyanFlagLogoProps) {
-  const h = size;
-  const w = size * 1.4;
-  const stripeH = h / 4;
-  const shieldW = w * 0.28;
-  const shieldH = h * 0.7;
-  const shieldX = (w - shieldW) / 2;
-  const shieldY = (h - shieldH) / 2;
+  const id = React.useId();
+  const s = size * 2.5; // viewBox scale
 
   return (
     <div className={`flex items-center gap-2 ${className}`} role="img" aria-label="Kenya Governance Explorer">
       <svg
-        width={w}
-        height={h}
-        viewBox={`0 0 ${w * 3} ${h * 3}`}
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="shrink-0"
       >
-        {/* Black stripe (top) */}
-        <rect x="0" y="0" width={w * 3} height={stripeH * 3} fill="#000000" />
-        {/* Red stripe */}
-        <rect x="0" y={stripeH * 3} width={w * 3} height={stripeH * 3} fill="#BB0000" />
-        {/* Green stripe */}
-        <rect x="0" y={stripeH * 6} width={w * 3} height={stripeH * 3} fill="#006600" />
-        {/* White borders between stripes */}
-        <rect x="0" y={stripeH * 3 - 1.5} width={w * 3} height={3} fill="#FFFFFF" />
-        <rect x="0" y={stripeH * 6 - 1.5} width={w * 3} height={3} fill="#FFFFFF" />
+        {/* ── Two crossed spears behind shield ── */}
+        {/* Left spear */}
+        <line x1="18" y1="8" x2="82" y2="95" stroke="#C8A84E" strokeWidth="3" strokeLinecap="round" />
+        <polygon points="18,8 14,18 22,18" fill="#C8A84E" />
+        {/* Right spear */}
+        <line x1="82" y1="8" x2="18" y2="95" stroke="#C8A84E" strokeWidth="3" strokeLinecap="round" />
+        <polygon points="82,8 78,18 86,18" fill="#C8A84E" />
 
-        {/* Kenyan Shield */}
+        {/* ── Shield outer (white border) ── */}
         <path
-          d={`
-            M ${shieldX * 3} ${shieldY * 3}
-            L ${(shieldX + shieldW) * 3} ${shieldY * 3}
-            L ${(shieldX + shieldW) * 3} ${(shieldY + shieldH * 0.75) * 3}
-            Q ${(shieldX + shieldW) * 3} ${(shieldY + shieldH) * 3} ${(shieldX + shieldW / 2) * 3} ${(shieldY + shieldH * 0.95) * 3}
-            Q ${shieldX * 3} ${(shieldY + shieldH) * 3} ${shieldX * 3} ${(shieldY + shieldH * 0.75) * 3}
-            Z
-          `}
+          d="M 28 15 L 72 15 L 72 58 Q 72 80 50 92 Q 28 80 28 58 Z"
           fill="#FFFFFF"
-          stroke="#000000"
+          stroke="#1a1a1a"
           strokeWidth="2.5"
         />
 
-        {/* Spear (vertical behind shield) */}
-        <line
-          x1={(shieldX + shieldW / 2) * 3}
-          y1={(shieldY - shieldH * 0.08) * 3}
-          x2={(shieldX + shieldW / 2) * 3}
-          y2={(shieldY + shieldH * 1.05) * 3}
-          stroke="#666666"
-          strokeWidth="3"
-        />
-        {/* Spear tip */}
-        <polygon
-          points={`${(shieldX + shieldW / 2) * 3},${(shieldY - shieldH * 0.15) * 3} ${(shieldX + shieldW / 2 - shieldW * 0.08) * 3},${(shieldY - shieldH * 0.02) * 3} ${(shieldX + shieldW / 2 + shieldW * 0.08) * 3},${(shieldY - shieldH * 0.02) * 3}`}
-          fill="#666666"
-        />
-
-        {/* Inner shield: red fill */}
+        {/* ── Shield inner fill ── */}
         <path
-          d={`
-            M ${(shieldX + 2) * 3} ${(shieldY + 3) * 3}
-            L ${(shieldX + shieldW - 2) * 3} ${(shieldY + 3) * 3}
-            L ${(shieldX + shieldW - 2) * 3} ${(shieldY + shieldH * 0.72) * 3}
-            Q ${(shieldX + shieldW - 2) * 3} ${(shieldY + shieldH - 2) * 3} ${(shieldX + shieldW / 2) * 3} ${(shieldY + shieldH * 0.92) * 3}
-            Q ${(shieldX + 2) * 3} ${(shieldY + shieldH - 2) * 3} ${(shieldX + 2) * 3} ${(shieldY + shieldH * 0.72) * 3}
-            Z
-          `}
+          d="M 32 19 L 68 19 L 68 56 Q 68 76 50 87 Q 32 76 32 56 Z"
           fill="#BB0000"
         />
 
-        {/* Inner shield: black and green halves */}
-        <clipPath id="shieldTop">
-          <path
-            d={`
-              M ${(shieldX + 2) * 3} ${(shieldY + 3) * 3}
-              L ${(shieldX + shieldW - 2) * 3} ${(shieldY + 3) * 3}
-              L ${(shieldX + shieldW - 2) * 3} ${(shieldY + shieldH * 0.5) * 3}
-              L ${(shieldX + 2) * 3} ${(shieldY + shieldH * 0.5) * 3}
-              Z
-            `}
-          />
-        </clipPath>
-        <rect x={(shieldX) * 3} y={(shieldY) * 3} width={shieldW * 3} height={shieldH * 0.5 * 3} fill="#000000" clipPath="url(#shieldTop)" />
+        {/* ── Black top half of shield ── */}
+        <defs>
+          <clipPath id={`shield-top-${id}`}>
+            <path d="M 32 19 L 68 19 L 68 44 L 32 44 Z" />
+          </clipPath>
+        </defs>
+        <rect x="28" y="15" width="44" height="35" fill="#1a1a1a" clipPath={`url(#shield-top-${id})`} />
 
-        <clipPath id="shieldBottom">
-          <path
-            d={`
-              M ${(shieldX + 2) * 3} ${(shieldY + shieldH * 0.5) * 3}
-              L ${(shieldX + shieldW - 2) * 3} ${(shieldY + shieldH * 0.5) * 3}
-              L ${(shieldX + shieldW - 2) * 3} ${(shieldY + shieldH * 0.72) * 3}
-              Q ${(shieldX + shieldW - 2) * 3} ${(shieldY + shieldH - 2) * 3} ${(shieldX + shieldW / 2) * 3} ${(shieldY + shieldH * 0.92) * 3}
-              Q ${(shieldX + 2) * 3} ${(shieldY + shieldH - 2) * 3} ${(shieldX + 2) * 3} ${(shieldY + shieldH * 0.72) * 3}
-              Z
-            `}
-          />
-        </clipPath>
-        <rect x={(shieldX) * 3} y={(shieldY + shieldH * 0.5) * 3} width={shieldW * 3} height={shieldH * 0.5 * 3} fill="#006600" clipPath="url(#shieldBottom)" />
+        {/* ── White horizontal stripe (middle) ── */}
+        <rect x="32" y="42" width="36" height="8" rx="0" fill="#FFFFFF" />
 
-        {/* Rounded corners on the flag */}
-        <rect x="0" y="0" width={w * 3} height={h * 3} rx="12" ry="12" fill="none" stroke="#00000020" strokeWidth="1" />
+        {/* ── Green bottom half of shield ── */}
+        <defs>
+          <clipPath id={`shield-bottom-${id}`}>
+            <path d="M 32 50 L 68 50 L 68 56 Q 68 76 50 87 Q 32 76 32 56 Z" />
+          </clipPath>
+        </defs>
+        <rect x="28" y="50" width="44" height="50" fill="#006600" clipPath={`url(#shield-bottom-${id})`} />
+
+        {/* ── Red cock (simplified) on the white stripe ── */}
+        <circle cx="50" cy="46" r="4" fill="#BB0000" />
+        <path d="M 46 44 Q 44 40 46 38 Q 48 40 46 44 Z" fill="#BB0000" />
+        <path d="M 54 44 Q 56 40 54 38 Q 52 40 54 44 Z" fill="#BB0000" />
+        {/* Beak */}
+        <polygon points="50,42 48,44 52,44" fill="#C8A84E" />
       </svg>
       {showText && (
         <span className={`font-bold text-stone-900 dark:text-stone-100 leading-tight ${textClassName}`}>
