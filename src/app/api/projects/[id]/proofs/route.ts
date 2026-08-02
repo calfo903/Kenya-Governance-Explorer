@@ -1,7 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
 
 export const runtime = 'nodejs';
+
+// ── Constants ──
+const MAX_PROOFS_PER_PROJECT = 200;
+const MAX_REPLIES_PER_PROOF = 50;
+const MAX_UPVOTES_PER_PROOF = 10000;
+
+// Simple in-memory rate limiter: IP → { lastUpvote timestamps }
+const upvoteRateLimit = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX_UPVOTES = 5; // max 5 upvotes per minute per IP
+
+function getClientIp(request: NextRequest): string {
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = upvoteRateLimit.get(ip) || [];
+  // Prune old entries
+  const recent = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+  upvoteRateLimit.set(ip, recent);
+  return recent.length >= RATE_LIMIT_MAX_UPVOTES;
+}
+
+function recordUpvote(ip: string): void {
+  const timestamps = upvoteRateLimit.get(ip) || [];
+  timestamps.push(Date.now());
+  upvoteRateLimit.set(ip, timestamps);
+}
 
 // In-memory store for citizen proofs (in production, use a database)
 interface CitizenProof {
@@ -184,6 +214,19 @@ export async function POST(
     };
 
     const existing = proofsStore.get(projectId) || [];
+    // Cap proofs per project to prevent unbounded memory growth
+    if (existing.length >= MAX_PROOFS_PER_PROJECT) {
+      return NextResponse.json(
+        { error: `Maximum proofs per project reached (${MAX_PROOFS_PER_PROJECT}).` },
+        { status: 429 }
+      );
+    }
+    // Sanitize content — strip HTML tags to prevent XSS
+    const sanitize = (str: string) => str.replace(/<[^>]*>/g, '').slice(0, 5000);
+    proof.content = sanitize(proof.content);
+    proof.caption = sanitize(proof.caption);
+    proof.authorName = sanitize(proof.authorName).slice(0, 100);
+    proof.authorLocation = sanitize(proof.authorLocation || '').slice(0, 100);
     existing.unshift(proof); // newest first
     proofsStore.set(projectId, existing);
 
@@ -222,7 +265,22 @@ export async function PATCH(
     }
 
     if (action === 'upvote') {
+      // Rate limit
+      const ip = getClientIp(request);
+      if (isRateLimited(ip)) {
+        return NextResponse.json(
+          { error: 'Too many upvotes. Please wait a moment.' },
+          { status: 429 }
+        );
+      }
+      if (proof.upvotes >= MAX_UPVOTES_PER_PROOF) {
+        return NextResponse.json(
+          { error: 'Maximum upvotes reached for this proof.' },
+          { status: 429 }
+        );
+      }
       proof.upvotes += 1;
+      recordUpvote(ip);
     } else if (action === 'reply') {
       if (!replyContent || !replyAuthorName) {
         return NextResponse.json(
@@ -230,10 +288,17 @@ export async function PATCH(
           { status: 400 }
         );
       }
+      if (proof.replies.length >= MAX_REPLIES_PER_PROOF) {
+        return NextResponse.json(
+          { error: `Maximum replies reached (${MAX_REPLIES_PER_PROOF}).` },
+          { status: 429 }
+        );
+      }
+      const sanitize = (str: string) => str.replace(/<[^>]*>/g, '').slice(0, 2000);
       proof.replies.push({
         id: `reply-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
-        authorName: replyAuthorName.trim(),
-        content: replyContent.trim(),
+        authorName: sanitize(replyAuthorName).slice(0, 100),
+        content: sanitize(replyContent),
         createdAt: new Date().toISOString(),
       });
     }

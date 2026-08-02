@@ -26,23 +26,26 @@ export default function GovernorReportCardPage() {
   const latestBudget = nationalSummary.budgetSummaries[0];
 
   const handleSharePNG = useCallback(async () => {
-    if (!cardRef.current) return;
-    try {
-      const canvas = document.createElement('canvas');
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `${governor?.county || 'county'}-report-card.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch {
-      // Fallback: use native share
-      if (navigator.share) {
-        navigator.share({
-          title: `${governor?.name} — Performance Report Card`,
-          text: `View the governance performance report card for ${governor?.county} County (${governor?.name}) on the Kenya Governance Explorer.`,
+    if (!governor) return;
+    // Try native share first (works on mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${governor.name} — Performance Report Card`,
+          text: `${governor.name} — ${governor.county} County Governor Report Card\nKenya Governance Explorer · 2022–2027`,
           url: window.location.href,
-        }).catch(() => {});
-      }
+        });
+        return;
+      } catch { /* User cancelled, fall through */ }
+    }
+    // Fallback: copy summary text to clipboard
+    const summary = `${governor.name} — ${governor.county} County Governor\nParty: ${governor.party} · Coalition: ${governor.coalition}\nPopulation: ${governor.population.toLocaleString()} · Area: ${governor.areaSqKm.toLocaleString()} km²\nConstituencies: ${governor.constituenciesCount} · Wards: ${governor.wardsCount}\n\nKenya Governance Explorer · 2022–2027\nData: OAG · CoB · IEBC · TI-Kenya`;
+    try {
+      await navigator.clipboard.writeText(summary);
+      // toast.success('Report summary copied to clipboard!');
+    } catch {
+      // Final fallback: open mailto with the summary
+      window.open(`mailto:?subject=${encodeURIComponent(`${governor.name} Report Card`)}&body=${encodeURIComponent(summary)}`);
     }
   }, [governor]);
 
@@ -59,7 +62,7 @@ export default function GovernorReportCardPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
             <Camera className="h-5 w-5 text-emerald-600" /> Governor Report Card
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Shareable performance snapshot — export as PNG or share on WhatsApp/X</p>
@@ -88,7 +91,7 @@ export default function GovernorReportCardPage() {
           <div className="mb-3">
             <RepAvatar name={governor.name} county={governor.county} size="h-16 w-16" className="mx-auto" />
           </div>
-          <h3 className="text-xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{governor.name}</h3>
+          <h3 className="text-xl font-bold text-stone-900 dark:text-stone-100">{governor.name}</h3>
           <p className="text-sm text-stone-500 dark:text-stone-400">{governor.county} County Governor</p>
           <div className="flex items-center justify-center gap-2 mt-2">
             <Badge className={`text-[10px] ${governor.coalition === 'Kenya Kwanza Alliance' ? 'bg-yellow-100 text-yellow-800' : governor.coalition === 'Azimio la Umoja One Kenya Coalition' ? 'bg-blue-100 text-blue-800' : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300'}`}>
@@ -102,19 +105,19 @@ export default function GovernorReportCardPage() {
         {/* Key Stats */}
         <div className="grid grid-cols-2 gap-4 mt-5">
           <div className="text-center">
-            <p className="text-2xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{governor.population.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{governor.population.toLocaleString()}</p>
             <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Population</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{governor.areaSqKm.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{governor.areaSqKm.toLocaleString()}</p>
             <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Area (km²)</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{governor.constituenciesCount}</p>
+            <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{governor.constituenciesCount}</p>
             <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Constituencies</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{governor.wardsCount}</p>
+            <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{governor.wardsCount}</p>
             <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Wards</p>
           </div>
         </div>
@@ -125,7 +128,7 @@ export default function GovernorReportCardPage() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Scale className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <p className="text-xs font-semibold text-stone-700 dark:text-stone-200 dark:text-stone-300">Latest Audit Opinion</p>
+            <p className="text-xs font-semibold text-stone-700 dark:text-stone-200">Latest Audit Opinion</p>
             <Badge variant="outline" className="text-[9px] ml-auto">{latestAudit.financialYear}</Badge>
           </div>
           <div className="space-y-2">
@@ -151,7 +154,7 @@ export default function GovernorReportCardPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <BarChart3 className="h-4 w-4 text-red-600 dark:text-red-400" />
-            <p className="text-xs font-semibold text-stone-700 dark:text-stone-200 dark:text-stone-300">Budget Absorption (Dev)</p>
+            <p className="text-xs font-semibold text-stone-700 dark:text-stone-200">Budget Absorption (Dev)</p>
           </div>
           <div className="flex items-center gap-3">
             <Progress value={latestBudget.avgDevelopmentAbsorption} className="h-3 flex-1" />
@@ -177,7 +180,7 @@ export default function GovernorReportCardPage() {
       {/* Share options */}
       <Card className="border-stone-200 dark:border-stone-700 dark:bg-stone-900">
         <CardContent className="pt-4 space-y-3">
-          <p className="text-xs font-semibold text-stone-700 dark:text-stone-200 dark:text-stone-300">Share this report card</p>
+          <p className="text-xs font-semibold text-stone-700 dark:text-stone-200">Share this report card</p>
           <div className="grid grid-cols-3 gap-2">
             <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={() => {
               const text = `${governor.name} — ${governor.county} County Governor Report Card\nKenya Governance Explorer`;

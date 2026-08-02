@@ -17,6 +17,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     <NextIntlClientProvider
       locale={locale}
       messages={currentMessages}
+      timeZone="Africa/Nairobi"
     >
       {children}
     </NextIntlClientProvider>

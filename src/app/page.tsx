@@ -356,7 +356,27 @@ function PageContent() {
     return [{ id: navItemDefs.find(n => n.sectionKey === navDef.sectionKey)?.id ?? tab, label: parentLabel }, { id: tab, label: tabLabel }];
   };
 
-  // Helper to get localized section label
+  // Helper: section dot color (lighter version of active color)
+  const sectionDotColor = (activeColor: string): string => {
+    const map: Record<string, string> = {
+      'bg-emerald-600': 'bg-emerald-500',
+      'bg-blue-600': 'bg-blue-500',
+      'bg-amber-600': 'bg-amber-500',
+      'bg-purple-600': 'bg-purple-500',
+      'bg-indigo-600': 'bg-indigo-500',
+      'bg-rose-600': 'bg-rose-500',
+      'bg-teal-600': 'bg-teal-500',
+      'bg-red-600': 'bg-red-500',
+      'bg-cyan-600': 'bg-cyan-500',
+      'bg-violet-600': 'bg-violet-500',
+      'bg-lime-600': 'bg-lime-500',
+      'bg-pink-600': 'bg-pink-500',
+      'bg-orange-600': 'bg-orange-500',
+      'bg-stone-600': 'bg-stone-500',
+    };
+    return map[activeColor] || 'bg-stone-400';
+  };
+
   const getSectionLabel = (sectionKey: string) => sectionLabels[sectionKey] ?? sectionKey;
 
   // Sidebar section renderer helper
@@ -364,12 +384,12 @@ function PageContent() {
     <div>
       {sidebarCollapsed ? (
         <div className="flex justify-center py-1.5">
-          <div className={`h-1.5 w-1.5 rounded-full ${activeColor.replace('bg-', 'bg-').replace('-600', '-500')}`} />
+          <div className={`h-1.5 w-1.5 rounded-full ${sectionDotColor(activeColor)}`} />
         </div>
       ) : (
         <button onClick={() => toggleSection(sectionKey)} className="flex items-center justify-between w-full px-3 py-1.5">
           <div className="flex items-center gap-1.5">
-            <div className={`h-1.5 w-1.5 rounded-full ${activeColor.replace('bg-', 'bg-').replace('-600', '-500')}`} />
+            <div className={`h-1.5 w-1.5 rounded-full ${sectionDotColor(activeColor)}`} />
             <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</span>
           </div>
           <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform duration-200 ${collapsedSections.has(sectionKey) ? '-rotate-90' : ''}`} />
@@ -421,7 +441,7 @@ function PageContent() {
     <div>
       <button onClick={() => toggleSection(sectionKey)} className="flex items-center justify-between w-full px-3 py-1.5">
         <div className="flex items-center gap-1.5">
-          <div className={`h-1.5 w-1.5 rounded-full ${activeColor.replace('bg-', 'bg-').replace('-600', '-500')}`} />
+          <div className={`h-1.5 w-1.5 rounded-full ${sectionDotColor(activeColor)}`} />
           <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{getSectionLabel(sectionKey)}</span>
         </div>
         <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform duration-200 ${collapsedSections.has(sectionKey) ? '-rotate-90' : ''}`} />

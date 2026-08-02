@@ -801,3 +801,28 @@ Stage Summary:
 - 7 new sidebar sections: Civic Engagement, Data & Analytics, AI & Smart Tools, Maps & Visualization, Community & Social, Accountability & Tracking, App & Settings
 - All features lazy-loaded for performance
 - Full i18n (EN + SW) for all 23 tabs
+
+---
+Task ID: 30
+Agent: Main Agent
+Task: Bug fix pass — all medium/low bugs + timeZone warning
+
+Work Log:
+- Fixed ENVIRONMENT_FALLBACK: Added `timeZone="Africa/Nairobi"` to I18nProvider
+- Fixed upload API: Images rejected silently — reordered validation (images first, then video), added MIME→extension safe map
+- Fixed path traversal: Replaced `file.name.split('.').pop()` with `safeExtMap` keyed by MIME type
+- Fixed XSS: Added HTML tag stripping + length limits on proof content, author names, replies
+- Fixed rate limiting: Added IP-based rate limiter for upvotes (5/min), capped proofs per project (200), replies per proof (50), upvotes per proof (10k)
+- Fixed VideoProofCard: Images rendered as `<video>` — added proper `(proof.type === 'video' && proof.content)` ternary
+- Fixed fullscreen listener leak: Changed `!!document.fullscreenElement` to `=== containerRef.current` check
+- Fixed governor report card: Empty PNG export → native share + clipboard fallback
+- Fixed duplicate dark classes: `dark:text-stone-50 dark:text-stone-100` → single `dark:text-stone-100`
+- Fixed fragile class manipulation: `.replace('-600', '-500')` → explicit color lookup map (14 entries)
+- Fixed hardcoded section labels: 7 new sidebar sections now use `t()` with EN+SW translations
+- Fixed unused imports: `ThumbsDown`, `fs`, `path` (proofs API), `_id` (logo)
+- Fixed RepChatWidget retry: `findLast(m => m.role === 'user')` with guard instead of last message
+
+Stage Summary:
+- All 15 reported bugs fixed
+- Build passes with zero errors
+- No ENVIRONMENT_FALLBACK warning

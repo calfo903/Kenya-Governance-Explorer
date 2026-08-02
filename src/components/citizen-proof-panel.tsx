@@ -107,9 +107,13 @@ function VideoProofCard({ proof, onUpvote, onReply }: {
     }
   };
 
-  // Sync fullscreen state with browser events
+  // Sync fullscreen state with browser events — only update if THIS element is fullscreen
   useEffect(() => {
-    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    const handler = () => {
+      if (containerRef.current) {
+        setIsFullscreen(document.fullscreenElement === containerRef.current);
+      }
+    };
     document.addEventListener('fullscreenchange', handler);
     return () => document.removeEventListener('fullscreenchange', handler);
   }, []);
