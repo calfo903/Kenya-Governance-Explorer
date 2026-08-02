@@ -292,7 +292,10 @@ export default function RepChatWidget({ rep }: RepChatWidgetProps) {
               <div className="flex flex-col items-center gap-1.5 py-2">
                 <span className="text-[10px] text-red-500 font-medium">{error}</span>
                 <button
-                  onClick={() => sendMessage(messages[messages.length - 1]?.content || '')}
+                  onClick={() => {
+                    const lastMsg = messages.findLast(m => m.role === 'user');
+                    if (lastMsg) sendMessage(lastMsg.content);
+                  }}
                   className="text-[10px] flex items-center gap-1 text-stone-500 hover:text-emerald-600 transition-colors"
                 >
                   <RotateCcw className="w-3 h-3" /> Retry

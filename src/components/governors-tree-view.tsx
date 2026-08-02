@@ -85,7 +85,7 @@ export default function GovernorsTreeView({ governors, expandedCounties, toggleC
                   const isCompared = comparisonList.some(c => c.representative.id === `gov-${g.code}`);
                   return (
                     <div key={g.code} className="border border-stone-100 dark:border-stone-800 rounded-lg overflow-hidden">
-                      <button onClick={() => toggleCounty(g.code)} className="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-800 dark:bg-stone-800 transition-colors text-left">
+                      <button onClick={() => toggleCounty(g.code)} className="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-700 transition-colors text-left">
                         <div className="flex items-center gap-2.5 min-w-0">
                           {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-stone-400 shrink-0" />}
                           <div className="min-w-0">

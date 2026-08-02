@@ -57,7 +57,14 @@
       "analytics": "Uchambuzi",
       "leadershipProjects": "Uongozi na Miradi",
       "insights": "Mawasiliano",
-      "aiTools": "Vifaa vya AI"
+      "aiTools": "Vifaa vya AI",
+      "civicEngagement": "Ushiriki wa Raia",
+      "dataAnalytics": "Data na Uchambuzi",
+      "aiSmartTools": "AI na Vifaa vya Smart",
+      "mapsViz": "Ramani na Kuona",
+      "communitySocial": "Jamii na Kijamii",
+      "accountability": "Uwajibikaji na Ufuatiliaji",
+      "appSettings": "Programu na Mipangilio"
     },
     "items": {
       "summary": "Muhtasari wa Kitaifa",

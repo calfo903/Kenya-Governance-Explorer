@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Video, ImagePlus, MessageSquare, Upload, ThumbsUp, ThumbsDown,
+  Video, ImagePlus, MessageSquare, Upload, ThumbsUp,
   Play, Pause, Send, ChevronDown, ChevronUp, Camera, FileVideo,
   CheckCircle2, Clock, Loader2, X, Eye, MessageCircle, MapPin,
   Shield, AlertTriangle, Maximize2, Minimize2,
@@ -118,8 +118,8 @@ function VideoProofCard({ proof, onUpvote, onReply }: {
     <div ref={containerRef}>
       <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 overflow-hidden">
         <CardContent className="p-0">
-          {/* Video player area */}
-          {proof.content ? (
+          {/* Media area — video, image, or placeholder */}
+          {(proof.type === 'video' && proof.content) ? (
             <div className="relative bg-stone-900 aspect-video max-h-48 flex items-center justify-center group/video">
               <video
                 ref={videoRef}
@@ -148,37 +148,56 @@ function VideoProofCard({ proof, onUpvote, onReply }: {
               )}
               {/* Controls row */}
               <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover/video:opacity-100 transition-opacity">
-                {(proof.content || proof.type === 'image') && (
-                  <button
-                    onClick={toggleFullscreen}
-                    className="h-7 w-7 rounded-md bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
-                    title="Fullscreen"
-                  >
-                    {isFullscreen ? (
-                      <Minimize2 className="h-3.5 w-3.5" />
-                    ) : (
-                      <Maximize2 className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                )}
+                <button
+                  onClick={toggleFullscreen}
+                  className="h-7 w-7 rounded-md bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                  title="Fullscreen"
+                >
+                  {isFullscreen ? (
+                    <Minimize2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <Maximize2 className="h-3.5 w-3.5" />
+                  )}
+                </button>
               </div>
-            {proof.verified && (
-              <div className="absolute top-2 right-2">
-                <Badge className="bg-emerald-600 text-white text-[9px] px-1.5 py-0 h-4">
-                  <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
-                  Verified
-                </Badge>
-              </div>
-            )}
-          </div>
-        ) : (
-          proof.type === 'image' && proof.content ? (
+              {proof.verified && (
+                <div className="absolute top-2 right-2">
+                  <Badge className="bg-emerald-600 text-white text-[9px] px-1.5 py-0 h-4">
+                    <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
+                    Verified
+                  </Badge>
+                </div>
+              )}
+            </div>
+          ) : (proof.type === 'image' && proof.content) ? (
             <div className="relative bg-stone-100 dark:bg-stone-800 aspect-video max-h-48 flex items-center justify-center group/video overflow-hidden">
               <img
                 src={proof.content}
                 alt={proof.caption || 'Citizen photo proof'}
                 className="w-full h-full object-cover"
               />
+              {/* Fullscreen button for images */}
+              <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover/video:opacity-100 transition-opacity">
+                <button
+                  onClick={toggleFullscreen}
+                  className="h-7 w-7 rounded-md bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                  title="Fullscreen"
+                >
+                  {isFullscreen ? (
+                    <Minimize2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <Maximize2 className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+              {proof.verified && (
+                <div className="absolute top-2 right-2">
+                  <Badge className="bg-emerald-600 text-white text-[9px] px-1.5 py-0 h-4">
+                    <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
+                    Verified
+                  </Badge>
+                </div>
+              )}
             </div>
           ) : (
             <div className="aspect-video max-h-48 bg-stone-100 dark:bg-stone-800 flex flex-col items-center justify-center gap-2">
@@ -194,8 +213,7 @@ function VideoProofCard({ proof, onUpvote, onReply }: {
                 </>
               )}
             </div>
-          )
-        )}
+          )}
 
         {/* Caption & Author */}
         <div className="p-3 space-y-2">

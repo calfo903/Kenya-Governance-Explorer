@@ -1,0 +1,992 @@
+     1→'use client';
+     2→import React, { useState, useEffect, useCallback, useRef } from 'react';
+     3→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+     4→import { Badge } from '@/components/ui/badge';
+     5→import { Button } from '@/components/ui/button';
+     6→import { Input } from '@/components/ui/input';
+     7→import { Textarea } from '@/components/ui/textarea';
+     8→import { Separator } from '@/components/ui/separator';
+     9→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    10→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    11→import {
+    12→  Video, ImagePlus, MessageSquare, Upload, ThumbsUp, ThumbsDown,
+    13→  Play, Pause, Send, ChevronDown, ChevronUp, Camera, FileVideo,
+    14→  CheckCircle2, Clock, Loader2, X, Eye, MessageCircle, MapPin,
+    15→  Shield, AlertTriangle, Maximize2, Minimize2,
+    16→} from 'lucide-react';
+    17→import { toast } from 'sonner';
+    18→import type { CitizenProof } from '@/data/types';
+    19→
+    20→// ─── Types ────────────────────────────────────────────────────────
+    21→
+    22→interface CitizenProofPanelProps {
+    23→  projectId: string;
+    24→  projectName: string;
+    25→  countyCode: string;
+    26→}
+    27→
+    28→interface ProofStats {
+    29→  total: number;
+    30→  videos: number;
+    31→  images: number;
+    32→  comments: number;
+    33→}
+    34→
+    35→// ─── Avatar color helper ──────────────────────────────────────────
+    36→
+    37→function getAvatarColor(name: string): string {
+    38→  const colors = [
+    39→    'bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500',
+    40→    'bg-rose-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-teal-500',
+    41→    'bg-orange-500', 'bg-pink-500',
+    42→  ];
+    43→  let hash = 0;
+    44→  for (let i = 0; i < name.length; i++) {
+    45→    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    46→  }
+    47→  return colors[Math.abs(hash) % colors.length];
+    48→}
+    49→
+    50→function getInitials(name: string): string {
+    51→  return name
+    52→    .split(' ')
+    53→    .map(w => w[0])
+    54→    .join('')
+    55→    .toUpperCase()
+    56→    .slice(0, 2);
+    57→}
+    58→
+    59→function timeAgo(dateStr: string): string {
+    60→  const date = new Date(dateStr);
+    61→  const now = new Date();
+    62→  const diffMs = now.getTime() - date.getTime();
+    63→  const diffMins = Math.floor(diffMs / 60000);
+    64→  const diffHours = Math.floor(diffMs / 3600000);
+    65→  const diffDays = Math.floor(diffMs / 86400000);
+    66→
+    67→  if (diffMins < 1) return 'Just now';
+    68→  if (diffMins < 60) return `${diffMins}m ago`;
+    69→  if (diffHours < 24) return `${diffHours}h ago`;
+    70→  if (diffDays < 7) return `${diffDays}d ago`;
+    71→  return date.toLocaleDateString('en-KE', { day: 'numeric', month: 'short' });
+    72→}
+    73→
+    74→// ─── Video Proof Card ─────────────────────────────────────────────
+    75→
+    76→function VideoProofCard({ proof, onUpvote, onReply }: {
+    77→  proof: CitizenProof;
+    78→  onUpvote: (proofId: string) => void;
+    79→  onReply: (proofId: string, authorName: string, content: string) => void;
+    80→}) {
+    81→  const videoRef = useRef<HTMLVideoElement>(null);
+    82→  const containerRef = useRef<HTMLDivElement>(null);
+    83→  const [isPlaying, setIsPlaying] = useState(false);
+    84→  const [isFullscreen, setIsFullscreen] = useState(false);
+    85→  const [showReplies, setShowReplies] = useState(false);
+    86→  const [replyText, setReplyText] = useState('');
+    87→  const [replyAuthor, setReplyAuthor] = useState('');
+    88→  const [showReplyForm, setShowReplyForm] = useState(false);
+    89→
+    90→  const togglePlay = () => {
+    91→    if (videoRef.current) {
+    92→      if (isPlaying) {
+    93→        videoRef.current.pause();
+    94→      } else {
+    95→        videoRef.current.play();
+    96→      }
+    97→      setIsPlaying(!isPlaying);
+    98→    }
+    99→  };
+   100→
+   101→  const toggleFullscreen = () => {
+   102→    if (!containerRef.current) return;
+   103→    if (!document.fullscreenElement) {
+   104→      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+   105→    } else {
+   106→      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+   107→    }
+   108→  };
+   109→
+   110→  // Sync fullscreen state with browser events
+   111→  useEffect(() => {
+   112→    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+   113→    document.addEventListener('fullscreenchange', handler);
+   114→    return () => document.removeEventListener('fullscreenchange', handler);
+   115→  }, []);
+   116→
+   117→  return (
+   118→    <div ref={containerRef}>
+   119→      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 overflow-hidden">
+   120→        <CardContent className="p-0">
+   121→          {/* Video player area */}
+   122→          {proof.content ? (
+   123→            <div className="relative bg-stone-900 aspect-video max-h-48 flex items-center justify-center group/video">
+   124→              <video
+   125→                ref={videoRef}
+   126→                src={proof.content}
+   127→                className="w-full h-full object-contain"
+   128→                playsInline
+   129→                controls={isFullscreen}
+   130→                onPlay={() => setIsPlaying(true)}
+   131→                onPause={() => setIsPlaying(false)}
+   132→                onEnded={() => setIsPlaying(false)}
+   133→              />
+   134→              {/* Play overlay (only when NOT in native fullscreen) */}
+   135→              {!isFullscreen && (
+   136→                <button
+   137→                  onClick={togglePlay}
+   138→                  className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/video:opacity-100 transition-opacity"
+   139→                >
+   140→                  <div className="h-12 w-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+   141→                    {isPlaying ? (
+   142→                      <Pause className="h-5 w-5 text-stone-800" />
+   143→                    ) : (
+   144→                      <Play className="h-5 w-5 text-stone-800 ml-0.5" />
+   145→                    )}
+   146→                  </div>
+   147→                </button>
+   148→              )}
+   149→              {/* Controls row */}
+   150→              <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover/video:opacity-100 transition-opacity">
+   151→                {(proof.content || proof.type === 'image') && (
+   152→                  <button
+   153→                    onClick={toggleFullscreen}
+   154→                    className="h-7 w-7 rounded-md bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+   155→                    title="Fullscreen"
+   156→                  >
+   157→                    {isFullscreen ? (
+   158→                      <Minimize2 className="h-3.5 w-3.5" />
+   159→                    ) : (
+   160→                      <Maximize2 className="h-3.5 w-3.5" />
+   161→                    )}
+   162→                  </button>
+   163→                )}
+   164→              </div>
+   165→            {proof.verified && (
+   166→              <div className="absolute top-2 right-2">
+   167→                <Badge className="bg-emerald-600 text-white text-[9px] px-1.5 py-0 h-4">
+   168→                  <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
+   169→                  Verified
+   170→                </Badge>
+   171→              </div>
+   172→            )}
+   173→          </div>
+   174→        ) : (
+   175→          proof.type === 'image' && proof.content ? (
+   176→            <div className="relative bg-stone-100 dark:bg-stone-800 aspect-video max-h-48 flex items-center justify-center group/video overflow-hidden">
+   177→              <img
+   178→                src={proof.content}
+   179→                alt={proof.caption || 'Citizen photo proof'}
+   180→                className="w-full h-full object-cover"
+   181→              />
+   182→            </div>
+   183→          ) : (
+   184→            <div className="aspect-video max-h-48 bg-stone-100 dark:bg-stone-800 flex flex-col items-center justify-center gap-2">
+   185→              {proof.type === 'video' ? (
+   186→                <>
+   187→                  <FileVideo className="h-10 w-10 text-stone-400" />
+   188→                  <span className="text-xs text-stone-500 dark:text-stone-400">Video proof uploaded</span>
+   189→                </>
+   190→              ) : (
+   191→                <>
+   192→                  <Camera className="h-10 w-10 text-stone-400" />
+   193→                  <span className="text-xs text-stone-500 dark:text-stone-400">Photo proof uploaded</span>
+   194→                </>
+   195→              )}
+   196→            </div>
+   197→          )
+   198→        )}
+   199→
+   200→        {/* Caption & Author */}
+   201→        <div className="p-3 space-y-2">
+   202→          {proof.caption && (
+   203→            <p className="text-sm text-stone-700 dark:text-stone-200 leading-relaxed">{proof.caption}</p>
+   204→          )}
+   205→
+   206→          <div className="flex items-center justify-between">
+   207→            <div className="flex items-center gap-2">
+   208→              <Avatar className="h-6 w-6">
+   209→                <AvatarFallback className={`text-[9px] text-white font-bold ${getAvatarColor(proof.authorName)}`}>
+   210→                  {getInitials(proof.authorName)}
+   211→                </AvatarFallback>
+   212→              </Avatar>
+   213→              <div>
+   214→                <span className="text-xs font-medium text-stone-700 dark:text-stone-200">{proof.authorName}</span>
+   215→                {proof.authorLocation && (
+   216→                  <span className="text-[10px] text-stone-400 ml-1 flex items-center gap-0.5">
+   217→                    <MapPin className="h-2 w-2" />
+   218→                    {proof.authorLocation}
+   219→                  </span>
+   220→                )}
+   221→              </div>
+   222→              <span className="text-[10px] text-stone-400">{timeAgo(proof.createdAt)}</span>
+   223→            </div>
+   224→
+   225→            <div className="flex items-center gap-2">
+   226→              {/* Upvote */}
+   227→              <Button
+   228→                variant="ghost"
+   229→                size="sm"
+   230→                className="h-7 px-2 text-stone-500 dark:text-stone-400 hover:text-emerald-600"
+   231→                onClick={() => onUpvote(proof.id)}
+   232→              >
+   233→                <ThumbsUp className="h-3 w-3 mr-1" />
+   234→                <span className="text-[10px] font-medium">{proof.upvotes}</span>
+   235→              </Button>
+   236→
+   237→              {/* Reply toggle */}
+   238→              <Button
+   239→                variant="ghost"
+   240→                size="sm"
+   241→                className="h-7 px-2 text-stone-500 dark:text-stone-400"
+   242→                onClick={() => setShowReplyForm(!showReplyForm)}
+   243→              >
+   244→                <MessageCircle className="h-3 w-3" />
+   245→              </Button>
+   246→
+   247→              {/* Replies expand */}
+   248→              {proof.replies.length > 0 && (
+   249→                <Button
+   250→                  variant="ghost"
+   251→                  size="sm"
+   252→                  className="h-7 px-2 text-stone-400"
+   253→                  onClick={() => setShowReplies(!showReplies)}
+   254→                >
+   255→                  <span className="text-[10px]">{proof.replies.length}</span>
+   256→                  {showReplies ? (
+   257→                    <ChevronUp className="h-3 w-3 ml-0.5" />
+   258→                  ) : (
+   259→                    <ChevronDown className="h-3 w-3 ml-0.5" />
+   260→                  )}
+   261→                </Button>
+   262→              )}
+   263→            </div>
+   264→          </div>
+   265→
+   266→          {/* Reply form */}
+   267→          {showReplyForm && (
+   268→            <div className="space-y-2 pt-1 border-t border-stone-100 dark:border-stone-800">
+   269→              <Input
+   270→                placeholder="Your name"
+   271→                value={replyAuthor}
+   272→                onChange={e => setReplyAuthor(e.target.value)}
+   273→                className="h-7 text-xs bg-stone-50 dark:bg-stone-800"
+   274→              />
+   275→              <div className="flex gap-2">
+   276→                <Input
+   277→                  placeholder="Write a reply..."
+   278→                  value={replyText}
+   279→                  onChange={e => setReplyText(e.target.value)}
+   280→                  className="h-7 text-xs flex-1 bg-stone-50 dark:bg-stone-800"
+   281→                  onKeyDown={e => {
+   282→                    if (e.key === 'Enter' && replyText.trim() && replyAuthor.trim()) {
+   283→                      onReply(proof.id, replyAuthor, replyText);
+   284→                      setReplyText('');
+   285→                      setShowReplyForm(false);
+   286→                    }
+   287→                  }}
+   288→                />
+   289→                <Button
+   290→                  size="sm"
+   291→                  className="h-7 px-2 bg-emerald-600 hover:bg-emerald-700"
+   292→                  disabled={!replyText.trim() || !replyAuthor.trim()}
+   293→                  onClick={() => {
+   294→                    onReply(proof.id, replyAuthor, replyText);
+   295→                    setReplyText('');
+   296→                    setShowReplyForm(false);
+   297→                  }}
+   298→                >
+   299→                  <Send className="h-3 w-3" />
+   300→                </Button>
+   301→              </div>
+   302→            </div>
+   303→          )}
+   304→
+   305→          {/* Replies */}
+   306→          {showReplies && proof.replies.length > 0 && (
+   307→            <div className="space-y-2 pt-1 border-t border-stone-100 dark:border-stone-800">
+   308→              {proof.replies.map(reply => (
+   309→                <div key={reply.id} className="flex gap-2 pt-1">
+   310→                  <Avatar className="h-5 w-5 flex-shrink-0 mt-0.5">
+   311→                    <AvatarFallback className={`text-[8px] text-white font-bold ${getAvatarColor(reply.authorName)}`}>
+   312→                      {getInitials(reply.authorName)}
+   313→                    </AvatarFallback>
+   314→                  </Avatar>
+   315→                  <div className="flex-1 min-w-0">
+   316→                    <div className="flex items-center gap-1.5">
+   317→                      <span className="text-[11px] font-medium text-stone-700 dark:text-stone-200">
+   318→                        {reply.authorName}
+   319→                      </span>
+   320→                      <span className="text-[10px] text-stone-400">{timeAgo(reply.createdAt)}</span>
+   321→                    </div>
+   322→                    <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed">
+   323→                      {reply.content}
+   324→                    </p>
+   325→                  </div>
+   326→                </div>
+   327→              ))}
+   328→            </div>
+   329→          )}
+   330→        </div>
+   331→      </CardContent>
+   332→    </Card>
+   333→    </div>
+   334→  );
+   335→}
+   336→
+   337→// ─── Comment Proof Card ───────────────────────────────────────────
+   338→
+   339→function CommentProofCard({ proof, onUpvote, onReply }: {
+   340→  proof: CitizenProof;
+   341→  onUpvote: (proofId: string) => void;
+   342→  onReply: (proofId: string, authorName: string, content: string) => void;
+   343→}) {
+   344→  const [showReplies, setShowReplies] = useState(false);
+   345→  const [replyText, setReplyText] = useState('');
+   346→  const [replyAuthor, setReplyAuthor] = useState('');
+   347→  const [showReplyForm, setShowReplyForm] = useState(false);
+   348→
+   349→  return (
+   350→    <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
+   351→      <CardContent className="p-3 space-y-2">
+   352→        <div className="flex gap-2.5">
+   353→          <Avatar className="h-7 w-7 flex-shrink-0">
+   354→            <AvatarFallback className={`text-[10px] text-white font-bold ${getAvatarColor(proof.authorName)}`}>
+   355→              {getInitials(proof.authorName)}
+   356→            </AvatarFallback>
+   357→          </Avatar>
+   358→          <div className="flex-1 min-w-0">
+   359→            <div className="flex items-center gap-2 flex-wrap">
+   360→              <span className="text-xs font-semibold text-stone-800 dark:text-stone-100">{proof.authorName}</span>
+   361→              {proof.authorLocation && (
+   362→                <span className="text-[10px] text-stone-400 flex items-center gap-0.5">
+   363→                  <MapPin className="h-2 w-2" />
+   364→                  {proof.authorLocation}
+   365→                </span>
+   366→              )}
+   367→              <span className="text-[10px] text-stone-400">{timeAgo(proof.createdAt)}</span>
+   368→              {proof.verified && (
+   369→                <Badge className="bg-emerald-100 text-emerald-700 text-[8px] px-1 py-0 h-3.5">
+   370→                  <CheckCircle2 className="h-2 w-2 mr-0.5" />
+   371→                  Verified
+   372→                </Badge>
+   373→              )}
+   374→            </div>
+   375→            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed mt-1">
+   376→              {proof.content}
+   377→            </p>
+   378→
+   379→            <div className="flex items-center gap-3 mt-2">
+   380→              <Button
+   381→                variant="ghost"
+   382→                size="sm"
+   383→                className="h-6 px-2 text-stone-400 hover:text-emerald-600"
+   384→                onClick={() => onUpvote(proof.id)}
+   385→              >
+   386→                <ThumbsUp className="h-3 w-3 mr-1" />
+   387→                <span className="text-[10px]">{proof.upvotes}</span>
+   388→              </Button>
+   389→              <Button
+   390→                variant="ghost"
+   391→                size="sm"
+   392→                className="h-6 px-2 text-stone-400"
+   393→                onClick={() => setShowReplyForm(!showReplyForm)}
+   394→              >
+   395→                <MessageCircle className="h-3 w-3 mr-1" />
+   396→                <span className="text-[10px]">Reply</span>
+   397→              </Button>
+   398→              {proof.replies.length > 0 && (
+   399→                <Button
+   400→                  variant="ghost"
+   401→                  size="sm"
+   402→                  className="h-6 px-2 text-stone-400"
+   403→                  onClick={() => setShowReplies(!showReplies)}
+   404→                >
+   405→                  <span className="text-[10px]">{proof.replies.length} replies</span>
+   406→                  {showReplies ? <ChevronUp className="h-2.5 w-2.5 ml-0.5" /> : <ChevronDown className="h-2.5 w-2.5 ml-0.5" />}
+   407→                </Button>
+   408→              )}
+   409→            </div>
+   410→
+   411→            {/* Reply form */}
+   412→            {showReplyForm && (
+   413→              <div className="space-y-1.5 pt-2 mt-2 border-t border-stone-100 dark:border-stone-800">
+   414→                <Input
+   415→                  placeholder="Your name"
+   416→                  value={replyAuthor}
+   417→                  onChange={e => setReplyAuthor(e.target.value)}
+   418→                  className="h-7 text-xs bg-stone-50 dark:bg-stone-800"
+   419→                />
+   420→                <div className="flex gap-2">
+   421→                  <Input
+   422→                    placeholder="Write a reply..."
+   423→                    value={replyText}
+   424→                    onChange={e => setReplyText(e.target.value)}
+   425→                    className="h-7 text-xs flex-1 bg-stone-50 dark:bg-stone-800"
+   426→                    onKeyDown={e => {
+   427→                      if (e.key === 'Enter' && replyText.trim() && replyAuthor.trim()) {
+   428→                        onReply(proof.id, replyAuthor, replyText);
+   429→                        setReplyText('');
+   430→                        setShowReplyForm(false);
+   431→                      }
+   432→                    }}
+   433→                  />
+   434→                  <Button
+   435→                    size="sm"
+   436→                    className="h-7 px-2 bg-emerald-600 hover:bg-emerald-700"
+   437→                    disabled={!replyText.trim() || !replyAuthor.trim()}
+   438→                    onClick={() => {
+   439→                      onReply(proof.id, replyAuthor, replyText);
+   440→                      setReplyText('');
+   441→                      setShowReplyForm(false);
+   442→                    }}
+   443→                  >
+   444→                    <Send className="h-3 w-3" />
+   445→                  </Button>
+   446→                </div>
+   447→              </div>
+   448→            )}
+   449→
+   450→            {/* Replies */}
+   451→            {showReplies && proof.replies.length > 0 && (
+   452→              <div className="space-y-2 pt-2 mt-2 border-t border-stone-100 dark:border-stone-800">
+   453→                {proof.replies.map(reply => (
+   454→                  <div key={reply.id} className="flex gap-2">
+   455→                    <Avatar className="h-5 w-5 flex-shrink-0 mt-0.5">
+   456→                      <AvatarFallback className={`text-[8px] text-white font-bold ${getAvatarColor(reply.authorName)}`}>
+   457→                        {getInitials(reply.authorName)}
+   458→                      </AvatarFallback>
+   459→                    </Avatar>
+   460→                    <div className="flex-1 min-w-0">
+   461→                      <div className="flex items-center gap-1.5">
+   462→                        <span className="text-[10px] font-medium text-stone-700 dark:text-stone-200">
+   463→                          {reply.authorName}
+   464→                        </span>
+   465→                        <span className="text-[9px] text-stone-400">{timeAgo(reply.createdAt)}</span>
+   466→                      </div>
+   467→                      <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed">
+   468→                        {reply.content}
+   469→                      </p>
+   470→                    </div>
+   471→                  </div>
+   472→                ))}
+   473→              </div>
+   474→            )}
+   475→          </div>
+   476→        </div>
+   477→      </CardContent>
+   478→    </Card>
+   479→  );
+   480→}
+   481→
+   482→// ─── Upload Form ──────────────────────────────────────────────────
+   483→
+   484→function UploadForm({ projectId, onProofAdded, activeType }: {
+   485→  projectId: string;
+   486→  onProofAdded: () => void;
+   487→  activeType: string;
+   488→}) {
+   489→  const [uploading, setUploading] = useState(false);
+   490→  const [caption, setCaption] = useState('');
+   491→  const [authorName, setAuthorName] = useState('');
+   492→  const [authorLocation, setAuthorLocation] = useState('');
+   493→  const [commentText, setCommentText] = useState('');
+   494→  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+   495→  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+   496→  const fileInputRef = useRef<HTMLInputElement>(null);
+   497→
+   498→  const resetForm = () => {
+   499→    setCaption('');
+   500→    setCommentText('');
+   501→    setSelectedFile(null);
+   502→    setPreviewUrl(null);
+   503→  };
+   504→
+   505→  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+   506→    const file = e.target.files?.[0];
+   507→    if (file) {
+   508→      setSelectedFile(file);
+   509→      if (file.type.startsWith('image/')) {
+   510→        const url = URL.createObjectURL(file);
+   511→        setPreviewUrl(url);
+   512→      } else {
+   513→        setPreviewUrl(null);
+   514→      }
+   515→    }
+   516→  };
+   517→
+   518→  const handleUpload = async () => {
+   519→    if (!authorName.trim()) {
+   520→      toast.error('Please enter your name');
+   521→      return;
+   522→    }
+   523→
+   524→    if (activeType === 'comment') {
+   525→      if (!commentText.trim()) {
+   526→        toast.error('Please write a comment');
+   527→        return;
+   528→      }
+   529→      // Submit text comment
+   530→      try {
+   531→        setUploading(true);
+   532→        const res = await fetch(`/api/projects/${projectId}/proofs`, {
+   533→          method: 'POST',
+   534→          headers: { 'Content-Type': 'application/json' },
+   535→          body: JSON.stringify({
+   536→            type: 'comment',
+   537→            content: commentText.trim(),
+   538→            authorName: authorName.trim(),
+   539→            authorLocation: authorLocation.trim(),
+   540→          }),
+   541→        });
+   542→        if (!res.ok) throw new Error('Failed to submit');
+   543→        toast.success('Comment posted successfully!');
+   544→        setCommentText('');
+   545→        onProofAdded();
+   546→      } catch {
+   547→        toast.error('Failed to post comment. Please try again.');
+   548→      } finally {
+   549→        setUploading(false);
+   550→      }
+   551→      return;
+   552→    }
+   553→
+   554→    if (!selectedFile) {
+   555→      toast.error('Please select a file to upload');
+   556→      return;
+   557→    }
+   558→
+   559→    try {
+   560→      setUploading(true);
+   561→
+   562→      // Upload the file first
+   563→      const formData = new FormData();
+   564→      formData.append('video', selectedFile);
+   565→
+   566→      const uploadRes = await fetch('/api/upload/video', {
+   567→        method: 'POST',
+   568→        body: formData,
+   569→      });
+   570→
+   571→      if (!uploadRes.ok) {
+   572→        const err = await uploadRes.json();
+   573→        throw new Error(err.error || 'Upload failed');
+   574→      }
+   575→
+   576→      const uploadData = await uploadRes.json();
+   577→
+   578→      // Now create the proof record
+   579→      const proofRes = await fetch(`/api/projects/${projectId}/proofs`, {
+   580→        method: 'POST',
+   581→        headers: { 'Content-Type': 'application/json' },
+   582→        body: JSON.stringify({
+   583→          type: uploadData.isVideo ? 'video' : 'image',
+   584→          content: uploadData.url,
+   585→          caption: caption.trim(),
+   586→          authorName: authorName.trim(),
+   587→          authorLocation: authorLocation.trim(),
+   588→        }),
+   589→      });
+   590→
+   591→      if (!proofRes.ok) throw new Error('Failed to create proof record');
+   592→
+   593→      toast.success(uploadData.isVideo ? 'Video proof uploaded!' : 'Photo proof uploaded!');
+   594→      resetForm();
+   595→      onProofAdded();
+   596→    } catch (err) {
+   597→      toast.error(err instanceof Error ? err.message : 'Upload failed. Please try again.');
+   598→    } finally {
+   599→      setUploading(false);
+   600→    }
+   601→  };
+   602→
+   603→  // Comment form (simpler)
+   604→  if (activeType === 'comment') {
+   605→    return (
+   606→      <Card className="border-emerald-200 dark:border-emerald-800 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-stone-900">
+   607→        <CardContent className="p-3 space-y-2">
+   608→          <div className="flex items-center gap-2 mb-1">
+   609→            <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+   610→            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Share Your Observation</span>
+   611→          </div>
+   612→          <div className="flex gap-2">
+   613→            <Input
+   614→              placeholder="Your name"
+   615→              value={authorName}
+   616→              onChange={e => setAuthorName(e.target.value)}
+   617→              className="h-8 text-xs w-32 bg-white dark:bg-stone-800"
+   618→            />
+   619→            <Input
+   620→              placeholder="Your area (optional)"
+   621→              value={authorLocation}
+   622→              onChange={e => setAuthorLocation(e.target.value)}
+   623→              className="h-8 text-xs w-36 bg-white dark:bg-stone-800"
+   624→            />
+   625→          </div>
+   626→          <Textarea
+   627→            placeholder="Describe what you've observed about this project — progress, issues, or concerns..."
+   628→            value={commentText}
+   629→            onChange={e => setCommentText(e.target.value)}
+   630→            className="text-xs min-h-[60px] bg-white dark:bg-stone-800 resize-none"
+   631→          />
+   632→          <div className="flex justify-end">
+   633→            <Button
+   634→              size="sm"
+   635→              className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+   636→              disabled={uploading || !commentText.trim() || !authorName.trim()}
+   637→              onClick={handleUpload}
+   638→            >
+   639→              {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+   640→              Post Comment
+   641→            </Button>
+   642→          </div>
+   643→        </CardContent>
+   644→      </Card>
+   645→    );
+   646→  }
+   647→
+   648→  // Video/Image upload form
+   649→  return (
+   650→    <Card className="border-emerald-200 dark:border-emerald-800 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-stone-900">
+   651→      <CardContent className="p-3 space-y-2">
+   652→        <div className="flex items-center gap-2 mb-1">
+   653→          {activeType === 'video' ? (
+   654→            <Video className="h-3.5 w-3.5 text-emerald-600" />
+   655→          ) : (
+   656→            <Camera className="h-3.5 w-3.5 text-emerald-600" />
+   657→          )}
+   658→          <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+   659→            {activeType === 'video' ? 'Upload Video Proof' : 'Upload Photo Proof'}
+   660→          </span>
+   661→        </div>
+   662→
+   663→        {/* File drop zone */}
+   664→        <div
+   665→          className="border-2 border-dashed border-emerald-200 dark:border-emerald-800 rounded-lg p-4 text-center cursor-pointer hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors"
+   666→          onClick={() => fileInputRef.current?.click()}
+   667→        >
+   668→          {selectedFile ? (
+   669→            <div className="space-y-1.5">
+   670→              {previewUrl ? (
+   671→                <img src={previewUrl} alt="Preview" className="max-h-32 mx-auto rounded-md" />
+   672→              ) : (
+   673→                <div className="flex items-center justify-center gap-2">
+   674→                  <FileVideo className="h-8 w-8 text-emerald-600" />
+   675→                  <div className="text-left">
+   676→                    <p className="text-xs font-medium text-stone-700 dark:text-stone-200">{selectedFile.name}</p>
+   677→                    <p className="text-[10px] text-stone-400">{(selectedFile.size / 1024 / 1024).toFixed(1)}MB</p>
+   678→                  </div>
+   679→                </div>
+   680→              )}
+   681→              <Button
+   682→                variant="ghost"
+   683→                size="sm"
+   684→                className="text-[10px] text-red-500 hover:text-red-700 h-6"
+   685→                onClick={e => { e.stopPropagation(); resetForm(); }}
+   686→              >
+   687→                <X className="h-3 w-3 mr-1" />
+   688→                Remove
+   689→              </Button>
+   690→            </div>
+   691→          ) : (
+   692→            <div className="space-y-1">
+   693→              <Upload className="h-6 w-6 text-emerald-500 mx-auto" />
+   694→              <p className="text-xs text-stone-600 dark:text-stone-300">
+   695→                Click to select {activeType === 'video' ? 'video' : 'photo'}
+   696→              </p>
+   697→              <p className="text-[10px] text-stone-400">
+   698→                MP4, WebM, MOV, AVI, MKV up to 50MB
+   699→                {activeType === 'image' ? ' · JPG, PNG, WebP, GIF' : ''}
+   700→              </p>
+   701→            </div>
+   702→          )}
+   703→        </div>
+   704→        <input
+   705→          ref={fileInputRef}
+   706→          type="file"
+   707→          accept={activeType === 'video'
+   708→            ? 'video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo,video/x-matroska'
+   709→            : 'image/jpeg,image/png,image/webp,image/gif'
+   710→          }
+   711→          onChange={handleFileSelect}
+   712→          className="hidden"
+   713→        />
+   714→
+   715→        {/* Caption */}
+   716→        <Textarea
+   717→          placeholder="Describe what this proof shows..."
+   718→          value={caption}
+   719→          onChange={e => setCaption(e.target.value)}
+   720→          className="text-xs min-h-[40px] bg-white dark:bg-stone-800 resize-none"
+   721→        />
+   722→
+   723→        {/* Author info */}
+   724→        <div className="flex gap-2">
+   725→          <Input
+   726→            placeholder="Your name *"
+   727→            value={authorName}
+   728→            onChange={e => setAuthorName(e.target.value)}
+   729→            className="h-8 text-xs flex-1 bg-white dark:bg-stone-800"
+   730→          />
+   731→          <Input
+   732→            placeholder="Your area (optional)"
+   733→            value={authorLocation}
+   734→            onChange={e => setAuthorLocation(e.target.value)}
+   735→            className="h-8 text-xs w-36 bg-white dark:bg-stone-800"
+   736→          />
+   737→        </div>
+   738→
+   739→        <div className="flex justify-end">
+   740→          <Button
+   741→            size="sm"
+   742→            className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+   743→            disabled={uploading || !selectedFile || !authorName.trim()}
+   744→            onClick={handleUpload}
+   745→          >
+   746→            {uploading ? (
+   747→              <>
+   748→                <Loader2 className="h-3 w-3 animate-spin" />
+   749→                Uploading...
+   750→              </>
+   751→            ) : (
+   752→              <>
+   753→                <Upload className="h-3 w-3" />
+   754→                Upload Proof
+   755→              </>
+   756→            )}
+   757→          </Button>
+   758→        </div>
+   759→      </CardContent>
+   760→    </Card>
+   761→  );
+   762→}
+   763→
+   764→// ─── Main Component ───────────────────────────────────────────────
+   765→
+   766→export default function CitizenProofPanel({ projectId, projectName, countyCode }: CitizenProofPanelProps) {
+   767→  const [proofs, setProofs] = useState<CitizenProof[]>([]);
+   768→  const [stats, setStats] = useState<ProofStats>({ total: 0, videos: 0, images: 0, comments: 0 });
+   769→  const [loading, setLoading] = useState(true);
+   770→  const [activeTab, setActiveTab] = useState('all');
+   771→  const [showUpload, setShowUpload] = useState(false);
+   772→
+   773→  // Fetch proofs
+   774→  const fetchProofs = useCallback(async () => {
+   775→    try {
+   776→      const res = await fetch(`/api/projects/${projectId}/proofs`);
+   777→      if (res.ok) {
+   778→        const data = await res.json();
+   779→        setProofs(data.proofs || []);
+   780→        setStats({
+   781→          total: data.total || 0,
+   782→          videos: data.videos || 0,
+   783→          images: data.images || 0,
+   784→          comments: data.comments || 0,
+   785→        });
+   786→      }
+   787→    } catch {
+   788→      // Silently fail — proofs are optional
+   789→    } finally {
+   790→      setLoading(false);
+   791→    }
+   792→  }, [projectId]);
+   793→
+   794→  useEffect(() => {
+   795→    fetchProofs();
+   796→  }, [fetchProofs]);
+   797→
+   798→  // Upvote handler
+   799→  const handleUpvote = async (proofId: string) => {
+   800→    try {
+   801→      const res = await fetch(`/api/projects/${projectId}/proofs`, {
+   802→        method: 'PATCH',
+   803→        headers: { 'Content-Type': 'application/json' },
+   804→        body: JSON.stringify({ proofId, action: 'upvote' }),
+   805→      });
+   806→      if (res.ok) {
+   807→        setProofs(prev =>
+   808→          prev.map(p => p.id === proofId ? { ...p, upvotes: p.upvotes + 1 } : p)
+   809→        );
+   810→      }
+   811→    } catch {
+   812→      toast.error('Failed to upvote');
+   813→    }
+   814→  };
+   815→
+   816→  // Reply handler
+   817→  const handleReply = async (proofId: string, authorName: string, content: string) => {
+   818→    try {
+   819→      const res = await fetch(`/api/projects/${projectId}/proofs`, {
+   820→        method: 'PATCH',
+   821→        headers: { 'Content-Type': 'application/json' },
+   822→        body: JSON.stringify({ proofId, action: 'reply', replyAuthorName: authorName, replyContent: content }),
+   823→      });
+   824→      if (res.ok) {
+   825→        fetchProofs(); // refresh to get the updated proof with reply
+   826→      }
+   827→    } catch {
+   828→      toast.error('Failed to post reply');
+   829→    }
+   830→  };
+   831→
+   832→  // Filter proofs by tab
+   833→  const filteredProofs = proofs.filter(p => {
+   834→    if (activeTab === 'all') return true;
+   835→    if (activeTab === 'videos') return p.type === 'video';
+   836→    if (activeTab === 'photos') return p.type === 'image';
+   837→    if (activeTab === 'comments') return p.type === 'comment';
+   838→    return true;
+   839→  });
+   840→
+   841→  const getUploadType = () => {
+   842→    if (activeTab === 'videos') return 'video';
+   843→    if (activeTab === 'photos') return 'image';
+   844→    if (activeTab === 'comments') return 'comment';
+   845→    return 'video'; // default for "all"
+   846→  };
+   847→
+   848→  return (
+   849→    <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
+   850→      <CardHeader className="pb-2 pt-4 px-4">
+   851→        <div className="flex items-center justify-between">
+   852→          <div>
+   853→            <CardTitle className="text-sm font-semibold text-stone-800 dark:text-stone-100 flex items-center gap-2">
+   854→              <Eye className="h-4 w-4 text-emerald-600" />
+   855→              Citizen Proof Hub
+   856→            </CardTitle>
+   857→            <CardDescription className="text-[10px] mt-0.5">
+   858→              Community-submitted videos, photos & observations as evidence
+   859→            </CardDescription>
+   860→          </div>
+   861→          <Button
+   862→            size="sm"
+   863→            className="h-7 text-[11px] gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+   864→            onClick={() => setShowUpload(!showUpload)}
+   865→          >
+   866→            {showUpload ? (
+   867→              <>
+   868→                <X className="h-3 w-3" />
+   869→                Cancel
+   870→              </>
+   871→            ) : (
+   872→              <>
+   873→                <Upload className="h-3 w-3" />
+   874→                Add Proof
+   875→              </>
+   876→            )}
+   877→          </Button>
+   878→        </div>
+   879→
+   880→        {/* Stats bar */}
+   881→        <div className="flex items-center gap-3 mt-2">
+   882→          {[
+   883→            { count: stats.videos, icon: Video, label: 'Videos' },
+   884→            { count: stats.images, icon: Camera, label: 'Photos' },
+   885→            { count: stats.comments, icon: MessageSquare, label: 'Comments' },
+   886→          ].map(item => (
+   887→            <div key={item.label} className="flex items-center gap-1 text-[10px] text-stone-500 dark:text-stone-400">
+   888→              <item.icon className="h-3 w-3" />
+   889→              <span className="font-semibold text-stone-700 dark:text-stone-200">{item.count}</span>
+   890→              <span>{item.label}</span>
+   891→            </div>
+   892→          ))}
+   893→        </div>
+   894→      </CardHeader>
+   895→      <CardContent className="px-4 pb-4 space-y-3">
+   896→        {/* Upload form (toggle) */}
+   897→        {showUpload && (
+   898→          <UploadForm
+   899→            projectId={projectId}
+   900→            onProofAdded={fetchProofs}
+   901→            activeType={activeTab === 'all' ? 'comment' : getUploadType()}
+   902→          />
+   903→        )}
+   904→
+   905→        {/* Tabs for filtering */}
+   906→        <Tabs value={activeTab} onValueChange={setActiveTab}>
+   907→          <TabsList className="h-8 bg-stone-100 dark:bg-stone-800">
+   908→            <TabsTrigger value="all" className="text-[11px] h-6 px-2.5">
+   909→              All ({stats.total})
+   910→            </TabsTrigger>
+   911→            <TabsTrigger value="videos" className="text-[11px] h-6 px-2.5">
+   912→              <Video className="h-3 w-3 mr-1" />
+   913→              Videos ({stats.videos})
+   914→            </TabsTrigger>
+   915→            <TabsTrigger value="photos" className="text-[11px] h-6 px-2.5">
+   916→              <Camera className="h-3 w-3 mr-1" />
+   917→              Photos ({stats.images})
+   918→            </TabsTrigger>
+   919→            <TabsTrigger value="comments" className="text-[11px] h-6 px-2.5">
+   920→              <MessageSquare className="h-3 w-3 mr-1" />
+   921→              Comments ({stats.comments})
+   922→            </TabsTrigger>
+   923→          </TabsList>
+   924→        </Tabs>
+   925→
+   926→        {/* Proof list */}
+   927→        {loading ? (
+   928→          <div className="flex items-center justify-center py-8">
+   929→            <Loader2 className="h-5 w-5 text-emerald-600 animate-spin" />
+   930→            <span className="text-xs text-stone-500 ml-2">Loading citizen proofs...</span>
+   931→          </div>
+   932→        ) : filteredProofs.length === 0 ? (
+   933→          <div className="flex flex-col items-center justify-center py-8 text-stone-400">
+   934→            <AlertTriangle className="h-8 w-8 mb-2 text-stone-300" />
+   935→            <p className="text-xs font-medium">No proofs yet for this project</p>
+   936→            <p className="text-[10px] mt-1">
+   937→              Be the first to share a video, photo, or observation
+   938→            </p>
+   939→            <Button
+   940→              variant="outline"
+   941→              size="sm"
+   942→              className="mt-3 h-7 text-[10px] border-emerald-300 text-emerald-700"
+   943→              onClick={() => setShowUpload(true)}
+   944→            >
+   945→              <Upload className="h-3 w-3 mr-1" />
+   946→              Add First Proof
+   947→            </Button>
+   948→          </div>
+   949→        ) : (
+   950→          <div className="space-y-3">
+   951→            {filteredProofs.map(proof => (
+   952→              proof.type === 'comment' ? (
+   953→                <CommentProofCard
+   954→                  key={proof.id}
+   955→                  proof={proof}
+   956→                  onUpvote={handleUpvote}
+   957→                  onReply={handleReply}
+   958→                />
+   959→              ) : (
+   960→                <VideoProofCard
+   961→                  key={proof.id}
+   962→                  proof={proof}
+   963→                  onUpvote={handleUpvote}
+   964→                  onReply={handleReply}
+   965→                />
+   966→              )
+   967→            ))}
+   968→          </div>
+   969→        )}
+   970→
+   971→        {/* Info banner */}
+   972→        <div className="p-2.5 rounded-md bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+   973→          <div className="flex items-start gap-2">
+   974→            <Shield className="h-3.5 w-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
+   975→            <div className="text-[10px] text-stone-500 dark:text-stone-400 leading-relaxed space-y-0.5">
+   976→              <p>
+   977→                <span className="font-semibold text-stone-600 dark:text-stone-300">Community Evidence Policy:</span>{' '}
+   978→                All submissions are community-reported. Verified proofs carry a green badge. 
+   979→                False reports may be flagged and removed.
+   980→              </p>
+   981→              <p>
+   982→                Videos and photos are stored locally. In production, they would be 
+   983→                reviewed by county oversight committees before verification.
+   984→              </p>
+   985→            </div>
+   986→          </div>
+   987→        </div>
+   988→      </CardContent>
+   989→    </Card>
+   990→  );
+   991→}
+   992→

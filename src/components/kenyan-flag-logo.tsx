@@ -10,7 +10,6 @@ interface KenyanFlagLogoProps {
 }
 
 // Unique IDs per instance to avoid SVG id collisions
-let _id = 0;
 
 export default function KenyanFlagLogo({ size = 36, className = '', showText = false, textClassName = '' }: KenyanFlagLogoProps) {
   const id = React.useId();

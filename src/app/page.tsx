@@ -329,13 +329,13 @@ function PageContent() {
     'nav.sections.leadershipProjects': t('nav.sections.leadershipProjects'),
     'nav.sections.insights': t('nav.sections.insights'),
     'nav.sections.aiTools': t('nav.sections.aiTools'),
-    'nav.sections.civicEngagement': 'Civic Engagement',
-    'nav.sections.dataAnalytics': 'Data & Analytics',
-    'nav.sections.aiSmartTools': 'AI & Smart Tools',
-    'nav.sections.mapsViz': 'Maps & Visualization',
-    'nav.sections.communitySocial': 'Community & Social',
-    'nav.sections.accountability': 'Accountability & Tracking',
-    'nav.sections.appSettings': 'App & Settings',
+    'nav.sections.civicEngagement': t('nav.sections.civicEngagement'),
+    'nav.sections.dataAnalytics': t('nav.sections.dataAnalytics'),
+    'nav.sections.aiSmartTools': t('nav.sections.aiSmartTools'),
+    'nav.sections.mapsViz': t('nav.sections.mapsViz'),
+    'nav.sections.communitySocial': t('nav.sections.communitySocial'),
+    'nav.sections.accountability': t('nav.sections.accountability'),
+    'nav.sections.appSettings': t('nav.sections.appSettings'),
   }), [t]);
 
   // Helper to get localized label for a nav item

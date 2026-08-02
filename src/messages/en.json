@@ -57,7 +57,14 @@
       "analytics": "Analytics",
       "leadershipProjects": "Leadership & Projects",
       "insights": "Insights",
-      "aiTools": "AI Tools"
+      "aiTools": "AI Tools",
+      "civicEngagement": "Civic Engagement",
+      "dataAnalytics": "Data & Analytics",
+      "aiSmartTools": "AI & Smart Tools",
+      "mapsViz": "Maps & Visualization",
+      "communitySocial": "Community & Social",
+      "accountability": "Accountability & Tracking",
+      "appSettings": "App & Settings"
     },
     "items": {
       "summary": "National Summary",
