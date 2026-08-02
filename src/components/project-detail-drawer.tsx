@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { toast } from 'sonner';
+import CitizenProofPanel from '@/components/citizen-proof-panel';
 
 // ─── Helper Types ────────────────────────────────────────────────
 
@@ -907,6 +908,13 @@ export default function ProjectDetailDrawer({
                 <CitizenAuditorWidget project={project} />
               </div>
             </div>
+
+            {/* ─── Citizen Proof Hub ─────────────────────────────── */}
+            <CitizenProofPanel
+              projectId={project.id}
+              projectName={project.name}
+              countyCode={project.countyCode}
+            />
 
             {/* ─── Oversight Action Hub ──────────────────────────── */}
             <OversightActionHub project={project} />

@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // Allow public uploads to be served
+  async rewrites() {
+    return [];
+  },
 };
 
 export default nextConfig;

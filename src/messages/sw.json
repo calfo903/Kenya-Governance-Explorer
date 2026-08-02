@@ -325,5 +325,34 @@
       "ethics": "Maadili",
       "sentiment": "Hisia"
     }
+  },
+  "proofHub": {
+    "title": "Kituo cha Uthibitisho wa Raia",
+    "subtitle": "Video, picha na maoni ya jamii kama ushahidi",
+    "addProof": "Ongeza Uthibitisho",
+    "uploadVideo": "Pakia Video kama Uthibitisho",
+    "uploadPhoto": "Pakia Picha kama Uthibitisho",
+    "shareObservation": "Shiriki Uchunguzi Wako",
+    "all": "Yote",
+    "videos": "Video",
+    "photos": "Picha",
+    "comments": "Maoni",
+    "noProofs": "Hakuna uthibitisho kwa mradi huu bado",
+    "noProofsHint": "Kuwa wa kwanza kushiriki video, picha, au uchunguzi",
+    "addFirstProof": "Ongeza Uthibitisho wa Kwanza",
+    "postComment": "Tuma Maoni",
+    "uploadProof": "Pakia Uthibitisho",
+    "reply": "Jibu",
+    "replies": "majibu",
+    "yourName": "Jina lako",
+    "yourArea": "Eneo lako (si lazima)",
+    "describeProof": "Eleza kile hiki uthibitisho kinachoonyesha...",
+    "describeObservation": "Eleza ulichotambua kuhusu mradi huu — maendeleo, matatizo, au wasiwasi...",
+    "writeReply": "Andika jibu...",
+    "verified": "Imethibitishwa",
+    "communityEvidence": "Sera ya Ushahidi wa Jamii:",
+    "communityEvidenceText": "Maanisha yote yameripotiwa na jamii. Uthibitisho uliothibitisho una beji ya kijani. Ripoti za uwongo zinaweza kutambuliwa na kuondolewa.",
+    "storageNote": "Video na picha zinahifadhiwa ndani. Katika uzalishaji, zingekaguliwa na kamati za usimamizi wa kaunti kabla ya kuthibitishwa.",
+    "proofHub": "Kituo ya Uthibitisho"
   }
 }

@@ -325,5 +325,34 @@
       "ethics": "Ethics",
       "sentiment": "Sentiment"
     }
+  },
+  "proofHub": {
+    "title": "Citizen Proof Hub",
+    "subtitle": "Community-submitted videos, photos & observations as evidence",
+    "addProof": "Add Proof",
+    "uploadVideo": "Upload Video Proof",
+    "uploadPhoto": "Upload Photo Proof",
+    "shareObservation": "Share Your Observation",
+    "all": "All",
+    "videos": "Videos",
+    "photos": "Photos",
+    "comments": "Comments",
+    "noProofs": "No proofs yet for this project",
+    "noProofsHint": "Be the first to share a video, photo, or observation",
+    "addFirstProof": "Add First Proof",
+    "postComment": "Post Comment",
+    "uploadProof": "Upload Proof",
+    "reply": "Reply",
+    "replies": "replies",
+    "yourName": "Your name",
+    "yourArea": "Your area (optional)",
+    "describeProof": "Describe what this proof shows...",
+    "describeObservation": "Describe what you've observed about this project — progress, issues, or concerns...",
+    "writeReply": "Write a reply...",
+    "verified": "Verified",
+    "communityEvidence": "Community Evidence Policy:",
+    "communityEvidenceText": "All submissions are community-reported. Verified proofs carry a green badge. False reports may be flagged and removed.",
+    "storageNote": "Videos and photos are stored locally. In production, they would be reviewed by county oversight committees before verification.",
+    "proofHub": "Proof Hub"
   }
 }

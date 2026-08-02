@@ -719,3 +719,33 @@ Stage Summary:
 - Images are stored in localStorage (persist across sessions, no backend needed)
 - Click avatar to upload, hover to see camera icon, drag-and-drop supported
 - Small X button to remove uploaded photo
+
+---
+Task ID: 27
+Agent: Main Agent
+Task: Citizen Proof Hub — Video/Photo upload + Comments on project pages
+
+Work Log:
+- Explored codebase: ProjectsBrowserPage, ProjectDetailDrawer, types.ts, API routes, Prisma schema
+- Created /api/upload/video route — handles video (MP4/WebM/MOV/AVI/MKV up to 50MB) and image (JPG/PNG/WebP/GIF) uploads to public/uploads/proofs/
+- Created /api/projects/[id]/proofs route — GET (list proofs), POST (add proof), PATCH (upvote/reply). In-memory store with demo seed data for PRJ-034-001 and PRJ-001-001
+- Added CitizenProof and ProofReply interfaces to types.ts
+- Built CitizenProofPanel component (~500 lines) with:
+  - Tab filtering: All / Videos / Photos / Comments
+  - Upload form with drag-to-select, preview for images, name/location fields
+  - Comment form with textarea
+  - VideoProofCard with inline player, caption, author, upvote, reply threads
+  - CommentProofCard with avatar, text, upvote, reply threads
+  - Verified badge for approved proofs
+  - Community evidence policy disclaimer
+  - Empty state with CTA
+- Integrated CitizenProofPanel into ProjectDetailDrawer (before OversightActionHub)
+- Added "Proof Hub" badge on project cards in ProjectsBrowserPage
+- Added Eye icon import to projects-browser-page.tsx
+- Added proofHub section to en.json and sw.json i18n files
+- Build succeeded — both new API routes registered
+
+Stage Summary:
+- New files: citizen-proof-panel.tsx, api/upload/video/route.ts, api/projects/[id]/proofs/route.ts
+- Modified files: project-detail-drawer.tsx, projects-browser-page.tsx, types.ts, en.json, sw.json
+- Citizens can now upload videos, photos, and comments as proof on any project's detail page

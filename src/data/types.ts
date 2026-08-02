@@ -282,6 +282,28 @@ export interface RiskForecast {
   recommendation: string;
 }
 
+// ─── Citizen Proof Types ─────────────────────────────────────────
+export interface CitizenProof {
+  id: string;
+  projectId: string;
+  type: 'video' | 'image' | 'comment';
+  content: string; // URL for video/image, text for comment
+  caption?: string;
+  authorName: string;
+  authorLocation?: string;
+  createdAt: string;
+  verified: boolean;
+  upvotes: number;
+  replies: ProofReply[];
+}
+
+export interface ProofReply {
+  id: string;
+  authorName: string;
+  content: string;
+  createdAt: string;
+}
+
 // ─── Mzalendo Member Types ────────────────────────────────────────
 export interface MzalendoMember {
   id: string;

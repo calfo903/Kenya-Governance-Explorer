@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Search, Filter, MapPin, ArrowUpDown, TrendingUp, X, ChevronRight,
-  DollarSign, AlertTriangle, CheckCircle2, Clock, Camera,
+  DollarSign, AlertTriangle, CheckCircle2, Clock, Camera, Eye,
   Layers, Building2, Droplets, Heart, GraduationCap, Leaf, Activity,
 } from 'lucide-react';
 import { getAuditColor } from '@/data/types';
@@ -440,6 +440,15 @@ export default function ProjectsBrowserPage() {
                         <span className="text-[10px] font-medium">{project.citizenPhotos}</span>
                       </div>
                     )}
+
+                    {/* Citizen Proofs indicator */}
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] px-1.5 py-0 h-5 border-emerald-200 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                    >
+                      <Eye className="h-2.5 w-2.5 mr-0.5" />
+                      Proof Hub
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
