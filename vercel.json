@@ -3,6 +3,10 @@
   "framework": "nextjs",
   "buildCommand": "npx prisma generate && next build",
   "installCommand": "npm install",
+  "outputDirectory": ".next/standalone",
+
+  "crons": [],
+
   "headers": [
     {
       "source": "/api/(.*)",
