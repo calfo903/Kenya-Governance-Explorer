@@ -25,6 +25,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import RepChatWidget from '@/components/rep-chat-widget';
+import RepAvatar from '@/components/rep-avatar';
 
 // ─── Constants ──────────────────────────────────────────────────
 const COALITION_COLORS: Record<string, string> = {
@@ -261,7 +262,7 @@ function MemberCard({ member }: { member: MzalendoMember }) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <GenderIcon gender={member.gender} />
+            <RepAvatar name={member.name} county={member.county} size="h-8 w-8" className="shrink-0" />
             <div className="min-w-0">
               <CardTitle className="text-sm font-bold leading-tight text-stone-900 dark:text-stone-50 dark:text-stone-100 truncate">
                 {member.name}

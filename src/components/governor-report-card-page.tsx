@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import RepChatWidget from '@/components/rep-chat-widget';
+import RepAvatar from '@/components/rep-avatar';
 
 export default function GovernorReportCardPage() {
   const [selectedCounty, setSelectedCounty] = React.useState<string>('034');
@@ -84,8 +85,8 @@ export default function GovernorReportCardPage() {
       <div ref={cardRef} className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-6 max-w-lg mx-auto shadow-lg">
         {/* Header */}
         <div className="text-center mb-5">
-          <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-3">
-            <Shield className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+          <div className="mb-3">
+            <RepAvatar name={governor.name} county={governor.county} size="h-16 w-16" className="mx-auto" />
           </div>
           <h3 className="text-xl font-bold text-stone-900 dark:text-stone-50 dark:text-stone-100">{governor.name}</h3>
           <p className="text-sm text-stone-500 dark:text-stone-400">{governor.county} County Governor</p>

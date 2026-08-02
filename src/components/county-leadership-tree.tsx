@@ -23,6 +23,7 @@ import {
   IdCard,
 } from 'lucide-react';
 import RepChatWidget from '@/components/rep-chat-widget';
+import RepAvatar from '@/components/rep-avatar';
 
 // ─── County List (all 47) ──────────────────────────────────────────
 
@@ -350,13 +351,13 @@ function PersonRow({
       {icon ? (
         <span className="shrink-0">{icon}</span>
       ) : (
-        <div
-          className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-            isPlaceholder ? 'bg-gray-100 dark:bg-gray-800 text-gray-400' : getAvatarColor(name)
-          }`}
-        >
-          {getInitials(name)}
-        </div>
+        isPlaceholder ? (
+          <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-400">
+            {getInitials(name)}
+          </div>
+        ) : (
+          <RepAvatar name={name} county={countyName} size="h-6 w-6" />
+        )
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 flex-wrap">

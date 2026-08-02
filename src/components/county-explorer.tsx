@@ -17,6 +17,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import DownloadLink from '@/components/download-link';
 import RepChatWidget from '@/components/rep-chat-widget';
+import RepAvatar from '@/components/rep-avatar';
 
 // ══════════════════════════════════════════════════════════════════
 // COUNTY EXPLORER
@@ -152,7 +153,10 @@ export function OfficialFullCard({ rep, countyName, onCompare }: { rep: Represen
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4 text-emerald-600" /> {rep.fullName}</CardTitle>
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <RepAvatar name={rep.fullName} county={countyName} size="h-6 w-6" className="mt-0.5" />
+              {rep.fullName}
+            </CardTitle>
             <p className="text-xs text-stone-500">{rep.officialTitle} · {rep.politicalParty} {rep.coalition ? `(${rep.coalition})` : ''} · {rep.jurisdiction}</p>
           </div>
           <div className="flex items-center gap-1">

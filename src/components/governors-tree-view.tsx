@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import RepChatWidget from '@/components/rep-chat-widget';
+import RepAvatar from '@/components/rep-avatar';
 
 // ══════════════════════════════════════════════════════════════════
 // GOVERNORS TREE VIEW
@@ -150,9 +151,12 @@ function CountyQuickView({ county, onAddComparison, isInComparison }: {
 function MiniRow({ rep, onCompare }: { rep: Representative; onCompare: () => void }) {
   return (
     <div className="relative flex items-center justify-between px-2.5 py-2 bg-white dark:bg-stone-900 rounded-lg border border-stone-100 dark:border-stone-800 text-xs">
-      <div className="min-w-0">
-        <span className="font-medium">{rep.fullName}</span>
-        <span className="text-stone-400 ml-1.5">{rep.officialTitle}{rep.politicalParty ? ` · ${rep.politicalParty}` : ''}</span>
+      <div className="flex items-center gap-2 min-w-0">
+        <RepAvatar name={rep.fullName} county={rep.jurisdiction} size="h-6 w-6" />
+        <div className="min-w-0">
+          <span className="font-medium">{rep.fullName}</span>
+          <span className="text-stone-400 ml-1.5">{rep.officialTitle}{rep.politicalParty ? ` · ${rep.politicalParty}` : ''}</span>
+        </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
         <RepChatWidget rep={{ name: rep.fullName, title: rep.officialTitle, county: rep.jurisdiction, party: rep.politicalParty, coalition: rep.coalition, bio: rep.biography }} />

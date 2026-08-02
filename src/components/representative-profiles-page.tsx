@@ -21,6 +21,7 @@ import {
   Gavel, ClipboardList, Calendar, FileText, TrendingUp,
 } from 'lucide-react';
 import RepChatWidget from '@/components/rep-chat-widget';
+import RepAvatar from '@/components/rep-avatar';
 
 // ─── TYPES ───────────────────────────────────────────────────────
 
@@ -502,11 +503,7 @@ export default function RepresentativeProfilesPage() {
                             <CardHeader className="pb-3">
                               <div className="flex items-start gap-3">
                                 {/* Avatar */}
-                                <div
-                                  className={`h-12 w-12 rounded-full ${typeConfig.accentBg} flex items-center justify-center shrink-0 text-sm font-bold ${typeConfig.accentText}`}
-                                >
-                                  {getInitials(profile.name)}
-                                </div>
+                                <RepAvatar name={profile.name} county={profile.county} size="h-12 w-12" className="shrink-0" />
                                 <div className="flex-1 min-w-0">
                                   <CardTitle className="text-sm font-bold text-stone-900 dark:text-stone-50 leading-tight">
                                     {profile.name}

@@ -687,3 +687,35 @@ Stage Summary:
 - Bottom nav: Home | AI | Counties | Budget | Search (replaced Alerts)
 - Kenyan flag visible in topbar header and dashboard hero section
 - Bilingual support (EN + SW) for all new labels
+
+---
+Task ID: 27
+Agent: Main Agent
+Task: Add image upload capability for representative/member profiles
+
+Work Log:
+- Created `/home/z/my-project/src/hooks/use-rep-avatar.ts` — custom hook for localStorage-based avatar storage
+  - Keyed by rep name + county to distinguish same-named people
+  - Compresses images via canvas to 200px max at JPEG 70% quality
+  - Provides upload(), remove(), src, and loaded state
+- Created `/home/z/my-project/src/components/rep-avatar.tsx` — reusable avatar component
+  - Shows uploaded image or fallback initials
+  - Hover overlay with Camera/Upload icon
+  - Drag-and-drop image upload support
+  - Click to open file picker
+  - Remove button (small X) on hover when image exists
+  - Configurable size prop (h-6 w-6 to h-16 w-16)
+- Integrated RepAvatar into 6 components:
+  1. CountyLeadershipTree PersonRow (h-6 w-6) — replaces initials circle for real officials
+  2. CountyExplorer OfficialFullCard (h-6 w-6) — replaces User icon
+  3. RepresentativeProfilesPage (h-12 w-12) — replaces colored initials circle
+  4. MzalendoPage MemberCard (h-8 w-8) — replaces GenderIcon
+  5. GovernorsTreeView MiniRow (h-6 w-6) — added before name text
+  6. GovernorReportCardPage (h-16 w-16) — replaces Shield icon in report card
+- Build passes cleanly
+
+Stage Summary:
+- Every representative profile across the app now supports image upload
+- Images are stored in localStorage (persist across sessions, no backend needed)
+- Click avatar to upload, hover to see camera icon, drag-and-drop supported
+- Small X button to remove uploaded photo
