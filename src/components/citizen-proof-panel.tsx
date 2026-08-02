@@ -12,7 +12,7 @@ import {
   Video, ImagePlus, MessageSquare, Upload, ThumbsUp, ThumbsDown,
   Play, Pause, Send, ChevronDown, ChevronUp, Camera, FileVideo,
   CheckCircle2, Clock, Loader2, X, Eye, MessageCircle, MapPin,
-  Shield, AlertTriangle,
+  Shield, AlertTriangle, Maximize2, Minimize2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { CitizenProof } from '@/data/types';
@@ -79,7 +79,9 @@ function VideoProofCard({ proof, onUpvote, onReply }: {
   onReply: (proofId: string, authorName: string, content: string) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [replyAuthor, setReplyAuthor] = useState('');
@@ -96,33 +98,70 @@ function VideoProofCard({ proof, onUpvote, onReply }: {
     }
   };
 
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  };
+
+  // Sync fullscreen state with browser events
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
+
   return (
-    <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 overflow-hidden">
-      <CardContent className="p-0">
-        {/* Video player area */}
-        {proof.content ? (
-          <div className="relative bg-stone-900 aspect-video max-h-48 flex items-center justify-center">
-            <video
-              ref={videoRef}
-              src={proof.content}
-              className="w-full h-full object-contain"
-              playsInline
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onEnded={() => setIsPlaying(false)}
-            />
-            <button
-              onClick={togglePlay}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity"
-            >
-              <div className="h-12 w-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                {isPlaying ? (
-                  <Pause className="h-5 w-5 text-stone-800" />
-                ) : (
-                  <Play className="h-5 w-5 text-stone-800 ml-0.5" />
+    <div ref={containerRef}>
+      <Card className="border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 overflow-hidden">
+        <CardContent className="p-0">
+          {/* Video player area */}
+          {proof.content ? (
+            <div className="relative bg-stone-900 aspect-video max-h-48 flex items-center justify-center group/video">
+              <video
+                ref={videoRef}
+                src={proof.content}
+                className="w-full h-full object-contain"
+                playsInline
+                controls={isFullscreen}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onEnded={() => setIsPlaying(false)}
+              />
+              {/* Play overlay (only when NOT in native fullscreen) */}
+              {!isFullscreen && (
+                <button
+                  onClick={togglePlay}
+                  className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/video:opacity-100 transition-opacity"
+                >
+                  <div className="h-12 w-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                    {isPlaying ? (
+                      <Pause className="h-5 w-5 text-stone-800" />
+                    ) : (
+                      <Play className="h-5 w-5 text-stone-800 ml-0.5" />
+                    )}
+                  </div>
+                </button>
+              )}
+              {/* Controls row */}
+              <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover/video:opacity-100 transition-opacity">
+                {(proof.content || proof.type === 'image') && (
+                  <button
+                    onClick={toggleFullscreen}
+                    className="h-7 w-7 rounded-md bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+                    title="Fullscreen"
+                  >
+                    {isFullscreen ? (
+                      <Minimize2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <Maximize2 className="h-3.5 w-3.5" />
+                    )}
+                  </button>
                 )}
               </div>
-            </button>
             {proof.verified && (
               <div className="absolute top-2 right-2">
                 <Badge className="bg-emerald-600 text-white text-[9px] px-1.5 py-0 h-4">
@@ -133,10 +172,29 @@ function VideoProofCard({ proof, onUpvote, onReply }: {
             )}
           </div>
         ) : (
-          <div className="aspect-video max-h-48 bg-stone-100 dark:bg-stone-800 flex flex-col items-center justify-center gap-2">
-            <FileVideo className="h-10 w-10 text-stone-400" />
-            <span className="text-xs text-stone-500 dark:text-stone-400">Video proof uploaded</span>
-          </div>
+          proof.type === 'image' && proof.content ? (
+            <div className="relative bg-stone-100 dark:bg-stone-800 aspect-video max-h-48 flex items-center justify-center group/video overflow-hidden">
+              <img
+                src={proof.content}
+                alt={proof.caption || 'Citizen photo proof'}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="aspect-video max-h-48 bg-stone-100 dark:bg-stone-800 flex flex-col items-center justify-center gap-2">
+              {proof.type === 'video' ? (
+                <>
+                  <FileVideo className="h-10 w-10 text-stone-400" />
+                  <span className="text-xs text-stone-500 dark:text-stone-400">Video proof uploaded</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="h-10 w-10 text-stone-400" />
+                  <span className="text-xs text-stone-500 dark:text-stone-400">Photo proof uploaded</span>
+                </>
+              )}
+            </div>
+          )
         )}
 
         {/* Caption & Author */}
@@ -272,6 +330,7 @@ function VideoProofCard({ proof, onUpvote, onReply }: {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 }
 

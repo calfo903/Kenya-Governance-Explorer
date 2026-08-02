@@ -14,6 +14,7 @@ import {
   Search, Filter, MapPin, ArrowUpDown, TrendingUp, X, ChevronRight,
   DollarSign, AlertTriangle, CheckCircle2, Clock, Camera, Eye,
   Layers, Building2, Droplets, Heart, GraduationCap, Leaf, Activity,
+  Maximize2, Minimize2,
 } from 'lucide-react';
 import { getAuditColor } from '@/data/types';
 
@@ -85,6 +86,7 @@ export default function ProjectsBrowserPage() {
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('risk');
   const [selectedProject, setSelectedProject] = useState<ProjectRecord | null>(null);
+  const [isDrawerFullscreen, setIsDrawerFullscreen] = useState(false);
 
   // ─── Summary Stats ──────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -160,8 +162,29 @@ export default function ProjectsBrowserPage() {
   }, [projects, searchQuery, statusFilter, categoryFilter, riskFilter, sortBy]);
 
   // ─── Drawer ──────────────────────────────────────────────────────
-  const openDrawer = (project: ProjectRecord) => setSelectedProject(project);
-  const closeDrawer = () => setSelectedProject(null);
+  const openDrawer = (project: ProjectRecord) => {
+    setSelectedProject(project);
+    setIsDrawerFullscreen(false);
+  };
+  const closeDrawer = () => {
+    setSelectedProject(null);
+    setIsDrawerFullscreen(false);
+  };
+
+  // Scroll-to-fullscreen: listen for scroll in the drawer panel
+  const drawerPanelRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    const panel = drawerPanelRef.current;
+    if (!panel) return;
+    const handleScroll = () => {
+      // Auto-enter fullscreen when user scrolls past 120px
+      if (panel.scrollTop > 120 && !isDrawerFullscreen) {
+        setIsDrawerFullscreen(true);
+      }
+    };
+    panel.addEventListener('scroll', handleScroll, { passive: true });
+    return () => panel.removeEventListener('scroll', handleScroll);
+  }, [isDrawerFullscreen]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -460,13 +483,43 @@ export default function ProjectsBrowserPage() {
       {/* Project Detail Drawer */}
       {selectedProject && (
         <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/50" onClick={closeDrawer} />
-          <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[70%] lg:w-[60%] bg-white dark:bg-stone-900 shadow-2xl overflow-y-auto">
-            <div className="sticky top-0 z-10 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 px-4 py-3 flex items-center justify-between">
+          {/* Backdrop — only visible & clickable when NOT fullscreen */}
+          <div
+            className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
+              isDrawerFullscreen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
+            onClick={closeDrawer}
+          />
+          {/* Drawer panel */}
+          <div
+            ref={drawerPanelRef}
+            className={`absolute top-0 bottom-0 bg-white dark:bg-stone-900 shadow-2xl overflow-y-auto transition-all duration-300 ease-in-out ${
+              isDrawerFullscreen
+                ? 'left-0 right-0 w-full'
+                : 'right-0 left-auto w-full sm:w-[70%] lg:w-[60%]'
+            }`}
+          >
+            <div className="sticky top-0 z-10 bg-white dark:bg-stone-900/95 backdrop-blur-sm border-b border-stone-200 dark:border-stone-700 px-4 py-3 flex items-center justify-between">
               <h2 className="text-sm font-bold text-stone-800 dark:text-stone-100">Project Details</h2>
-              <Button variant="ghost" size="sm" onClick={closeDrawer}>
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDrawerFullscreen(!isDrawerFullscreen)}
+                  className="text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full h-8 w-8 p-0"
+                  title={isDrawerFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                >
+                  {isDrawerFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={closeDrawer}
+                  className="text-stone-500 dark:text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-full h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <ProjectDetailDrawer project={selectedProject} onClose={closeDrawer} />
           </div>

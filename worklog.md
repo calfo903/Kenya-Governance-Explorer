@@ -749,3 +749,27 @@ Stage Summary:
 - New files: citizen-proof-panel.tsx, api/upload/video/route.ts, api/projects/[id]/proofs/route.ts
 - Modified files: project-detail-drawer.tsx, projects-browser-page.tsx, types.ts, en.json, sw.json
 - Citizens can now upload videos, photos, and comments as proof on any project's detail page
+
+---
+Task ID: 28
+Agent: Main Agent
+Task: Enable fullscreen while scrolling in project detail drawer + video/image proofs
+
+Work Log:
+- Added `isDrawerFullscreen` state to ProjectsBrowserPage
+- Added `drawerPanelRef` to track scroll position in the drawer panel
+- Implemented scroll-to-fullscreen: drawer auto-expands to 100% width when user scrolls past 120px
+- Added `Maximize2`/`Minimize2` toggle button in the drawer header (next to close button)
+- Drawer smoothly transitions between 60%/70% width and full-screen using CSS transitions (duration-300 ease-in-out)
+- Backdrop overlay fades out when in fullscreen (opacity-0 pointer-events-none) so user can interact with the full content
+- Close drawer resets fullscreen state
+- Added fullscreen button to VideoProofCard using browser Fullscreen API
+- Video gets native controls when in fullscreen mode
+- Image proofs now render actual `<img>` tags with fullscreen support
+- Group hover reveals controls on video/image hover
+
+Stage Summary:
+- Modified: projects-browser-page.tsx (fullscreen drawer), citizen-proof-panel.tsx (video/image fullscreen)
+- Drawer expands to fullscreen on scroll with smooth animation
+- Toggle button allows manual fullscreen control
+- Video/image proofs support native browser fullscreen
