@@ -9,4 +9,12 @@ export type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'sch
   | 'leadership' | 'projects' | 'mzalendo' | 'compareEnhanced'
   | 'representatives' | 'reports' | 'hansard'
   // ── Merged Hub Tabs ──
-  | 'aiHub' | 'fiscalHub' | 'procurementHub' | 'performanceHub' | 'insightsHub' | 'integrityHub';
+  | 'aiHub' | 'fiscalHub' | 'procurementHub' | 'performanceHub' | 'insightsHub' | 'integrityHub'
+  // ── New Feature Tabs ──
+  | 'whistleblower' | 'rtiLetters' | 'smsUssd' | 'petitions'
+  | 'budgetTracking' | 'contractors' | 'publicParticipation' | 'countyHealth'
+  | 'factChecker' | 'smartAlerts' | 'predictiveRisk'
+  | 'countyHeatmap' | 'projectMap' | 'beforeAfter'
+  | 'forums' | 'citizenJournalist' | 'governorRatings'
+  | 'promiseTracker' | 'enhancedCompareNew' | 'governanceTimeline'
+  | 'offlineMode' | 'voiceSearch' | 'pwaSettings';

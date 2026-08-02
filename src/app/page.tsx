@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { I18nProvider } from '@/i18n/i18n-provider';
 import { LanguageToggle } from '@/components/language-toggle';
@@ -64,6 +64,31 @@ import PerformanceHub from '@/components/performance-hub';
 import InsightsHub from '@/components/insights-hub';
 import IntegrityHub from '@/components/integrity-hub';
 
+// Lazy-loaded new feature components
+const WhistleblowerPortal = React.lazy(() => import('@/components/whistleblower-portal'));
+const PetitionBuilderNew = React.lazy(() => import('@/components/petition-builder'));
+const RTILetterGenerator = React.lazy(() => import('@/components/rti-letter-generator'));
+const SmsUssdHub = React.lazy(() => import('@/components/sms-ussd-hub'));
+const BudgetTrackingDashboard = React.lazy(() => import('@/components/budget-tracking-dashboard'));
+const ContractorDatabase = React.lazy(() => import('@/components/contractor-database'));
+const PublicParticipationTracker = React.lazy(() => import('@/components/public-participation-tracker'));
+const CountyHealthScore = React.lazy(() => import('@/components/county-health-score'));
+const AIFactChecker = React.lazy(() => import('@/components/ai-fact-checker'));
+const SmartAlertsSystem = React.lazy(() => import('@/components/smart-alerts-system'));
+const PredictiveRiskDashboard = React.lazy(() => import('@/components/predictive-risk-dashboard'));
+const EnhancedCountyHeatmap = React.lazy(() => import('@/components/enhanced-county-heatmap'));
+const ProjectLocationMap = React.lazy(() => import('@/components/project-location-map'));
+const BeforeAfterSlider = React.lazy(() => import('@/components/before-after-slider'));
+const CommunityForums = React.lazy(() => import('@/components/community-forums'));
+const CitizenJournalistProgram = React.lazy(() => import('@/components/citizen-journalist-program'));
+const GovernorReportCardRatings = React.lazy(() => import('@/components/governor-report-card-ratings'));
+const ElectionPromiseTracker = React.lazy(() => import('@/components/election-promise-tracker'));
+const EnhancedCountyComparison = React.lazy(() => import('@/components/enhanced-county-comparison'));
+const CountyGovernanceTimeline = React.lazy(() => import('@/components/county-governance-timeline'));
+const OfflineModeDashboard = React.lazy(() => import('@/components/offline-mode-dashboard'));
+const VoiceSearchInterface = React.lazy(() => import('@/components/voice-search-interface'));
+const PWAEnhancementPanel = React.lazy(() => import('@/components/pwa-enhancement-panel'));
+
 // ─── ICONS ────────────────────────────────────────────────────────
 import {
   Shield, Search, Filter,
@@ -87,6 +112,8 @@ import {
   Trophy, Flag, FileBarChart, Award,
   Bot, Brain, Sparkles, Newspaper, Wallet,
   AlignJustify, AlignCenter, ChevronLeft,
+  HardHat, HeartPulse, SearchCheck,
+  ArrowLeftRight, Wifi, Mic, Settings, Smartphone,
 } from 'lucide-react';
 
 // ─── shadcn/ui ───────────────────────────────────────────────────
@@ -150,6 +177,36 @@ const navItemDefs: NavItem[] = [
   { id: 'insightsHub', labelKey: 'nav.items.insightsHub', icon: Trophy, sectionKey: 'nav.sections.insights' },
   // ── AI Tools ──
   { id: 'aiHub', labelKey: 'nav.items.aiHub', icon: Bot, sectionKey: 'nav.sections.aiTools' },
+  // ── Civic Engagement (New) ──
+  { id: 'whistleblower', labelKey: 'nav.items.whistleblower', icon: Lock, sectionKey: 'nav.sections.civicEngagement' },
+  { id: 'petitions', labelKey: 'nav.items.petitions', icon: ClipboardList, sectionKey: 'nav.sections.civicEngagement' },
+  { id: 'rtiLetters', labelKey: 'nav.items.rtiLetters', icon: Mail, sectionKey: 'nav.sections.civicEngagement' },
+  { id: 'smsUssd', labelKey: 'nav.items.smsUssd', icon: Smartphone, sectionKey: 'nav.sections.civicEngagement' },
+  // ── Data & Analytics (New) ──
+  { id: 'budgetTracking', labelKey: 'nav.items.budgetTracking', icon: Receipt, sectionKey: 'nav.sections.dataAnalytics' },
+  { id: 'contractors', labelKey: 'nav.items.contractors', icon: HardHat, sectionKey: 'nav.sections.dataAnalytics' },
+  { id: 'publicParticipation', labelKey: 'nav.items.publicParticipation', icon: Users, sectionKey: 'nav.sections.dataAnalytics' },
+  { id: 'countyHealth', labelKey: 'nav.items.countyHealth', icon: HeartPulse, sectionKey: 'nav.sections.dataAnalytics' },
+  // ── AI & Smart Tools (New) ──
+  { id: 'factChecker', labelKey: 'nav.items.factChecker', icon: SearchCheck, sectionKey: 'nav.sections.aiSmartTools' },
+  { id: 'smartAlerts', labelKey: 'nav.items.smartAlerts', icon: Bell, sectionKey: 'nav.sections.aiSmartTools' },
+  { id: 'predictiveRisk', labelKey: 'nav.items.predictiveRisk', icon: TrendingUp, sectionKey: 'nav.sections.aiSmartTools' },
+  // ── Maps & Visualization (New) ──
+  { id: 'countyHeatmap', labelKey: 'nav.items.countyHeatmap', icon: Map, sectionKey: 'nav.sections.mapsViz' },
+  { id: 'projectMap', labelKey: 'nav.items.projectMap', icon: MapPin, sectionKey: 'nav.sections.mapsViz' },
+  { id: 'beforeAfter', labelKey: 'nav.items.beforeAfter', icon: ArrowLeftRight, sectionKey: 'nav.sections.mapsViz' },
+  // ── Community & Social (New) ──
+  { id: 'forums', labelKey: 'nav.items.forums', icon: MessageSquare, sectionKey: 'nav.sections.communitySocial' },
+  { id: 'citizenJournalist', labelKey: 'nav.items.citizenJournalist', icon: Award, sectionKey: 'nav.sections.communitySocial' },
+  { id: 'governorRatings', labelKey: 'nav.items.governorRatings', icon: Star, sectionKey: 'nav.sections.communitySocial' },
+  // ── Accountability & Tracking (New) ──
+  { id: 'promiseTracker', labelKey: 'nav.items.promiseTracker', icon: Target, sectionKey: 'nav.sections.accountability' },
+  { id: 'enhancedCompareNew', labelKey: 'nav.items.enhancedCompareNew', icon: GitCompare, sectionKey: 'nav.sections.accountability' },
+  { id: 'governanceTimeline', labelKey: 'nav.items.governanceTimeline', icon: Clock, sectionKey: 'nav.sections.accountability' },
+  // ── App & Settings (New) ──
+  { id: 'offlineMode', labelKey: 'nav.items.offlineMode', icon: Wifi, sectionKey: 'nav.sections.appSettings' },
+  { id: 'voiceSearch', labelKey: 'nav.items.voiceSearch', icon: Mic, sectionKey: 'nav.sections.appSettings' },
+  { id: 'pwaSettings', labelKey: 'nav.items.pwaSettings', icon: Settings, sectionKey: 'nav.sections.appSettings' },
 ];
 
 // ══════════════════════════════════════════════════════════════════
@@ -174,7 +231,7 @@ function PageContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [compact, setCompact] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['nav.sections.civicTools', 'nav.sections.citizenAction', 'nav.sections.dataAlerts', 'nav.sections.analytics', 'nav.sections.leadershipProjects', 'nav.sections.insights']));
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['nav.sections.civicTools', 'nav.sections.citizenAction', 'nav.sections.dataAlerts', 'nav.sections.analytics', 'nav.sections.leadershipProjects', 'nav.sections.insights', 'nav.sections.civicEngagement', 'nav.sections.dataAnalytics', 'nav.sections.aiSmartTools', 'nav.sections.mapsViz', 'nav.sections.communitySocial', 'nav.sections.accountability', 'nav.sections.appSettings']));
   const toggleSection = (sectionKey: string) => {
     setCollapsedSections(prev => {
       const next = new Set(prev);
@@ -254,6 +311,13 @@ function PageContent() {
   const leadershipItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.leadershipProjects');
   const insightItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.insights');
   const aiItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.aiTools');
+  const civicEngagementItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.civicEngagement');
+  const dataAnalyticsItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.dataAnalytics');
+  const aiSmartToolsItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.aiSmartTools');
+  const mapsVizItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.mapsViz');
+  const communitySocialItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.communitySocial');
+  const accountabilityItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.accountability');
+  const appSettingsItems = navItemDefs.filter(n => n.sectionKey === 'nav.sections.appSettings');
 
   // Section labels lookup
   const sectionLabels = useMemo(() => ({
@@ -265,6 +329,13 @@ function PageContent() {
     'nav.sections.leadershipProjects': t('nav.sections.leadershipProjects'),
     'nav.sections.insights': t('nav.sections.insights'),
     'nav.sections.aiTools': t('nav.sections.aiTools'),
+    'nav.sections.civicEngagement': 'Civic Engagement',
+    'nav.sections.dataAnalytics': 'Data & Analytics',
+    'nav.sections.aiSmartTools': 'AI & Smart Tools',
+    'nav.sections.mapsViz': 'Maps & Visualization',
+    'nav.sections.communitySocial': 'Community & Social',
+    'nav.sections.accountability': 'Accountability & Tracking',
+    'nav.sections.appSettings': 'App & Settings',
   }), [t]);
 
   // Helper to get localized label for a nav item
@@ -644,6 +715,20 @@ function PageContent() {
                   {renderMobileSidebarSection(insightItems, 'nav.sections.insights', 'bg-teal-600')}
                   <Separator />
                   {renderMobileSidebarSection(aiItems, 'nav.sections.aiTools', 'bg-emerald-600')}
+                  <Separator />
+                  {renderMobileSidebarSection(civicEngagementItems, 'nav.sections.civicEngagement', 'bg-red-600')}
+                  <Separator />
+                  {renderMobileSidebarSection(dataAnalyticsItems, 'nav.sections.dataAnalytics', 'bg-cyan-600')}
+                  <Separator />
+                  {renderMobileSidebarSection(aiSmartToolsItems, 'nav.sections.aiSmartTools', 'bg-violet-600')}
+                  <Separator />
+                  {renderMobileSidebarSection(mapsVizItems, 'nav.sections.mapsViz', 'bg-lime-600')}
+                  <Separator />
+                  {renderMobileSidebarSection(communitySocialItems, 'nav.sections.communitySocial', 'bg-pink-600')}
+                  <Separator />
+                  {renderMobileSidebarSection(accountabilityItems, 'nav.sections.accountability', 'bg-orange-600')}
+                  <Separator />
+                  {renderMobileSidebarSection(appSettingsItems, 'nav.sections.appSettings', 'bg-stone-600')}
                 </nav>
               </aside>
             </div>
@@ -728,6 +813,32 @@ function PageContent() {
             {activeTab === 'integrityHub' && <IntegrityHub />}
             {activeTab === 'insightsHub' && <InsightsHub />}
             {activeTab === 'aiHub' && <AIHubPage />}
+            {/* ── New Feature Tabs ── */}
+            <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" /></div>}>
+            {activeTab === 'whistleblower' && <WhistleblowerPortal />}
+            {activeTab === 'petitions' && <PetitionBuilderNew />}
+            {activeTab === 'rtiLetters' && <RTILetterGenerator />}
+            {activeTab === 'smsUssd' && <SmsUssdHub />}
+            {activeTab === 'budgetTracking' && <BudgetTrackingDashboard />}
+            {activeTab === 'contractors' && <ContractorDatabase />}
+            {activeTab === 'publicParticipation' && <PublicParticipationTracker />}
+            {activeTab === 'countyHealth' && <CountyHealthScore />}
+            {activeTab === 'factChecker' && <AIFactChecker />}
+            {activeTab === 'smartAlerts' && <SmartAlertsSystem />}
+            {activeTab === 'predictiveRisk' && <PredictiveRiskDashboard />}
+            {activeTab === 'countyHeatmap' && <EnhancedCountyHeatmap />}
+            {activeTab === 'projectMap' && <ProjectLocationMap />}
+            {activeTab === 'beforeAfter' && <BeforeAfterSlider />}
+            {activeTab === 'forums' && <CommunityForums />}
+            {activeTab === 'citizenJournalist' && <CitizenJournalistProgram />}
+            {activeTab === 'governorRatings' && <GovernorReportCardRatings />}
+            {activeTab === 'promiseTracker' && <ElectionPromiseTracker />}
+            {activeTab === 'enhancedCompareNew' && <EnhancedCountyComparison />}
+            {activeTab === 'governanceTimeline' && <CountyGovernanceTimeline />}
+            {activeTab === 'offlineMode' && <OfflineModeDashboard />}
+            {activeTab === 'voiceSearch' && <VoiceSearchInterface />}
+            {activeTab === 'pwaSettings' && <PWAEnhancementPanel />}
+            </Suspense>
           </main>
 
           {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
