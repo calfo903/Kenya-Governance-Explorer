@@ -1,10 +1,18 @@
 /**
  * AI Service Layer — Kenya Governance Explorer
- * Wraps z-ai-web-dev-sdk for LLM + Web Search operations.
+ * Primary: OpenRouter API with Google Gemini 2.5 Flash
+ * Fallback: z-ai-web-dev-sdk (if OPENROUTER_API_KEY is not set or OpenRouter fails)
+ * Also: Web Search via z-ai-web-dev-sdk
  * All functions are backend-only (server-side).
  */
 import ZAI from 'z-ai-web-dev-sdk';
 
+// ─── OpenRouter + Gemini Config ──────────────────────────────────
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
+const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+const DEFAULT_MODEL = 'google/gemini-2.5-flash-preview';
+
+// z-ai-web-dev-sdk singleton
 let _zai: Awaited<ReturnType<typeof ZAI.create>> | null = null;
 
 async function getZAI() {
@@ -21,11 +29,74 @@ You understand: budgets, audits, CECMs, MCAs, governors, senators, women reps, c
 Provide accurate, factual answers. Cite sources when possible (OAG, CoB, IEBC, EACC, CRA, Parliament).
 If unsure, say so honestly. Format responses in clear markdown with headers and bullet points.`;
 
+// ─── OpenRouter (Gemini) Implementation ────────────────────────────
+
+interface OpenRouterMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+interface OpenRouterResponse {
+  choices: Array<{
+    message: {
+      content: string | null;
+    } | null;
+  } | null>;
+}
+
+async function openRouterChat(
+  messages: OpenRouterMessage[],
+  model = DEFAULT_MODEL,
+): Promise<string> {
+  const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://kenya-governance-explorer.vercel.app',
+      'X-Title': 'Kenya Governance Explorer',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      max_tokens: 2048,
+      temperature: 0.7,
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`OpenRouter API error (${res.status}): ${errBody}`);
+  }
+
+  const data: OpenRouterResponse = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('OpenRouter returned empty response.');
+  return content;
+}
+
+// ─── Unified chatCompletion (OpenRouter primary, z-ai fallback) ──
+
 export async function chatCompletion(
   userMessage: string,
   systemPrompt = GOVERNANCE_SYSTEM,
   history: Array<{ role: 'assistant' | 'user'; content: string }> = []
 ): Promise<string> {
+  // Primary: OpenRouter + Gemini
+  if (OPENROUTER_API_KEY) {
+    try {
+      const messages: OpenRouterMessage[] = [
+        { role: 'system', content: systemPrompt },
+        ...history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+        { role: 'user', content: userMessage },
+      ];
+      return await openRouterChat(messages);
+    } catch (err) {
+      console.error('[AI] OpenRouter failed, falling back to z-ai:', err);
+    }
+  }
+
+  // Fallback: z-ai-web-dev-sdk
   const zai = await getZAI();
   const messages = [
     { role: 'assistant' as const, content: systemPrompt },
@@ -44,6 +115,25 @@ export async function structuredCompletion<T>(
   systemPrompt = GOVERNANCE_SYSTEM,
   history: Array<{ role: 'assistant' | 'user'; content: string }> = []
 ): Promise<T> {
+  // Primary: OpenRouter + Gemini
+  if (OPENROUTER_API_KEY) {
+    try {
+      const sys = systemPrompt + '\n\nIMPORTANT: Respond with valid JSON only. No markdown, no code fences, no extra text.';
+      const messages: OpenRouterMessage[] = [
+        { role: 'system', content: sys },
+        ...history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+        { role: 'user', content: userMessage },
+      ];
+      const raw = await openRouterChat(messages);
+      // Strip markdown fences if present
+      const cleaned = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '').trim();
+      return JSON.parse(cleaned) as T;
+    } catch (err) {
+      console.error('[AI] OpenRouter structured failed, falling back to z-ai:', err);
+    }
+  }
+
+  // Fallback: z-ai-web-dev-sdk
   const zai = await getZAI();
   const sys = systemPrompt + '\n\nIMPORTANT: Respond with valid JSON only. No markdown, no code fences, no extra text.';
   const messages = [
@@ -62,7 +152,7 @@ export async function structuredCompletion<T>(
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// WEB SEARCH HELPERS
+// WEB SEARCH HELPERS (z-ai-web-dev-sdk)
 // ═══════════════════════════════════════════════════════════════════
 
 export interface SearchResult {

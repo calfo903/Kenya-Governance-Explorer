@@ -277,7 +277,10 @@ export default function AIChatPage() {
         {error && (
           <div className="flex flex-col items-center gap-2 py-4">
             <Badge variant="destructive" className="text-xs">{error}</Badge>
-            <Button variant="outline" size="sm" onClick={() => sendMessage(messages[messages.length - 1]?.content || '')}>
+            <Button variant="outline" size="sm" onClick={() => {
+              const lastMsg = messages.findLast(m => m.role === 'user');
+              if (lastMsg) sendMessage(lastMsg.content);
+            }}>
               <RotateCcw className="w-3 h-3 mr-1" /> Retry
             </Button>
           </div>

@@ -826,3 +826,22 @@ Stage Summary:
 - All 15 reported bugs fixed
 - Build passes with zero errors
 - No ENVIRONMENT_FALLBACK warning
+---
+Task ID: 30
+Agent: Main Agent
+Task: Integrate OpenRouter + Gemini as AI backend (with z-ai fallback) + fix remaining bugs
+Work Log:
+- Read existing lib/ai.ts (z-ai-web-dev-sdk based), all 12 AI API routes, rep-chat-widget.tsx, ai-chat-page.tsx
+- Confirmed proof store already has caps and rate limiting (already fixed in prior session)
+- Confirmed fullscreenchange listener already has proper cleanup in citizen-proof-panel.tsx
+- Confirmed handleSharePNG already fixed to text-based sharing (no longer blank canvas download)
+- Rewrote lib/ai.ts: Added OpenRouter API integration with Google Gemini 2.5 Flash as primary model, z-ai-web-dev-sdk as automatic fallback on failure. Both chatCompletion() and structuredCompletion() support dual provider.
+- Added OPENROUTER_API_KEY placeholder to .env
+- Fixed ai-chat-page.tsx retry button: changed from `messages[messages.length-1]?.content || ''` (could send empty or assistant content) to `messages.findLast(m => m.role === 'user')` with guard
+- Build passed clean, app running on port 3000
+
+Stage Summary:
+- OpenRouter + Gemini 2.5 Flash is now the primary AI provider; z-ai-web-dev-sdk automatically kicks in if OpenRouter fails or API key is not set
+- User needs to replace the placeholder in .env with their real OpenRouter API key
+- AI chat retry button in ai-chat-page.tsx now correctly resends the last user message instead of potentially empty string
+- All 12 AI API routes (/api/ai/*) automatically benefit from the new OpenRouter + Gemini backend
