@@ -23,12 +23,8 @@ function buildCountyContext(countyCode: string): string {
   const code = countyCode.trim().padStart(3, '0');
   const audits = countyAuditData.filter((r) => r.countyCode === code);
   const budgets = countyBudgetData.filter((b) => b.countyCode === code);
-  const projects = (countyProjects ?? []).filter(
-    (p: { countyCode?: string }) => p.countyCode === code,
-  );
-  const governor = all47Governors.find(
-    (g) => g.countyCode === code || String(g.countyCode).padStart(3, '0') === code,
-  );
+  const projects = countyProjects.filter((p) => p.countyCode === code);
+  const governor = all47Governors.find((g) => g.code === code);
 
   if (!audits.length && !budgets.length && !governor) {
     return `No structured in-app data for county code ${code}. Answer from general knowledge and cite OAG/CoB.`;
@@ -37,7 +33,7 @@ function buildCountyContext(countyCode: string): string {
   const name =
     audits[0]?.countyName ||
     budgets[0]?.countyName ||
-    governor?.countyName ||
+    governor?.county ||
     `County ${code}`;
 
   const lines: string[] = [
@@ -46,9 +42,7 @@ function buildCountyContext(countyCode: string): string {
   ];
 
   if (governor) {
-    lines.push(
-      `Governor: ${governor.name ?? 'n/a'} (${governor.party ?? 'n/a'} / ${governor.coalition ?? 'n/a'})`,
-    );
+    lines.push(`Governor: ${governor.name} (${governor.party} / ${governor.coalition})`);
   }
 
   for (const a of audits) {
@@ -62,27 +56,20 @@ function buildCountyContext(countyCode: string): string {
 
   for (const b of budgets) {
     lines.push(
-      `Budget ${b.financialYear}: total=${b.totalBudget?.toLocaleString?.() ?? b.totalBudget} KES; dev absorption=${b.devAbsorptionRate}%; pending bills=${b.pendingBills?.toLocaleString?.() ?? b.pendingBills} KES`,
+      `Budget ${b.financialYear}: total=${b.totalBudget.toLocaleString()} KES; dev absorption=${b.devAbsorptionRate}%; pending bills=${b.pendingBills.toLocaleString()} KES`,
     );
   }
 
-  for (const p of projects.slice(0, 5) as Array<{
-    name?: string;
-    status?: string;
-    budgetKes?: number;
-  }>) {
+  for (const p of projects.slice(0, 5)) {
     lines.push(
-      `Project: ${p.name ?? 'unnamed'} — status=${p.status ?? 'n/a'}${p.budgetKes != null ? `; budget=${p.budgetKes}` : ''}`,
+      `Project: ${p.name} — status=${p.status}; budgetAllocated=${p.budgetAllocated.toLocaleString()} KES; spent=${p.budgetSpent.toLocaleString()} KES`,
     );
   }
 
   const snap = NATIONAL_OVERSIGHT_SNAPSHOT;
-  if (snap) {
-    lines.push(
-      `National FY24/25 reference: OAG exec unmodified=${snap.oagFY202425?.executives?.unmodified}, adverse=${snap.oagFY202425?.executives?.adverse}; CoB dev absorption~${snap.cobFY202425?.developmentAbsorptionPct}%`,
-    );
-  }
-
+  lines.push(
+    `National FY24/25 reference: OAG exec unmodified=${snap.oagFY202425.executives.unmodified}, adverse=${snap.oagFY202425.executives.adverse}; CoB dev absorption~${snap.cobFY202425.developmentAbsorptionPct}%`,
+  );
   lines.push(
     'Structure answers: Summary → Evidence (from context above) → What citizens can do (RTI, MCA questions, CoB sections).',
   );
