@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { webSearch, searchAndSummarize } from '@/lib/ai';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 interface NewsRequestBody {
   topic?: string;
@@ -7,7 +8,10 @@ interface NewsRequestBody {
   num?: number;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+
+  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
   try {
     const body: NewsRequestBody = await request.json();
     const { topic, countyName, num } = body;

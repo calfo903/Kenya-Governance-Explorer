@@ -22,9 +22,14 @@ export async function GET(
     // ═══════════════════════════════════════════════════════════════
     // Suggestion 5: Role-Based Access Control (RBAC) Security check
     // ═══════════════════════════════════════════════════════════════
-    const authHeader = request.headers.get('Authorization');
-    const secureToken = process.env.ADMIN_DECRYPTION_TOKEN || 'kenya-governance-ombudsman-seckey-2026';
+    const secureToken = process.env.ADMIN_DECRYPTION_TOKEN;
+    if (!secureToken) {
+      // Route is locked out unless the environment is explicitly configured.
+      logger.warn('Access blocked: ADMIN_DECRYPTION_TOKEN is not configured.', { id });
+      return forbidden('Ombudsman decryption endpoint is not configured on this server.');
+    }
 
+    const authHeader = request.headers.get('Authorization');
     if (!authHeader) {
       logger.warn('Access blocked: Missing Authorization header.', { id });
       return unauthorized('Ombudsman token credentials are required to fetch unredacted ciphers.');

@@ -2,20 +2,47 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 0.3.x   | ✅        |
+| < 0.3   | ❌        |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+**Please do not report security vulnerabilities through public GitHub issues.**
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Email security findings to the maintainers via the repository's contact information. Include:
+
+- A description of the vulnerability and its potential impact
+- Steps to reproduce or a proof-of-concept
+- The affected version(s)
+- Any suggested remediation if known
+
+You can expect an acknowledgement within **48 hours** and a status update within **7 days**.
+
+If a vulnerability is accepted, we will coordinate a fix and disclosure timeline with you.
+If declined, we will explain why.
+
+## Scope
+
+The following are **in scope**:
+
+- Authentication and session handling (`/api/auth/*`)
+- Admin routes that modify data (`PATCH /api/db/tips/*/status`, `PATCH /api/db/stories/*/status`)
+- Whistleblower encryption and data handling
+- API input validation and injection risks
+- Rate limiting and denial-of-service vectors
+
+## Out of Scope
+
+- Spam or low-impact social engineering
+- Issues requiring physical access to a server
+- Issues in third-party dependencies (report upstream)
+
+## Security Architecture Notes
+
+- Passwords are hashed with **scrypt** (N=16384, r=8, p=1)
+- Sessions use **HS256 JWT** signed with a `JWT_SECRET` env variable
+- Whistleblower submissions are encrypted client-side with **AES-256-GCM** (PBKDF2-derived key) before transmission
+- API inputs are validated with **Zod** schemas on every route
+- Structured logs automatically redact `password`, `token`, `secret`, `authorization`, `description`, and `experience` fields

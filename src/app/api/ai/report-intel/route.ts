@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { structuredCompletion } from '@/lib/ai';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 interface ReportIntelRequestBody {
   reportText: string;
@@ -26,7 +27,10 @@ Severity levels:
 
 For countyContacts, suggest the most relevant county offices (e.g. CECM Finance, County Assembly Budget Committee, EACC, Ombudsman) based on the report category.`;
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+
+  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
   try {
     const body: ReportIntelRequestBody = await request.json();
     const { reportText, reportId } = body;

@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { chatCompletion } from '@/lib/ai';
 import { countyAuditData } from '@/data/county-audit-data';
 import { countyBudgetData } from '@/data/county-budget-data';
 import { countyProjects } from '@/data/county-projects';
 import { all47Governors } from '@/data/governors';
 import { NATIONAL_OVERSIGHT_SNAPSHOT } from '@/data/oversight-sources';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -76,7 +77,10 @@ function buildCountyContext(countyCode: string): string {
   return lines.join('\n');
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+
+  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
   try {
     const body: ChatRequestBody = await request.json();
     const { message, history, systemContext, countyCode } = body;

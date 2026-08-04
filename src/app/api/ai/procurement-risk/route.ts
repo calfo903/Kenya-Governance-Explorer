@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { webSearch, structuredCompletion } from '@/lib/ai';
 import { db } from '@/lib/db';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 interface ProcurementRiskRequest {
   countyCode?: string;
@@ -14,7 +15,10 @@ interface ProcurementRiskResult {
   recommendations: string[];
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+
+  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
   try {
     const body: ProcurementRiskRequest = await request.json();
 

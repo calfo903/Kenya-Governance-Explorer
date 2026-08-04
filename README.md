@@ -126,10 +126,13 @@ The app will be available at **http://localhost:3000**.
 
 ### Environment Variables
 
-| Variable | Description | Required |
-|---|---|---|
-| `DATABASE_URL` | SQLite database path (default: `file:./db/custom.db`) | Yes |
-| AI SDK env vars | Required for AI features (z-ai-web-dev-sdk configuration) | For AI features |
+| Variable                 | Description                                                                | Required             |
+|--------------------------|----------------------------------------------------------------------------|----------------------|
+| `DATABASE_URL`           | SQLite path (default: `file:./db/custom.db`) or Postgres URL               | Yes                  |
+| `JWT_SECRET`             | Signs session tokens — generate with `openssl rand -hex 32`                | Yes                  |
+| `OPENROUTER_API_KEY`     | OpenRouter key for Gemini 2.5 Flash; falls back to z-ai-web-dev-sdk       | For AI features      |
+| `ADMIN_EMAIL`            | Registered email of the admin; required for tip/story moderation routes    | For admin features   |
+| `ADMIN_DECRYPTION_TOKEN` | Bearer token for Ombudsman decryption endpoint; route locked if unset      | For admin decryption |
 
 ### Available Scripts
 
@@ -351,4 +354,4 @@ A `Caddyfile` is included for reverse proxy configuration:
 
 ## License
 
-Private — All rights reserved.
+[MIT](./LICENSE) — © 2024–2026 Kenya Governance Explorer contributors.

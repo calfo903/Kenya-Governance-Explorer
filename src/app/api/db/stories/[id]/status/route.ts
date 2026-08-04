@@ -1,12 +1,14 @@
 /**
  * §4 — Update citizen story status (pending → reviewed → actioned → dismissed)
+ * Requires admin authentication (ADMIN_EMAIL env var must match session user).
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { StoryStatusUpdateSchema, validateBody } from '@/lib/api-validation';
 import { notFound, internalError, unprocessable } from '@/lib/api-errors';
 import { createLogger } from '@/lib/api-logger';
+import { requireAdmin } from '@/lib/require-auth';
 
 const log = createLogger('/api/db/stories/[id]/status');
 
@@ -18,10 +20,14 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 };
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const start = performance.now();
+
+  const auth = await requireAdmin(request);
+  if (auth.error) return auth.error;
+
   const { id } = await params;
 
   const parsed = await validateBody(request, StoryStatusUpdateSchema);

@@ -58,5 +58,15 @@ prompt
 /skills/
 .zscripts/dev.pid
 
+# agent/dev artifacts — not part of the project
+/tool-results/
+/agent-ctx/
+/worklog.md
+/download/
+/main-page-sidebar.png
+
+# SQLite database — generated at runtime, not committed
+/db/*.db
+
 # OS
 Thumbs.db

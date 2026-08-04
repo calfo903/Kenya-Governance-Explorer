@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { structuredCompletion } from '@/lib/ai';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 interface QuizRequest {
   topic?: string;
@@ -20,7 +21,10 @@ interface QuizResponse {
   difficulty: string;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+
+  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
   try {
     const body: QuizRequest = await request.json();
 
