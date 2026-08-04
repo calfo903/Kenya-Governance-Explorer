@@ -19,30 +19,21 @@ export async function POST(request: Request) {
 
     const countyCode = body.countyCode.trim();
 
-    // Fetch all related data in parallel
+    // Fetch core data in parallel (do NOT reference other Promise results inside the same Promise.all)
     const [
       county,
       governor,
       leadership,
-      cecms,
-      mcas,
       budgets,
       audits,
       projects,
       whistleblowerReports,
-      citizenStories,
     ] = await Promise.all([
       db.county.findUnique({ where: { code: countyCode } }),
       db.governor.findUnique({ where: { countyCode } }),
       db.countyLeadership.findUnique({
         where: { countyCode },
         include: { cecms: true, mcas: true },
-      }),
-      db.countyCECM.findMany({
-        where: { leadership: { countyCode } },
-      }),
-      db.countyMCA.findMany({
-        where: { leadership: { countyCode } },
       }),
       db.countyBudgetRecord.findMany({
         where: { countyCode },
@@ -62,10 +53,6 @@ export async function POST(request: Request) {
         where: { countyCode },
         take: 5,
       }),
-      db.citizenStory.findMany({
-        where: { countyName: county?.name ?? '' },
-        take: 5,
-      }),
     ]);
 
     if (!county) {
@@ -74,6 +61,15 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
+
+    const cecms = leadership?.cecms ?? [];
+    const mcas = leadership?.mcas ?? [];
+
+    // Stories need county name — fetch after county is known
+    const citizenStories = await db.citizenStory.findMany({
+      where: { countyName: county.name },
+      take: 5,
+    });
 
     // Assemble data context for LLM
     const sections: string[] = [];
@@ -88,12 +84,16 @@ export async function POST(request: Request) {
     // Leadership
     if (governor || leadership) {
       const leadershipInfo = [
-        governor ? `Governor: ${governor.fullName} (${governor.party}${governor.coalition ? `, ${governor.coalition}` : ''}), Term: ${governor.termStart.getFullYear()}-${governor.termEnd.getFullYear()}` : 'Governor: Not recorded',
+        governor
+          ? `Governor: ${governor.fullName} (${governor.party}${governor.coalition ? `, ${governor.coalition}` : ''}), Term: ${governor.termStart.getFullYear()}-${governor.termEnd.getFullYear()}`
+          : 'Governor: Not recorded',
         leadership?.deputyGovernor ? `Deputy Governor: ${leadership.deputyGovernor}` : null,
         leadership?.senator ? `Senator: ${leadership.senator}` : null,
         leadership?.womanRep ? `Women Rep: ${leadership.womanRep}` : null,
         leadership?.assemblySpeaker ? `Assembly Speaker: ${leadership.assemblySpeaker}` : null,
-      ].filter(Boolean).join('\n');
+      ]
+        .filter(Boolean)
+        .join('\n');
       dataParts.push(`LEADERSHIP:\n${leadershipInfo}`);
       sections.push('Leadership');
     }
@@ -102,7 +102,12 @@ export async function POST(request: Request) {
     if (cecms.length > 0) {
       dataParts.push(
         `CECMs (${cecms.length}):\n` +
-          cecms.map((c) => `  - ${c.fullName} — ${c.portfolio}${c.qualification ? ` (${c.qualification})` : ''}`).join('\n')
+          cecms
+            .map(
+              (c) =>
+                `  - ${c.fullName} — ${c.portfolio}${c.qualification ? ` (${c.qualification})` : ''}`
+            )
+            .join('\n')
       );
       sections.push('County Executive');
     }
@@ -111,7 +116,12 @@ export async function POST(request: Request) {
     if (budgets.length > 0) {
       dataParts.push(
         `BUDGETS (last 3 years):\n` +
-          budgets.map((b) => `  - FY ${b.financialYear}: Total KES ${b.totalBudget.toLocaleString()}, Development KES ${b.developmentBudget.toLocaleString()}, Recurrent KES ${b.recurrentBudget.toLocaleString()}, Dev Absorption: ${b.devAbsorptionRate}%, Own Revenue: KES ${b.ownSourceRevenue.toLocaleString()}, Pending Bills: KES ${b.pendingBills.toLocaleString()}`).join('\n')
+          budgets
+            .map(
+              (b) =>
+                `  - FY ${b.financialYear}: Total KES ${b.totalBudget.toLocaleString()}, Development KES ${b.developmentBudget.toLocaleString()}, Recurrent KES ${b.recurrentBudget.toLocaleString()}, Dev Absorption: ${b.devAbsorptionRate}%, Own Revenue: KES ${b.ownSourceRevenue.toLocaleString()}, Pending Bills: KES ${b.pendingBills.toLocaleString()}`
+            )
+            .join('\n')
       );
       sections.push('Budget Health');
     }
@@ -120,7 +130,12 @@ export async function POST(request: Request) {
     if (audits.length > 0) {
       dataParts.push(
         `AUDITS (last 3 years):\n` +
-          audits.map((a) => `  - FY ${a.financialYear}: Executive Opinion: ${a.executiveOpinion ?? 'N/A'}, Assembly Opinion: ${a.assemblyOpinion ?? 'N/A'}, Findings: ${a.keyFindings}`).join('\n')
+          audits
+            .map(
+              (a) =>
+                `  - FY ${a.financialYear}: Executive Opinion: ${a.executiveOpinion ?? 'N/A'}, Assembly Opinion: ${a.assemblyOpinion ?? 'N/A'}, Findings: ${a.keyFindings}`
+            )
+            .join('\n')
       );
       sections.push('Audit Status');
     }
@@ -129,14 +144,21 @@ export async function POST(request: Request) {
     if (projects.length > 0) {
       dataParts.push(
         `PROJECTS (${projects.length}):\n` +
-          projects.map((p) => `  - ${p.name} [${p.category}] — ${p.status}, Budget: KES ${p.budgetAllocated.toLocaleString()}, Spent: KES ${p.budgetSpent.toLocaleString()}, Risk: ${p.riskScore}/10`).join('\n')
+          projects
+            .map(
+              (p) =>
+                `  - ${p.name} [${p.category}] — ${p.status}, Budget: KES ${p.budgetAllocated.toLocaleString()}, Spent: KES ${p.budgetSpent.toLocaleString()}, Risk: ${p.riskScore}/10`
+            )
+            .join('\n')
       );
       sections.push('Project Pipeline');
     }
 
     // Whistleblower reports
     if (whistleblowerReports.length > 0) {
-      dataParts.push(`WHISTLEBLOWER REPORTS: ${whistleblowerReports.length} filed (${whistleblowerReports.filter((r) => r.status === 'pending').length} pending)`);
+      dataParts.push(
+        `WHISTLEBLOWER REPORTS: ${whistleblowerReports.length} filed (${whistleblowerReports.filter((r) => r.status === 'pending').length} pending)`
+      );
       sections.push('Whistleblower Intelligence');
     }
 
@@ -144,7 +166,9 @@ export async function POST(request: Request) {
     if (citizenStories.length > 0) {
       dataParts.push(
         `CITIZEN STORIES (${citizenStories.length}):\n` +
-          citizenStories.map((s) => `  - [${s.sector}] ${s.title} (Rating: ${s.rating}/5)`).join('\n')
+          citizenStories
+            .map((s) => `  - [${s.sector}] ${s.title} (Rating: ${s.rating}/5)`)
+            .join('\n')
       );
       sections.push('Citizen Feedback');
     }
