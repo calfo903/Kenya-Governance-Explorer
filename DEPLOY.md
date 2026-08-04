@@ -1,30 +1,35 @@
 # Deploy to Vercel
 
-## 1. Merge the PR
-https://github.com/calfo903/Kenya-Governance-Explorer/pull/2
+PR #2 is merged into `main`. Deploy from `main`.
 
-## 2. Import on Vercel
+## 1. Import on Vercel
 1. Go to https://vercel.com/new
-2. Import `calfo903/Kenya-Governance-Explorer`
+2. Import `calfo903/Kenya-Governance-Explorer` (branch: **main**)
 3. Framework: **Next.js** (auto-detected)
 4. Root directory: `.`
-5. Build: uses `vercel.json` → `npx prisma generate && next build`
+5. Build uses `vercel.json` → `npx prisma generate && next build`
 
-## 3. Environment variables (Project → Settings → Environment Variables)
+## 2. Environment variables
 
 | Name | Value | Required |
 |------|--------|----------|
-| `DATABASE_URL` | `file:./db/custom.db` for demo **or** a Postgres URL (recommended for production) | Yes |
-| `OPENROUTER_API_KEY` | from https://openrouter.ai/keys | For AI features |
+| `DATABASE_URL` | **Postgres** URL (Neon / Supabase / Vercel Postgres) | Yes for DB features |
+| `OPENROUTER_API_KEY` | from https://openrouter.ai/keys | Yes for AI Hub |
 | `NEXTAUTH_URL` | `https://your-app.vercel.app` | If auth enabled |
-| `NEXTAUTH_SECRET` | long random string | If auth enabled |
+| `NEXTAUTH_SECRET` | long random string (`openssl rand -base64 32`) | If auth enabled |
 
-**SQLite on Vercel:** the filesystem is read-only at runtime except `/tmp`. Prefer **Vercel Postgres**, Neon, or Supabase for production. Static TS data modules still work without a DB.
+**Do not use SQLite on Vercel** (read-only FS). Static TypeScript data modules (audits, budgets, governors, projects, OAG reports) still work without a DB.
 
-## 4. Deploy
-Push to `main` or click Deploy. Open the `.vercel.app` URL.
+## 3. Deploy
+Click **Deploy**. After success open the `.vercel.app` URL.
 
-## 5. Post-deploy check
-- `/` loads national summary
+## 4. Smoke tests
+- `/` — national summary loads
 - `/api/health`
-- AI Hub → set `OPENROUTER_API_KEY` or features fall back / error gracefully
+- `/api/reports` — in-app OAG/CoB feed
+- AI Chat with body `{ "message": "How is Makueni doing?", "countyCode": "017" }`
+
+## 5. Security
+- `.env` must never be committed (removed from git)
+- Rotate any secrets that were ever in the old committed `.env`
+- Set keys only in Vercel Project → Settings → Environment Variables
