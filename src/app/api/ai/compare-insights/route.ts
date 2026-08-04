@@ -25,7 +25,16 @@ export async function POST(request: Request) {
     // Fetch both counties' base info
     const counties = await db.county.findMany({
       where: { name: { in: [county1, county2] } },
-      select: { id: true, name: true, code: true, region: true, population: true, areaSqKm: true, constituencies: true, wards: true },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        region: true,
+        population: true,
+        areaSqKm: true,
+        constituencies: true,
+        wards: true,
+      },
     });
 
     if (counties.length < 2) {
@@ -55,16 +64,20 @@ export async function POST(request: Request) {
         })
       : [];
 
-    // Fetch leadership info
-    const leadership = selectedMetrics.includes('leadership')
-      ? await db.countyLeadership.findMany({
-          where: { countyCode: { in: countyCodes } },
-          include: {
-            governor: true,
-            cecms: { select: { portfolio: true, fullName: true } },
-          },
-        })
-      : [];
+    // Leadership: Governor is its own model; CountyLeadership only has cecms/mcas
+    const [leadership, governors] = selectedMetrics.includes('leadership')
+      ? await Promise.all([
+          db.countyLeadership.findMany({
+            where: { countyCode: { in: countyCodes } },
+            include: {
+              cecms: { select: { portfolio: true, fullName: true } },
+            },
+          }),
+          db.governor.findMany({
+            where: { countyCode: { in: countyCodes } },
+          }),
+        ])
+      : [[], []];
 
     // Fetch project records
     const projects = selectedMetrics.includes('projects')
@@ -77,7 +90,10 @@ export async function POST(request: Request) {
 
     // Build context for LLM
     const countyInfo = counties
-      .map((c) => `### ${c.name} (${c.code}) — ${c.region}\nPopulation: ${c.population.toLocaleString()} | Area: ${c.areaSqKm} km² | Constituencies: ${c.constituencies} | Wards: ${c.wards}`)
+      .map(
+        (c) =>
+          `### ${c.name} (${c.code}) — ${c.region}\nPopulation: ${c.population.toLocaleString()} | Area: ${c.areaSqKm} km² | Constituencies: ${c.constituencies} | Wards: ${c.wards}`
+      )
       .join('\n\n');
 
     const budgetInfo =
@@ -86,7 +102,7 @@ export async function POST(request: Request) {
           budgets
             .map(
               (b) =>
-                `- ${b.countyCode}: FY ${b.financialYear} — Total KES ${b.totalBudget.toLocaleString()}, Dev ${b.devAbsorptionRate * 100}% absorbed, Recurrent ${b.recurrentAbsorptionRate * 100}% absorbed, Pending Bills KES ${b.pendingBills.toLocaleString()}`
+                `- ${b.countyCode}: FY ${b.financialYear} — Total KES ${b.totalBudget.toLocaleString()}, Dev ${b.devAbsorptionRate}% absorbed, Recurrent ${b.recurrentAbsorptionRate}% absorbed, Pending Bills KES ${b.pendingBills.toLocaleString()}`
             )
             .join('\n')
         : '';
@@ -102,14 +118,16 @@ export async function POST(request: Request) {
             .join('\n')
         : '';
 
+    const governorByCode = new Map(governors.map((g) => [g.countyCode, g]));
     const leadershipInfo =
-      leadership.length > 0
+      leadership.length > 0 || governors.length > 0
         ? '\n\n#### Leadership\n' +
-          leadership
-            .map(
-              (l) =>
-                `- ${l.countyCode}: Governor ${l.governor?.fullName ?? 'N/A'} (${l.governor?.party ?? ''}), Deputy ${l.deputyGovernor ?? 'N/A'}, Senator ${l.senator ?? 'N/A'}, Women Rep ${l.womanRep ?? 'N/A'}`
-            )
+          countyCodes
+            .map((code) => {
+              const g = governorByCode.get(code);
+              const l = leadership.find((x) => x.countyCode === code);
+              return `- ${code}: Governor ${g?.fullName ?? 'N/A'} (${g?.party ?? ''}), Deputy ${l?.deputyGovernor ?? 'N/A'}, Senator ${l?.senator ?? 'N/A'}, Women Rep ${l?.womanRep ?? 'N/A'}`;
+            })
             .join('\n')
         : '';
 
