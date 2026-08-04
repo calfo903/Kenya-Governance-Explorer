@@ -1,7 +1,7 @@
 /**
- * §4 — Persistent Citizen Tips API (Prisma-backed)
+ * §4 — Persistent Citizen Tips API (Prisma-backed) with Merkle-Chain Tamper-Evident Ledger
  *
- * POST: Create a whistleblower tip, stored in SQLite via Prisma
+ * POST: Create a whistleblower tip, cryptographically linked to the previous tip's hash
  * GET: List tips (NEVER returns full description, only preview)
  */
 
@@ -13,6 +13,7 @@ import {
 } from '@/lib/api-validation';
 import { internalError } from '@/lib/api-errors';
 import { createLogger } from '@/lib/api-logger';
+import crypto from 'crypto';
 
 const log = createLogger('/api/db/tips');
 
@@ -49,19 +50,37 @@ export async function GET(request: Request) {
     ]);
 
     // §2.4 — NEVER return full tip description in listing
-    const safeTips = tips.map(t => ({
-      id: t.id,
-      countyName: t.countyName,
-      category: t.category,
-      anonymous: t.anonymous,
-      status: t.status,
-      adminNotes: t.adminNotes,
-      descriptionPreview: t.description.length > 60
-        ? t.description.slice(0, 60) + '...'
-        : t.description,
-      createdAt: t.createdAt,
-      updatedAt: t.updatedAt,
-    }));
+    const safeTips = tips.map(t => {
+      let descriptionPreview = t.description;
+      let isChainSecure = true;
+
+      try {
+        const parsed = JSON.parse(t.description);
+        if (parsed.encryptedPayload) {
+          descriptionPreview = '[Asymmetrically Encrypted Public-Key Payload Package]';
+        } else if (parsed.rawDescription) {
+          descriptionPreview = parsed.rawDescription;
+        }
+      } catch {
+        // Legacy plain description fallback
+      }
+
+      if (descriptionPreview.length > 60) {
+        descriptionPreview = descriptionPreview.slice(0, 60) + '...';
+      }
+
+      return {
+        id: t.id,
+        countyName: t.countyName,
+        category: t.category,
+        anonymous: t.anonymous,
+        status: t.status,
+        adminNotes: t.adminNotes,
+        descriptionPreview,
+        createdAt: t.createdAt,
+        updatedAt: t.updatedAt,
+      };
+    });
 
     const durationMs = Math.round(performance.now() - start);
     log.info('Tips fetched from DB', { total, returned: safeTips.length, page, limit, county, category, status, durationMs });
@@ -87,28 +106,93 @@ export async function POST(request: Request) {
   const { countyName, category, description, anonymous } = parsed.data;
 
   try {
+    // ═══════════════════════════════════════════════════════════════
+    // Suggestion 3: Merkle-Chain Tamper-Evident Ledger Implementation
+    // ═══════════════════════════════════════════════════════════════
+    
+    // 1. Fetch the most recent tip in the database to get the previous block hash
+    const previousTip = await db.citizenTip.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let previousHash = '0000000000000000000000000000000000000000000000000000000000000000'; // Genesis block hash
+    
+    if (previousTip) {
+      try {
+        const lastPkg = JSON.parse(previousTip.description);
+        if (lastPkg.merkleHash) {
+          previousHash = lastPkg.merkleHash;
+        } else {
+          // If the last tip didn't have a merkle hash parameter (legacy tip), compute its SHA-256
+          previousHash = crypto.createHash('sha256').update(previousTip.description).digest('hex');
+        }
+      } catch {
+        previousHash = crypto.createHash('sha256').update(previousTip.description).digest('hex');
+      }
+    }
+
+    // 2. Formulate the current block data package
+    let finalDescription = description;
+    let isAsymmetric = false;
+
+    try {
+      const parsedPkg = JSON.parse(description);
+      if (parsedPkg.encryptedPayload && parsedPkg.iv) {
+        // It's already an asymmetric JSON package
+        isAsymmetric = true;
+        const currentDataToHash = parsedPkg.encryptedPayload + parsedPkg.iv + previousHash;
+        const merkleHash = crypto.createHash('sha256').update(currentDataToHash).digest('hex');
+        
+        finalDescription = JSON.stringify({
+          ...parsedPkg,
+          previousHash,
+          merkleHash,
+          chainSecure: true
+        });
+      }
+    } catch {
+      // It's plain text description, package it into a JSON block to support chaining
+    }
+
+    if (!isAsymmetric) {
+      const currentDataToHash = description + previousHash;
+      const merkleHash = crypto.createHash('sha256').update(currentDataToHash).digest('hex');
+
+      finalDescription = JSON.stringify({
+        rawDescription: description,
+        previousHash,
+        merkleHash,
+        chainSecure: true
+      });
+    }
+
+    // 3. Save to Prisma SQLite database
     const tip = await db.citizenTip.create({
-      data: { countyName, category, description, anonymous },
+      data: { 
+        countyName, 
+        category, 
+        description: finalDescription, 
+        anonymous 
+      },
     });
 
     const durationMs = Math.round(performance.now() - start);
-    // §5.1 — Do NOT log the description content (redacted by logger)
-    log.info('Tip created in DB', {
+    log.info('Tip created with Merkle-Chain signature', {
       tipId: tip.id,
       county: countyName,
       category,
       anonymous,
-      descriptionLength: description.length,
+      merkleHash: JSON.parse(finalDescription).merkleHash,
       durationMs,
     });
 
     return NextResponse.json({
       success: true,
       tipId: tip.id,
-      message: 'Tip submitted successfully. Your identity is protected under the Protection of Whistleblowers Act, 2023.',
+      message: 'Tip submitted successfully. Secure Merkle-Chain Block committed. Your identity is protected.',
     }, { status: 201 });
   } catch (error) {
-    log.error('Failed to create tip in DB', { countyName, category }, Math.round(performance.now() - start));
-    return internalError('create tip in database');
+    log.error('Failed to create tip in DB with Merkle chain', { countyName, category }, Math.round(performance.now() - start));
+    return internalError('create tip in database with Merkle chain');
   }
 }

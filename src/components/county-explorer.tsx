@@ -7,7 +7,7 @@ import {
   getScoreColor, getScoreLabel, getAuditColor,
 } from '@/data/types';
 import {
-  MapPin, User, Mail, Globe, ExternalLink, GitCompare, AlertTriangle, Scale,
+  MapPin, User, Mail, Globe, ExternalLink, GitCompare, AlertTriangle, Scale, Printer
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,12 +31,21 @@ export function CountyExplorer({ countyCode, allCounties, onSelectCounty, addToC
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 print:hidden">
         <MapPin className="h-4 w-4 text-emerald-600" />
         <Select value={county.code} onValueChange={onSelectCounty}>
           <SelectTrigger className="h-9 text-sm flex-1 max-w-md border-stone-200"><SelectValue /></SelectTrigger>
           <SelectContent>{allCounties.map(c => <SelectItem key={c.code} value={c.code}>{c.code} — {c.name} ({c.region}) {c.dataAvailability === 'full' ? '★' : c.dataAvailability === 'partial' ? '◐' : '○'}</SelectItem>)}</SelectContent>
         </Select>
+        <Button
+          onClick={() => window.print()}
+          variant="outline"
+          size="sm"
+          className="h-9 text-xs border-stone-200 text-stone-600 hover:bg-stone-50 flex items-center gap-1.5"
+        >
+          <Printer className="h-3.5 w-3.5" />
+          Print Scorecard
+        </Button>
       </div>
 
       {/* County Header Card */}

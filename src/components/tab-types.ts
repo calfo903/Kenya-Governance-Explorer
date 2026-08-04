@@ -8,6 +8,7 @@ export type TabId = 'summary' | 'tree' | 'county' | 'sources' | 'compare' | 'sch
   | 'stories' | 'cbef' | 'embed'
   | 'leadership' | 'projects' | 'mzalendo' | 'compareEnhanced'
   | 'representatives' | 'reports' | 'hansard'
+  | 'adminDecrypt'
   // ── Merged Hub Tabs ──
   | 'aiHub' | 'fiscalHub' | 'procurementHub' | 'performanceHub' | 'insightsHub' | 'integrityHub'
   // ── New Feature Tabs ──

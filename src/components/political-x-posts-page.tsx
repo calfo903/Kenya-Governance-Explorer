@@ -9,7 +9,7 @@ import {
   Shield, Scale, Star, Globe, Radio,
   Filter, Hash, ArrowRight,
   BadgeCheck, AlertTriangle, TrendingUp,
-  Clock, Link2,
+  Clock, Link2, Award, Gavel,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,9 @@ const categoryIconMap: Record<string, React.ElementType> = {
   all: Users,
   president_dp: Star,
   governor: Landmark,
+  senator: Award,
+  womrep: Users,
+  mp: Gavel,
   oversight: Shield,
   judiciary: Scale,
   media: Radio,
@@ -30,6 +33,9 @@ const categoryIconMap: Record<string, React.ElementType> = {
 const categoryColorMap: Record<string, string> = {
   president_dp: 'bg-amber-500',
   governor: 'bg-emerald-500',
+  senator: 'bg-indigo-500',
+  womrep: 'bg-teal-500',
+  mp: 'bg-amber-600',
   oversight: 'bg-blue-500',
   judiciary: 'bg-purple-500',
   media: 'bg-pink-500',

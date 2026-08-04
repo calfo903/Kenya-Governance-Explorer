@@ -17,6 +17,7 @@ import {
   Maximize2, Minimize2,
 } from 'lucide-react';
 import { getAuditColor } from '@/data/types';
+import { toast } from 'sonner';
 
 // ─── Constants & Helpers ──────────────────────────────────────────
 
@@ -87,6 +88,49 @@ export default function ProjectsBrowserPage() {
   const [sortBy, setSortBy] = useState<string>('risk');
   const [selectedProject, setSelectedProject] = useState<ProjectRecord | null>(null);
   const [isDrawerFullscreen, setIsDrawerFullscreen] = useState(false);
+
+  // ─── Citizen Auditor Gamified States ────────────────────────────
+  const [auditorXP, setAuditorXP] = useState(450);
+  const [auditorLevel, setAuditorLevel] = useState(3);
+  const [proofProject, setProofProject] = useState('');
+  const [proofStatus, setProofStatus] = useState('stalled');
+  const [proofNotes, setProofNotes] = useState('');
+  const [proofFileName, setProofFileName] = useState('');
+  const [submittingProof, setSubmittingProof] = useState(false);
+  const [completedQuests, setCompletedQuests] = useState<Set<string>>(new Set());
+
+  const handleAuditorProofSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!proofProject || proofNotes.trim().length < 15) {
+      return;
+    }
+
+    setSubmittingProof(true);
+
+    setTimeout(() => {
+      setSubmittingProof(false);
+      
+      const addedXP = 150;
+      const nextXP = auditorXP + addedXP;
+      
+      if (nextXP >= 600) {
+        setAuditorLevel(prev => prev + 1);
+        setAuditorXP(nextXP - 600);
+        toast(`🏆 LEVEL UP! You are now a Level ${auditorLevel + 1} - Devolution Sentinel!`, {
+          description: `Excellent work crowdsourcing ground-truth data in Kenya's counties!`,
+        });
+      } else {
+        setAuditorXP(nextXP);
+        toast(`📸 Field Proof Submitted! +150 XP Earned`, {
+          description: `Your contribution helps audit paper budgets against physical realities.`,
+        });
+      }
+
+      setProofProject('');
+      setProofNotes('');
+      setProofFileName('');
+    }, 1200);
+  };
 
   // ─── Summary Stats ──────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -244,6 +288,198 @@ export default function ProjectsBrowserPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Citizen Auditor Gamified Dashboard (Suggestion 5) */}
+      <Card className="border-indigo-200 dark:border-indigo-900 bg-gradient-to-br from-indigo-50/50 via-white to-stone-50/50 dark:from-indigo-950/20 dark:via-stone-900 dark:to-stone-950 shadow-md">
+        <CardHeader className="pb-3 border-b border-indigo-100 dark:border-indigo-950">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900">
+                <Camera className="size-5" />
+              </div>
+              <div>
+                <CardTitle className="text-base font-bold text-indigo-900 dark:text-indigo-300">Citizen Auditor Portal</CardTitle>
+                <CardDescription className="text-xs text-indigo-600/80 dark:text-indigo-400/85">
+                  Verify paper budgets on the ground. Level up and earn digital badges for civic oversight!
+                </CardDescription>
+              </div>
+            </div>
+            {/* Level and XP Badge */}
+            <div className="flex items-center gap-3 bg-white dark:bg-stone-900 border border-indigo-100 dark:border-indigo-950 px-4 py-2 rounded-xl shrink-0">
+              <div className="text-right">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-indigo-500 block">Auditor Rank</span>
+                <span className="text-xs font-bold text-stone-800 dark:text-stone-100">Level {auditorLevel} — Devolution Sentinel</span>
+              </div>
+              <div className="h-9 w-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-indigo-600/20">
+                L{auditorLevel}
+              </div>
+            </div>
+          </div>
+          {/* XP Progress Bar */}
+          <div className="mt-3.5 space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold text-indigo-700 dark:text-indigo-400">
+              <span>XP Progress</span>
+              <span>{auditorXP} / 600 XP</span>
+            </div>
+            <Progress value={(auditorXP / 600) * 100} className="h-2 bg-indigo-100 dark:bg-indigo-950/40 [&>[data-slot=progress-indicator]]:bg-indigo-600 dark:[&>[data-slot=progress-indicator]]:bg-indigo-500" />
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Active Quests */}
+          <div className="lg:col-span-5 space-y-3">
+            <h4 className="text-xs font-bold text-indigo-900 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+              <Zap className="size-3.5" />
+              Active Auditor Quests
+            </h4>
+            
+            <div className="space-y-2.5">
+              {[
+                { id: 'q1', label: '📸 Upload field photo of Kajiado Borehole #34', xp: '+150 XP', county: 'Kajiado', desc: 'Borehole drilling at Oloolua' },
+                { id: 'q2', label: '📊 Verify cost absorption for School Project #12', xp: '+100 XP', county: 'Nairobi', desc: 'Medical clinic rehabilitation' },
+                { id: 'q3', label: '📝 Submit rating for Mombasa Local Health Center', xp: '+50 XP', county: 'Mombasa', desc: 'Renovation of clinic' }
+              ].map((quest) => (
+                <div key={quest.id} className="flex items-start gap-3 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-850 p-3 rounded-xl hover:shadow-sm transition-shadow">
+                  <input
+                    type="checkbox"
+                    checked={completedQuests.has(quest.id)}
+                    onChange={() => {
+                      if (completedQuests.has(quest.id)) {
+                        setCompletedQuests(prev => { const n = new Set(prev); n.delete(quest.id); return n; });
+                        setAuditorXP(prev => Math.max(0, prev - 100));
+                      } else {
+                        setCompletedQuests(prev => { const n = new Set(prev); n.add(quest.id); return n; });
+                        setAuditorXP(prev => {
+                          const n = prev + 100;
+                          if (n >= 600) {
+                            setAuditorLevel(l => l + 1);
+                            toast.success(`🏆 LEVEL UP! You are now Level ${auditorLevel + 1}!`);
+                            return n - 600;
+                          }
+                          toast.success('Quest Checked! +100 XP Earned.');
+                          return n;
+                        });
+                      }
+                    }}
+                    className="mt-1 size-4 rounded border-stone-300 dark:border-stone-700 text-indigo-600 focus:ring-indigo-500/30"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs font-bold ${completedQuests.has(quest.id) ? 'line-through text-stone-400 dark:text-stone-600' : 'text-stone-800 dark:text-stone-200'}`}>
+                      {quest.label}
+                    </p>
+                    <p className="text-[10px] text-stone-400 mt-0.5">{quest.desc} · {quest.county}</p>
+                  </div>
+                  <Badge variant="secondary" className="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-950/80 font-mono text-[9px] font-bold shrink-0">
+                    {quest.xp}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator className="lg:hidden bg-indigo-100 dark:bg-indigo-950" />
+
+          {/* Submit Ground Truth */}
+          <div className="lg:col-span-7 space-y-3">
+            <h4 className="text-xs font-bold text-indigo-900 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+              <Camera className="size-3.5" />
+              Submit Local Field Proof
+            </h4>
+
+            <form onSubmit={handleAuditorProofSubmit} className="space-y-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">Select Local Project</Label>
+                  <Select value={proofProject} onValueChange={setProofProject}>
+                    <SelectTrigger className="h-9 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-850 text-xs">
+                      <SelectValue placeholder="Select target project..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-850 text-xs">
+                      {projects.slice(0, 5).map(p => (
+                        <SelectItem key={p.id} value={p.id} className="text-xs">
+                          {p.id} — {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">Field Ground Status</Label>
+                  <Select value={proofStatus} onValueChange={setProofStatus}>
+                    <SelectTrigger className="h-9 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-850 text-xs">
+                      <SelectValue placeholder="Status on the ground" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-850 text-xs">
+                      <SelectItem value="stalled" className="text-xs">Stalled / Abandoned</SelectItem>
+                      <SelectItem value="active" className="text-xs">Active / Ongoing</SelectItem>
+                      <SelectItem value="completed" className="text-xs">Fully Functional / Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">Ground Observations & Notes</Label>
+                  <Input
+                    value={proofNotes}
+                    onChange={(e) => setProofNotes(e.target.value)}
+                    placeholder="Describe actual state (Minimum 15 characters)..."
+                    className="h-9 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-850 text-xs placeholder:text-stone-400"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">Add Photo Proof (Optional)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      value={proofFileName}
+                      readOnly
+                      placeholder="No file uploaded"
+                      className="h-9 bg-stone-50 dark:bg-stone-950 border-stone-200 dark:border-stone-850 text-xs shrink truncate"
+                    />
+                    <label className="h-9 px-3 bg-stone-100 hover:bg-stone-250 dark:bg-stone-800 hover:dark:bg-stone-705 border border-stone-200 dark:border-stone-850 rounded-lg text-xs font-semibold flex items-center justify-center cursor-pointer shrink-0">
+                      Upload
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) setProofFileName(f.name);
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={submittingProof || !proofProject || proofNotes.trim().length < 15}
+                className={`w-full h-9 font-semibold text-xs transition-all gap-1.5 ${
+                  proofProject && proofNotes.trim().length >= 15 && !submittingProof
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20'
+                    : 'bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500 cursor-not-allowed'
+                }`}
+              >
+                {submittingProof ? (
+                  <>
+                    <Clock className="size-3.5 animate-spin" />
+                    Processing ground proof upload...
+                  </>
+                ) : (
+                  <>
+                    <Send className="size-3.5" />
+                    Submit Ground Proof &amp; Earn +150 XP
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters Bar */}
       <Card className="border-stone-200 dark:border-stone-700 shadow-sm">

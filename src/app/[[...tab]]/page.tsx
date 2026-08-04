@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, Suspense } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { I18nProvider } from '@/i18n/i18n-provider';
 import { LanguageToggle } from '@/components/language-toggle';
@@ -19,9 +20,6 @@ import type { TabId } from '@/components/tab-types';
 import ConstitutionPage from '@/components/constitution-page';
 import PoliticalXPostsPage from '@/components/political-x-posts-page';
 import CountyMapPage from '@/components/county-map-page';
-import RtiGeneratorPage from '@/components/rti-generator-page';
-import PetitionBuilderPage from '@/components/petition-builder-page';
-import CorruptionHeatmapPage from '@/components/corruption-heatmap-page';
 import ManifestoTrackerPage from '@/components/manifesto-tracker-page';
 import CitizenFeedbackPage from '@/components/citizen-feedback-page';
 import TimelinePage from '@/components/timeline-page';
@@ -40,10 +38,10 @@ import RepresentativeProfilesPage from '@/components/representative-profiles-pag
 
 import CountyLeadershipTreePage from '@/components/county-leadership-tree';
 import ProjectsBrowserPage from '@/components/projects-browser-page';
+import AdminDecryptionPanel from '@/components/admin-decryption-panel';
 import { DataFreshnessIndicator } from '@/components/data-freshness';
 import CommandPalette from '@/components/command-palette';
 import { KenyaMiniMap } from '@/components/kenya-county-map';
-import CountyComparisonEnhanced from '@/components/county-comparison-enhanced';
 import { WeatherWidget, CitizenAuditorDashboard, AIInsightsWidget, ProjectVelocityChart, RiskForecastWidget, SidebarMiniMap } from '@/components/sidebar-widgets';
 import { useTheme } from 'next-themes';
 
@@ -179,6 +177,7 @@ const navItemDefs: NavItem[] = [
   { id: 'aiHub', labelKey: 'nav.items.aiHub', icon: Bot, sectionKey: 'nav.sections.aiTools' },
   // ── Civic Engagement (New) ──
   { id: 'whistleblower', labelKey: 'nav.items.whistleblower', icon: Lock, sectionKey: 'nav.sections.civicEngagement' },
+  { id: 'adminDecrypt', labelKey: 'nav.items.adminDecrypt', icon: Unlock, sectionKey: 'nav.sections.civicEngagement' },
   { id: 'petitions', labelKey: 'nav.items.petitions', icon: ClipboardList, sectionKey: 'nav.sections.civicEngagement' },
   { id: 'rtiLetters', labelKey: 'nav.items.rtiLetters', icon: Mail, sectionKey: 'nav.sections.civicEngagement' },
   { id: 'smsUssd', labelKey: 'nav.items.smsUssd', icon: Smartphone, sectionKey: 'nav.sections.civicEngagement' },
@@ -223,7 +222,13 @@ export default function KenyaGovernancePage() {
 function PageContent() {
   const t = useTranslations();
   const locale = useLocaleStore((s) => s.locale);
-  const [activeTab, setActiveTab] = useState<TabId>('summary');
+  const params = useParams();
+  const router = useRouter();
+  const tabParam = params?.tab;
+  const activeTab = (Array.isArray(tabParam) ? tabParam[0] : tabParam) as TabId || 'summary';
+  const setActiveTab = (tab: TabId) => {
+    router.push(`/${tab}`);
+  };
   const [selectedCounty, setSelectedCounty] = useState<string>('034');
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
@@ -798,9 +803,6 @@ function PageContent() {
                 }}
               />
             )}
-            {activeTab === 'rti' && <RtiGeneratorPage />}
-            {activeTab === 'petition' && <PetitionBuilderPage />}
-            {activeTab === 'heatmap' && <CorruptionHeatmapPage />}
             {activeTab === 'manifesto' && <ManifestoTrackerPage />}
             {activeTab === 'feedback' && <CitizenFeedbackPage />}
             {activeTab === 'timeline' && <TimelinePage />}
@@ -827,7 +829,6 @@ function PageContent() {
             </div>
             )}
             {activeTab === 'mzalendo' && <MzalendoPage />}
-            {activeTab === 'compareEnhanced' && <CountyComparisonEnhanced />}
             {activeTab === 'hansard' && <AssemblyHansardPage />}
             {activeTab === 'representatives' && <BudgetAllocationPage />}
             {activeTab === 'integrityHub' && <IntegrityHub />}
@@ -836,8 +837,8 @@ function PageContent() {
             {/* ── New Feature Tabs ── */}
             <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" /></div>}>
             {activeTab === 'whistleblower' && <WhistleblowerPortal />}
-            {activeTab === 'petitions' && <PetitionBuilderNew />}
-            {activeTab === 'rtiLetters' && <RTILetterGenerator />}
+            {(activeTab === 'petitions' || activeTab === 'petition') && <PetitionBuilderNew />}
+            {(activeTab === 'rtiLetters' || activeTab === 'rti') && <RTILetterGenerator />}
             {activeTab === 'smsUssd' && <SmsUssdHub />}
             {activeTab === 'budgetTracking' && <BudgetTrackingDashboard />}
             {activeTab === 'contractors' && <ContractorDatabase />}
@@ -846,17 +847,18 @@ function PageContent() {
             {activeTab === 'factChecker' && <AIFactChecker />}
             {activeTab === 'smartAlerts' && <SmartAlertsSystem />}
             {activeTab === 'predictiveRisk' && <PredictiveRiskDashboard />}
-            {activeTab === 'countyHeatmap' && <EnhancedCountyHeatmap />}
+            {(activeTab === 'countyHeatmap' || activeTab === 'heatmap') && <EnhancedCountyHeatmap />}
             {activeTab === 'projectMap' && <ProjectLocationMap />}
             {activeTab === 'beforeAfter' && <BeforeAfterSlider />}
             {activeTab === 'forums' && <CommunityForums />}
             {activeTab === 'citizenJournalist' && <CitizenJournalistProgram />}
             {activeTab === 'governorRatings' && <GovernorReportCardRatings />}
             {activeTab === 'promiseTracker' && <ElectionPromiseTracker />}
-            {activeTab === 'enhancedCompareNew' && <EnhancedCountyComparison />}
+            {(activeTab === 'enhancedCompareNew' || activeTab === 'compareEnhanced') && <EnhancedCountyComparison />}
             {activeTab === 'governanceTimeline' && <CountyGovernanceTimeline />}
             {activeTab === 'offlineMode' && <OfflineModeDashboard />}
             {activeTab === 'voiceSearch' && <VoiceSearchInterface />}
+            {activeTab === 'adminDecrypt' && <AdminDecryptionPanel />}
             {activeTab === 'pwaSettings' && <PWAEnhancementPanel />}
             </Suspense>
           </main>
