@@ -1,27 +1,19 @@
 # Contributing
 
-## Setup
-```bash
-git clone https://github.com/calfo903/Kenya-Governance-Explorer.git
-cd Kenya-Governance-Explorer
-cp .env.example .env   # never commit .env
-npm install
-npx prisma db push
-npm run seed           # baseline from src/data
-npm run seed:real      # optional enrichment from data/raw
-npm run dev
-```
+## Data updates
+- Prefer structured TypeScript modules under `src/data/` over external PDF links as primary UX.
+- Source every figure (OAG, CoB, CRA, etc.) and keep `oversight-sources.ts` current.
+- No sample/placeholder projects in production paths — use `county-projects.ts`.
 
 ## Security
-- Never commit `.env` or API keys.
-- Rotate any key that was previously committed.
-- Prefer official OAG / CoB / IEBC sources for new data.
+- Never commit `.env`. Use `.env.example` only.
+- Rotate any token that was ever committed.
 
-## Data
-- Static UI data: `src/data/*.ts`
-- Scrape staging only: `data/raw/`
-- Normalized import format for CECMs/MCAs: see `scripts/seed-real-data.ts`
+## Seeds
+```bash
+npm run seed
+npm run seed:projects
+```
 
 ## PRs
-- Run `npm run lint && npm run typecheck && npm test` before opening a PR.
-- CI must pass.
+Target `main`. Keep commits focused (data vs UI vs infra).
