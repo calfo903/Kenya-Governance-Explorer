@@ -35,18 +35,20 @@ export async function POST(request: Request) {
     }
 
     // Format budget data for the LLM
+    // Note: seeded rates are stored as percentage points (e.g. 57 = 57%), not fractions.
     const budgetSummary = budgets
       .map((b) => {
-        const totalDev = (b.developmentBudget / b.totalBudget) * 100;
-        const totalRec = (b.recurrentBudget / b.totalBudget) * 100;
+        const total = b.totalBudget || 1;
+        const totalDev = (b.developmentBudget / total) * 100;
+        const totalRec = (b.recurrentBudget / total) * 100;
         return [
           `County: ${b.county.name} (${b.county.code})`,
           `FY: ${b.financialYear}`,
           `Total Budget: KES ${b.totalBudget.toLocaleString()}`,
-          `Development: KES ${b.developmentBudget.toLocaleString()} (${totalDev.toFixed(1)}%)`,
-          `Recurrent: KES ${b.recurrentBudget.toLocaleString()} (${totalRec.toFixed(1)}%)`,
-          `Dev Absorption: ${(b.devAbsorptionRate * 100).toFixed(1)}%`,
-          `Recurrent Absorption: ${(b.recurrentAbsorptionRate * 100).toFixed(1)}%`,
+          `Development: KES ${b.developmentBudget.toLocaleString()} (${totalDev.toFixed(1)}% of total)`,
+          `Recurrent: KES ${b.recurrentBudget.toLocaleString()} (${totalRec.toFixed(1)}% of total)`,
+          `Dev Absorption: ${b.devAbsorptionRate.toFixed(1)}%`,
+          `Recurrent Absorption: ${b.recurrentAbsorptionRate.toFixed(1)}%`,
           `Own-Source Revenue: KES ${b.ownSourceRevenue.toLocaleString()}`,
           `Pending Bills: KES ${b.pendingBills.toLocaleString()}`,
         ].join('\n');
