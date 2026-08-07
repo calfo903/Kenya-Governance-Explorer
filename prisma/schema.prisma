@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -13,8 +12,8 @@ datasource db {
 // ═══════════════════════════════════════════════════════════════════
 
 model County {
-  id             String   @id @unique // e.g. "001"
-  name           String   // e.g. "Mombasa"
+  id             String   @id @unique
+  name           String
   code           String   @unique
   region         String
   capital        String
@@ -25,7 +24,6 @@ model County {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  // Relations
   governor      Governor?
   leadership    CountyLeadership?
   auditRecords  CountyAuditRecord[]
@@ -50,7 +48,6 @@ model Governor {
 model CountyLeadership {
   id              String  @id @default(uuid())
   countyCode      String  @unique
-
   deputyGovernor  String?
   senator         String?
   womanRep        String?
@@ -94,7 +91,7 @@ model CountyAuditRecord {
   financialYear    String
   executiveOpinion String?
   assemblyOpinion  String?
-  keyFindings      String // JSON array stored as text for SQLite compatibility
+  keyFindings      String
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -184,9 +181,7 @@ model CitizenTip {
   @@index([createdAt])
 }
 
-// ═══════════════════════════════════════════════════════════════════
 // Authentication & Download Tracking
-// ═══════════════════════════════════════════════════════════════════
 
 model User {
   id           String   @id @default(uuid())
