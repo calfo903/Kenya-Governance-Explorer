@@ -1,72 +1,96 @@
-# Production Vercel Deployment Guide — Upgraded Kenya County Governance Explorer
-**Step-by-step instructions to deploy your newly customized, high-security, dynamic-routed Next.js 16 app onto Vercel.**
+# Production Vercel Deployment Guide - Kenya County Governance Explorer
 
-Since we have upgraded the platform with **Asymmetric Cryptography, Merkle-Ledgers, dynamic routes, and live API integrations**, this guide outlines how to configure your production Vercel project successfully.
+Step-by-step instructions to deploy your customized Next.js 16 app onto Vercel with Supabase.
 
 ---
 
-## 🚀 Step 1: Push Your Local Upgrades to GitHub
-Make sure all our newly implemented features, routes, and optimizations are committed and pushed to your GitHub repository:
+## Step 1: Push Your Changes to GitHub
+Make sure all your changes are committed and pushed:
+
 ```bash
 git add .
-git commit -m "feat: upgrade to public-key cryptography, dynamic routing, Merkle ledger, and USSD gateway"
+git commit -m "feat: add whistleblower and tip components, fix build errors"
 git push origin main
 ```
 
 ---
 
-## ☁️ Step 2: Initialize Your Vercel Project
-1.  Go to your **[Vercel Dashboard](https://vercel.com/new)** and click **Add New** $\rightarrow$ **Project**.
-2.  Import your repository: **`calfo903/Kenya-Governance-Explorer`** (or your matching fork).
-3.  Vercel will automatically detect **Next.js** as the framework.
-4.  Leave the **Root Directory** as `.` (root).
+## Step 2: Initialize Your Vercel Project
+1. Go to https://vercel.com/new
+2. Click Add New -> Project
+3. Import calfo903/Kenya-Governance-Explorer
+4. Vercel will auto-detect Next.js
+5. Root Directory: .
 
 ---
 
-## 🔒 Step 3: Configure Your Production Environment Variables
-In **Project Settings $\rightarrow$ Environment Variables**, configure the following variables. 
+## Step 3: Configure Environment Variables
+In Project Settings -> Environment Variables:
 
-| Variable Name | Recommended Value | Purpose |
-| :--- | :--- | :--- |
-| `DATABASE_URL` | `file:./db/custom.db` *or* Postgres URL (e.g. Supabase / Neon) | Stores citizen tips, stories, and custom budgets. |
-| `ADMIN_DECRYPTION_TOKEN` | `kenya-governance-ombudsman-seckey-2026` *(or custom random string)* | Secures the unredacted whistleblower retrieval endpoint. |
-| `INGESTION_SECRET_KEY` | `kenya-governance-explorer-secret-ingest-token-2026` | Protects the OAG and CoB continuous data pipeline webhook. |
-| `OPENROUTER_API_KEY` | *Your OpenRouter API Key* (from [openrouter.ai](https://openrouter.ai/keys)) | Powers the 12 AI tools (budget anomalies, PIL writers). |
-| `OPENAI_API_KEY` | *Your OpenAI API Key* (from [platform.openai.com](https://platform.openai.com)) | Powers real Swahili voice transcription (Whisper-1). |
-| `AFRICAS_TALKING_API_KEY` | *Your Africa's Talking API Key* (optional) | Sends real SMS alerts and handles USSD menus. |
-| `AFRICAS_TALKING_USERNAME` | *Your Africa's Talking Username* (optional) | Authenticates real USSD/SMS callbacks. |
+| Variable | Value | Purpose |
+|---|---|---|
+| DATABASE_URL | Your Supabase Postgres URL | Database connection |
+| ADMIN_DECRYPTION_TOKEN | Generate random string | Secures decryption endpoint |
+| INGESTION_SECRET_KEY | Generate random string | Protects data pipeline |
+| OPENROUTER_API_KEY | From openrouter.ai/keys | Powers AI tools |
+| JWT_SECRET | openssl rand -hex 32 | Required for JWT authentication |
 
-> **⚠️ Database Portability Note on Vercel:** 
-> Vercel's serverless environment is **stateless and read-only** for local files. If you use SQLite (`file:./db/custom.db`), database modifications (like newly submitted whistleblower tips or citizen budget recommendations) will be reset every time your serverless function spins down. 
-> For **production write-concurrency**, change your Prisma provider to **PostgreSQL** (e.g., [Supabase](https://supabase.com) or [Neon](https://neon.tech)) in your database dashboard.
+Note: Vercel serverless environment is stateless and read-only for local files. Use PostgreSQL (Supabase or Neon) instead of SQLite for production.
 
 ---
 
-## 🏗️ Step 4: Build & Deployment Commands
-Your project's `vercel.json` is already perfectly optimized! Vercel will automatically read it and run:
-*   **Build Command:** `npx prisma generate && next build`
-*   **Install Command:** `npm install`
+## Step 4: Build and Deployment
+Your vercel.json is configured with:
+- Build Command: npx prisma generate && next build
+- Install Command: npm install
 
-Click **Deploy**! Within 2–3 minutes, Vercel will compile the NextJS App Router, generate the standalone static assets, build the Prisma client, and publish your production deployment URL (e.g., `https://kenya-governance-explorer.vercel.app`).
+Click Deploy! Within 2-3 minutes, Vercel will compile the Next.js App Router, generate the Prisma client, and publish your production deployment.
 
 ---
 
-## 🔍 Step 5: Post-Deployment Verification (Smoke Tests)
-Once deployed, verify your real-world systems are operational by visiting these paths:
+## Step 5: Post-Deployment Verification
+Verify your deployment:
+1. Dynamic Routing: Visit /summary, /whistleblower, /adminDecrypt
+2. Integrity Hub: Visit /integrityHub to test whistleblower and tip forms
+3. API Endpoints: Test /api/health, /api/counties, /api/budget
+4. AI Features: Test /api/ai/chat with a message
 
-1.  **Dynamic Web Routing:** Visit `https://your-domain.com/summary`, `https://your-domain.com/whistleblower`, or `https://your-domain.com/adminDecrypt`. Refreshing the page or clicking browser back/forward buttons should transition seamlessly.
-2.  **Continuous Ingestion Webhook:** Trigger a data pipeline upload using a tool like Postman or Curl:
-    ```bash
-    curl -X POST https://your-domain.com/api/db/ingest \
-      -H "Content-Type: application/json" \
-      -d '{
-        "secretKey": "kenya-governance-explorer-secret-ingest-token-2026",
-        "countyData": {
-          "code": "047", "name": "Nairobi", "region": "Nairobi", "capital": "Nairobi",
-          "population": 4397073, "areaSqKm": 696, "constituencies": 17, "wards": 85
-        }
-      }'
-    ```
-3.  **End-to-End Cryptography:** 
-    *   Open `/whistleblower` on your deployed site, submit an asymmetrically encrypted report, and copy the transaction hash.
-    *   Navigate to `/adminDecrypt`, enter your generated private key, and load the registers to watch the local in-browser WebCrypto engine safely decrypt the real database-fetched tip!
+---
+
+## Troubleshooting
+
+### Build Error: Module not found
+If you see Can not resolve errors:
+- Can not resolve @/components/whistleblower-page
+- Can not resolve @/components/anonymous-tip-page
+- Can not resolve jose
+
+Ensure these files exist:
+- src/components/whistleblower-page.tsx
+- src/components/anonymous-tip-page.tsx
+- package.json (with jose dependency)
+
+### Prisma Schema Error (P1012)
+If you see: The datasource property url is no longer supported
+
+Downgrade to Prisma 6.11.1:
+```bash
+npm install prisma@6.11.1 @prisma/client@6.11.1
+```
+
+### npm install fails
+Delete node_modules and try again:
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+---
+
+## Deployment Checklist
+- All files committed to main branch
+- package.json has jose dependency
+- package.json has prisma@6.11.1
+- Environment variables configured in Vercel
+- Build completes without errors
+- Smoke tests pass
