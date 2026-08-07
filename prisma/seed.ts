@@ -12,9 +12,7 @@ import { countyAuditData } from '../src/data/county-audit-data';
 import { countyBudgetData } from '../src/data/county-budget-data';
 import { countyProjects } from '../src/data/county-projects';
 
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL,
-});
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding Kenya Governance Explorer database...');

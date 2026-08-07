@@ -10,9 +10,7 @@
 import { PrismaClient } from '@prisma/client';
 import { countyProjects } from '../src/data/county-projects';
 
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL,
-});
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding real county projects...');
