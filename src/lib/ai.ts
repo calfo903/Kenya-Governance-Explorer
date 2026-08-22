@@ -106,6 +106,10 @@ export async function chatCompletion(
   }
 
   // Fallback: z-ai-web-dev-sdk
+  // ⚠ Only fires when OPENROUTER_API_KEY is unset. z-ai-web-dev-sdk is a
+  // third-party SDK (npm: futurescv/z-ai-web-dev-sdk) with limited public docs.
+  // Always set OPENROUTER_API_KEY in production so this path is never reached.
+  console.warn('[AI] WARNING: Falling back to z-ai-web-dev-sdk. Set OPENROUTER_API_KEY in production.');
   const zai = await getZAI();
   const messages = [
     { role: 'assistant' as const, content: systemPrompt },
@@ -143,6 +147,10 @@ export async function structuredCompletion<T>(
   }
 
   // Fallback: z-ai-web-dev-sdk
+  // ⚠ Only fires when OPENROUTER_API_KEY is unset. z-ai-web-dev-sdk is a
+  // third-party SDK (npm: futurescv/z-ai-web-dev-sdk) with limited public docs.
+  // Always set OPENROUTER_API_KEY in production so this path is never reached.
+  console.warn('[AI] WARNING: Falling back to z-ai-web-dev-sdk. Set OPENROUTER_API_KEY in production.');
   const zai = await getZAI();
   const sys = systemPrompt + '\n\nIMPORTANT: Respond with valid JSON only. No markdown, no code fences, no extra text.';
   const messages = [

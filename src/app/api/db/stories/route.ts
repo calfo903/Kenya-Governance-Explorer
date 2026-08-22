@@ -5,7 +5,8 @@
  * GET: List stories with pagination, filter by county/sector/status
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
 import {
   StoryCreateSchema, DbStoryQuerySchema,
@@ -63,8 +64,11 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const start = performance.now();
+
+  const rl = rateLimit(request, { maxRequests: 10, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   const parsed = await validateBody(request, StoryCreateSchema);
   if (!parsed.success) return parsed.response;
