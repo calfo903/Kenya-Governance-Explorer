@@ -18,7 +18,8 @@ export async function GET() {
     const governors = (await import('@/data/governors')).all47Governors;
     dataChecks.push({ name: 'governors', status: 'ok', latencyMs: Date.now() - t0 });
     if (governors.length !== 47) dataStatus = 'degraded';
-  } catch {
+  } catch (err) {
+    console.error('Health check failed for governors:', err instanceof Error ? err.message : 'Unknown error');
     dataStatus = 'degraded';
     dataChecks.push({ name: 'governors', status: 'error', latencyMs: 0 });
   }
@@ -28,7 +29,8 @@ export async function GET() {
     const auditData = (await import('@/data/county-audit-data')).countyAuditData;
     dataChecks.push({ name: 'audit-data', status: 'ok', latencyMs: Date.now() - t0 });
     if (auditData.length === 0) dataStatus = 'degraded';
-  } catch {
+  } catch (err) {
+    console.error('Health check failed for audit-data:', err instanceof Error ? err.message : 'Unknown error');
     dataStatus = 'degraded';
     dataChecks.push({ name: 'audit-data', status: 'error', latencyMs: 0 });
   }
@@ -38,7 +40,8 @@ export async function GET() {
     const budgetData = (await import('@/data/county-budget-data')).countyBudgetData;
     dataChecks.push({ name: 'budget-data', status: 'ok', latencyMs: Date.now() - t0 });
     if (budgetData.length === 0) dataStatus = 'degraded';
-  } catch {
+  } catch (err) {
+    console.error('Health check failed for budget-data:', err instanceof Error ? err.message : 'Unknown error');
     dataStatus = 'degraded';
     dataChecks.push({ name: 'budget-data', status: 'error', latencyMs: 0 });
   }

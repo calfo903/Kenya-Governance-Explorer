@@ -240,7 +240,8 @@ export async function validateBody<T extends z.ZodType>(
   let body: unknown;
   try {
     body = await request.json();
-  } catch {
+  } catch (err) {
+    console.error('JSON parsing failed:', err instanceof Error ? err.message : 'Unknown error');
     return {
       success: false,
       response: Response.json(

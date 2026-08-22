@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, scrypt, timingSafeEqual } from "crypto";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -9,7 +9,7 @@ if (!JWT_SECRET_RAW && process.env.NODE_ENV === "production") {
   throw new Error("JWT_SECRET environment variable is required in production");
 }
 export const JWT_SECRET = new TextEncoder().encode(
-  JWT_SECRET_RAW ?? randomBytes(32).toString("hex"),
+  JWT_SECRET_RAW ?? (process.env.NODE_ENV === "development" ? randomBytes(32).toString("hex") : ""),
 );
 const JWT_ALG = "HS256";
 const TOKEN_EXPIRY = "7d";
@@ -29,8 +29,7 @@ export async function hashPassword(password: string): Promise<string> {
       reject(new Error('Password hashing timed out'));
     }, SCRYPT_TIMEOUT);
     
-    const { scrypt } = require("crypto");
-    scrypt(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err: Error, derivedKey: Buffer) => {
+    scrypt(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err: Error | null, derivedKey: Buffer) => {
       clearTimeout(timeoutId);
       if (err) reject(err);
       else resolve(`${salt.toString("hex")}:${derivedKey.toString("hex")}`);
@@ -48,14 +47,14 @@ export async function verifyPassword(password: string, stored: string): Promise<
       reject(new Error('Password verification timed out'));
     }, SCRYPT_TIMEOUT);
     
-    const { scrypt } = require("crypto");
-    scrypt(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err: Error, derivedKey: Buffer) => {
+    scrypt(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err: Error | null, derivedKey: Buffer) => {
       clearTimeout(timeoutId);
       if (err) reject(err);
       else {
         try {
           resolve(timingSafeEqual(derivedKey, expected));
-        } catch {
+        } catch (err) {
+          console.error('Password verification comparison failed:', err instanceof Error ? err.message : 'Unknown error');
           resolve(false);
         }
       }
@@ -83,7 +82,8 @@ export async function verifyToken(token: string): Promise<TokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET, { algorithms: [JWT_ALG] });
     return payload as unknown as TokenPayload;
-  } catch {
+  } catch (err) {
+    console.error('Token verification failed:', err instanceof Error ? err.message : 'Unknown error');
     return null;
   }
 }
@@ -137,7 +137,8 @@ export function validateDownloadUrl(raw: string): { error: string | null; url: U
   let parsed: URL;
   try {
     parsed = new URL(raw);
-  } catch {
+  } catch (err) {
+    console.error('URL parsing failed:', err instanceof Error ? err.message : 'Unknown error');
     return { error: "Malformed URL", url: null };
   }
 

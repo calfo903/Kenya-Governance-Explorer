@@ -61,7 +61,8 @@ export async function GET(request: Request) {
         } else if (parsed.rawDescription) {
           descriptionPreview = parsed.rawDescription;
         }
-      } catch {
+      } catch (err) {
+        console.error('Tip description parsing failed:', err instanceof Error ? err.message : 'Unknown error');
         // Legacy plain description fallback
       }
 
@@ -126,7 +127,8 @@ export async function POST(request: Request) {
           // If the last tip didn't have a merkle hash parameter (legacy tip), compute its SHA-256
           previousHash = crypto.createHash('sha256').update(previousTip.description).digest('hex');
         }
-      } catch {
+      } catch (err) {
+        console.error('Merkle hash computation failed:', err instanceof Error ? err.message : 'Unknown error');
         previousHash = crypto.createHash('sha256').update(previousTip.description).digest('hex');
       }
     }
@@ -150,7 +152,8 @@ export async function POST(request: Request) {
           chainSecure: true
         });
       }
-    } catch {
+    } catch (err) {
+      console.error('Tip JSON parsing failed:', err instanceof Error ? err.message : 'Unknown error');
       // It's plain text description, package it into a JSON block to support chaining
     }
 

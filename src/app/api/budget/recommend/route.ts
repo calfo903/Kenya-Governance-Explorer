@@ -113,7 +113,8 @@ export async function GET(request: Request) {
           }
           parsedCount++;
         }
-      } catch {
+      } catch (err) {
+        console.error('Budget recommendation parsing failed:', err instanceof Error ? err.message : 'Unknown error');
         // Skip malformed records
       }
     }

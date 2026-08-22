@@ -55,7 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data.authenticated && data.user) {
           setUser(data.user);
         }
-      } catch {
+      } catch (err) {
+        console.error('Session check failed:', err instanceof Error ? err.message : 'Unknown error');
         setUser(null);
       } finally {
         if (!cancelled) setIsLoading(false);

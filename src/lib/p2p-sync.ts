@@ -31,7 +31,7 @@ export interface SyncPayload {
   type: 'SYNC_OFFER' | 'SYNC_REQUEST' | 'SYNC_DATA' | 'STATE_HASH_VECTOR';
   senderPeerId: string;
   vector: SyncStateVector;
-  payloadData?: any;
+  payloadData?: unknown;
 }
 
 export class P2PDataSyncCoordinator {
@@ -39,7 +39,7 @@ export class P2PDataSyncCoordinator {
   private dataChannel: RTCDataChannel | null = null;
   private peerId: string;
   private localVector: SyncStateVector = {};
-  private connectionTimeout: NodeJS.Timeout | null = null;
+  private connectionTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly CONNECTION_TIMEOUT_MS = 30_000; // 30 second connection timeout
 
   constructor(peerId: string) {
@@ -62,7 +62,8 @@ export class P2PDataSyncCoordinator {
         };
         localStorage.setItem('kenya_gov_sync_vector', JSON.stringify(this.localVector));
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to initialize vector clock:', err instanceof Error ? err.message : 'Unknown error');
       this.localVector = {};
     }
   }
