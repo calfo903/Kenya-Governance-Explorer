@@ -4,6 +4,23 @@
  * Employs raw browser-native WebRTC RTCPeerConnection and RTCDataChannel APIs
  * to coordinate decentralized peer-to-peer data sync directly between active citizen browser tabs.
  * Synchronizes county scorecard metrics and whistleblower hashes without centralized servers.
+ * 
+ * ⚠️ PRODUCTION WARNINGS:
+ * - This implementation is NOT production-ready for the following reasons:
+ *   1. No signaling server - offer/answer exchange requires external WebSocket infrastructure
+ *   2. No authentication - any peer can connect and exchange data
+ *   3. No encryption - data channel messages are not encrypted beyond DTLS
+ *   4. No conflict resolution - simple timestamp-based merging may lose data
+ *   5. No peer verification - vulnerable to man-in-the-middle attacks
+ *   6. No connection pooling - creates new connections for each sync session
+ * 
+ * RECOMMENDED IMPROVEMENTS FOR PRODUCTION:
+ * - Implement proper signaling server with WebSocket or Socket.IO
+ * - Add peer authentication using JWT or certificate-based auth
+ * - Implement end-to-end encryption for sensitive payloads
+ * - Add CRDT (Conflict-free Replicated Data Types) for robust conflict resolution
+ * - Implement ICE candidate trickle for faster connection establishment
+ * - Add connection heartbeat and automatic reconnection logic
  */
 
 export interface SyncStateVector {
@@ -22,6 +39,8 @@ export class P2PDataSyncCoordinator {
   private dataChannel: RTCDataChannel | null = null;
   private peerId: string;
   private localVector: SyncStateVector = {};
+  private connectionTimeout: NodeJS.Timeout | null = null;
+  private readonly CONNECTION_TIMEOUT_MS = 30_000; // 30 second connection timeout
 
   constructor(peerId: string) {
     this.peerId = peerId;

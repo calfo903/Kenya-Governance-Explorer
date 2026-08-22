@@ -3,8 +3,13 @@ import { createHash, randomBytes, timingSafeEqual } from "crypto";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? randomBytes(32).toString("hex"),
+// CRITICAL: JWT_SECRET must be set in production - no fallback allowed
+const JWT_SECRET_RAW = process.env.JWT_SECRET;
+if (!JWT_SECRET_RAW && process.env.NODE_ENV === "production") {
+  throw new Error("JWT_SECRET environment variable is required in production");
+}
+export const JWT_SECRET = new TextEncoder().encode(
+  JWT_SECRET_RAW ?? randomBytes(32).toString("hex"),
 );
 const JWT_ALG = "HS256";
 const TOKEN_EXPIRY = "7d";
@@ -15,14 +20,20 @@ const SCRYPT_KEYLEN = 64;
 const SCRYPT_COST = 16384;
 const SCRYPT_BLOCK_SIZE = 8;
 const SCRYPT_PARALLEL = 1;
+const SCRYPT_TIMEOUT = 5_000; // 5 second timeout for password hashing
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16);
   return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error('Password hashing timed out'));
+    }, SCRYPT_TIMEOUT);
+    
     const { scrypt } = require("crypto");
     scrypt(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err: Error, derivedKey: Buffer) => {
+      clearTimeout(timeoutId);
       if (err) reject(err);
-      resolve(`${salt.toString("hex")}:${derivedKey.toString("hex")}`);
+      else resolve(`${salt.toString("hex")}:${derivedKey.toString("hex")}`);
     });
   });
 }
@@ -33,13 +44,20 @@ export async function verifyPassword(password: string, stored: string): Promise<
   const salt = Buffer.from(saltHex, "hex");
   const expected = Buffer.from(hashHex, "hex");
   return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error('Password verification timed out'));
+    }, SCRYPT_TIMEOUT);
+    
     const { scrypt } = require("crypto");
     scrypt(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err: Error, derivedKey: Buffer) => {
+      clearTimeout(timeoutId);
       if (err) reject(err);
-      try {
-        resolve(timingSafeEqual(derivedKey, expected));
-      } catch {
-        resolve(false);
+      else {
+        try {
+          resolve(timingSafeEqual(derivedKey, expected));
+        } catch {
+          resolve(false);
+        }
       }
     });
   });
@@ -74,18 +92,27 @@ export async function verifyToken(token: string): Promise<TokenPayload | null> {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN = 8;
+const PASSWORD_MAX = 128; // Prevent DoS via extremely long passwords
 
 export function validateEmail(email: string): string | null {
   const trimmed = email.trim().toLowerCase();
   if (!EMAIL_RE.test(trimmed)) return "Invalid email address";
   if (trimmed.length > 254) return "Email too long";
+  // Additional check: ensure domain has at least one dot and valid TLD
+  const domain = trimmed.split('@')[1];
+  if (!domain || !domain.includes('.') || domain.endsWith('.')) {
+    return "Invalid email domain";
+  }
   return null;
 }
 
 export function validatePassword(password: string): string | null {
   if (password.length < PASSWORD_MIN) return `Password must be at least ${PASSWORD_MIN} characters`;
+  if (password.length > PASSWORD_MAX) return `Password must not exceed ${PASSWORD_MAX} characters`;
   if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
   if (!/[0-9]/.test(password)) return "Password must contain at least one number";
+  if (!/[a-z]/.test(password)) return "Password must contain at least one lowercase letter";
+  if (!/[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\;'`~]/.test(password)) return "Password must contain at least one special character";
   return null;
 }
 

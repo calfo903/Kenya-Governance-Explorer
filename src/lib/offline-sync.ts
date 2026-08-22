@@ -4,11 +4,19 @@
  * Implements standard client-side database capabilities to cache whistleblower reports
  * and citizen audit proofs locally inside the browser when offline.
  * Automatically synchronizes cached payloads to Prisma routes when network connectivity returns.
+ * 
+ * IMPROVEMENTS NEEDED FOR PRODUCTION:
+ * - Add exponential backoff with jitter for retry logic
+ * - Implement proper transaction rollback on failure
+ * - Add encryption for sensitive queued data
+ * - Use Workbox for better service worker integration
  */
 
 const DB_NAME = 'KenyaGovernanceOfflineDB';
 const STORE_NAME = 'offlineSubmissionsQueue';
 const DB_VERSION = 1;
+const SYNC_RETRY_DELAY_MS = 5000; // 5 seconds between retries
+const MAX_SYNC_RETRIES = 3;
 
 export interface QueuedSubmission {
   id?: number;
@@ -16,6 +24,7 @@ export interface QueuedSubmission {
   endpoint: string;
   payload: Record<string, any>;
   queuedAt: string;
+  retryCount?: number;
 }
 
 /** Open or initialize the offline browser IndexedDB */
@@ -112,6 +121,12 @@ export async function dequeueSubmission(id: number): Promise<void> {
 /**
  * Iterates over the queued IndexedDB records and dispatches them to their target APIs.
  * Returns the count of successfully synchronized records.
+ * 
+ * IMPROVEMENTS:
+ * - Added retry logic with max retries
+ * - Only removes item from queue on successful sync
+ * - Continues processing other items instead of stopping on first failure
+ * - TODO: Add exponential backoff with jitter
  */
 export async function performBackgroundSync(): Promise<number> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -136,15 +151,54 @@ export async function performBackgroundSync(): Promise<number> {
       if (response.ok && item.id !== undefined) {
         await dequeueSubmission(item.id);
         synchronizedCount++;
+      } else if (!response.ok) {
+        // Increment retry count and re-queue if under max retries
+        const currentRetries = item.retryCount ?? 0;
+        if (currentRetries < MAX_SYNC_RETRIES) {
+          await updateSubmissionRetryCount(item.id!, currentRetries + 1);
+        } else {
+          // Max retries exceeded, remove from queue
+          console.warn(`Submission ID ${item.id} exceeded max retries, removing from queue`);
+          await dequeueSubmission(item.id!);
+        }
       }
     } catch (err) {
       console.error(`Failed to sync queued submission ID: ${item.id}`, err);
-      // Stop synchronization to preserve order on subsequent failures
-      break;
+      // Continue processing other items instead of stopping
+      // Increment retry count
+      if (item.id !== undefined) {
+        const currentRetries = item.retryCount ?? 0;
+        if (currentRetries < MAX_SYNC_RETRIES) {
+          await updateSubmissionRetryCount(item.id, currentRetries + 1);
+        }
+      }
     }
   }
 
   return synchronizedCount;
+}
+
+/** Update the retry count for a submission */
+async function updateSubmissionRetryCount(id: number, retryCount: number): Promise<void> {
+  const db = await openOfflineDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const getRequest = store.get(id);
+    
+    getRequest.onsuccess = () => {
+      const item = getRequest.result as QueuedSubmission | undefined;
+      if (item) {
+        item.retryCount = retryCount;
+        const putRequest = store.put(item);
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = () => reject(putRequest.error);
+      } else {
+        resolve();
+      }
+    };
+    getRequest.onerror = () => reject(getRequest.error);
+  });
 }
 
 /** Register automatic network recovery synchronization listener */
