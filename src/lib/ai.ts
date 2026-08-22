@@ -20,9 +20,9 @@ async function getZAI() {
   return _zai;
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
 // LLM HELPERS
-// ═══════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
 
 const GOVERNANCE_SYSTEM = `You are an expert on Kenya's county governance system (2010 Constitution, devolution, 47 counties).
 You understand: budgets, audits, CECMs, MCAs, governors, senators, women reps, county assemblies, procurement, devolution milestones.
@@ -79,8 +79,16 @@ async function openRouterChat(
   }
 
   const data: OpenRouterResponse = await res.json();
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error('OpenRouter returned empty response.');
+
+  // Be defensive about the response shape
+  const content = data?.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+    ? data.choices[0].message.content
+    : null;
+
+  if (!content) {
+    // Include the full response body for diagnostics in server logs
+    throw new Error('OpenRouter returned empty response.');
+  }
   return content;
 }
 
@@ -136,7 +144,12 @@ export async function structuredCompletion<T>(
       const raw = await openRouterChat(messages);
       // Strip markdown fences if present
       const cleaned = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '').trim();
-      return JSON.parse(cleaned) as T;
+      try {
+        return JSON.parse(cleaned) as T;
+      } catch (err: any) {
+        console.error('[AI] Failed to parse JSON from OpenRouter structured response', { error: String(err), raw: raw.slice(0, 200) });
+        throw new Error('Failed to parse structured JSON from OpenRouter response.');
+      }
     } catch (err) {
       console.error('[AI] OpenRouter structured failed, falling back to z-ai:', err);
     }
@@ -157,12 +170,17 @@ export async function structuredCompletion<T>(
   const raw = completion.choices[0]?.message?.content ?? '{}';
   // Strip markdown fences if present
   const cleaned = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '').trim();
-  return JSON.parse(cleaned) as T;
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch (err: any) {
+    console.error('[AI] Failed to parse JSON from z-ai structured response', { error: String(err), raw: raw.slice(0, 200) });
+    throw new Error('Failed to parse structured JSON from z-ai response.');
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
 // WEB SEARCH HELPERS (z-ai-web-dev-sdk)
-// ═══════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
 
 export interface SearchResult {
   url: string;
@@ -176,8 +194,14 @@ export interface SearchResult {
 
 export async function webSearch(query: string, num = 10): Promise<SearchResult[]> {
   const zai = await getZAI();
-  const results = await zai.functions.invoke('web_search', { query, num });
-  return (results ?? []) as SearchResult[];
+  try {
+    const results = await zai.functions.invoke('web_search', { query, num });
+    if (!results || !Array.isArray(results)) return [];
+    return results as SearchResult[];
+  } catch (err) {
+    console.error('[AI] webSearch failed', err);
+    return [];
+  }
 }
 
 export async function searchAndSummarize(query: string): Promise<{
