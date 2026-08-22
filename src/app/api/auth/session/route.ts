@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
       authenticated: true,
       user: { id: payload.sub, email: payload.email, name: payload.name },
     });
-  } catch {
+  } catch (err) {
+    console.error('Session verification failed:', err instanceof Error ? err.message : 'Unknown error');
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
 }

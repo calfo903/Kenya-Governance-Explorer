@@ -4,6 +4,9 @@
  * Limits each IP to `maxRequests` calls within `windowMs`.
  * For production at scale, replace the Map with Upstash Redis +
  * @upstash/ratelimit — the interface below stays the same.
+ * 
+ * NOTE: This in-memory implementation is NOT suitable for serverless/edge deployments
+ * as each instance maintains its own separate state. Use Redis for distributed environments.
  *
  * Usage:
  *   const result = rateLimit(request, { maxRequests: 10, windowMs: 60_000 });
@@ -74,7 +77,7 @@ export function rateLimit(
   win.timestamps = win.timestamps.filter((t) => t > cutoff);
 
   if (win.timestamps.length >= maxRequests) {
-    const oldestInWindow = win.timestamps[0];
+    const oldestInWindow = win.timestamps[0] ?? now;
     store.set(key, win);
     return {
       allowed: false,
@@ -95,13 +98,13 @@ export function rateLimit(
 
 /** Returns a 429 JSON response with standard Retry-After header. */
 export function rateLimitResponse(result: RateLimitResult): NextResponse {
-  const retryAfterSec = Math.ceil((result.resetAt - Date.now()) / 1000);
+  const retryAfterSec = Math.max(Math.ceil((result.resetAt - Date.now()) / 1000), 1);
   return NextResponse.json(
     { success: false, error: 'Too many requests. Please wait before trying again.' },
     {
       status: 429,
       headers: {
-        'Retry-After': String(Math.max(retryAfterSec, 1)),
+        'Retry-After': String(retryAfterSec),
         'X-RateLimit-Remaining': '0',
         'X-RateLimit-Reset': String(result.resetAt),
       },

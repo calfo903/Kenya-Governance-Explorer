@@ -81,7 +81,8 @@ export async function GET(request: NextRequest) {
         fileSize: contentLength,
       },
     });
-  } catch {
+  } catch (err) {
+    console.error('Download tracking failed:', err instanceof Error ? err.message : 'Unknown error');
     // Non-critical: don't block download on tracking failure
   }
 

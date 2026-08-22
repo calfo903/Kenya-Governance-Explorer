@@ -1,72 +1,42 @@
-# dependencies
-node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+```
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+.npm/
 
-# testing
-/coverage
+# Build outputs
+dist/
+build/
+.next/
+out/
+.nuxt/
+public/build/
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-*.key
-
-# debug
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-*.log
-dev.log
-dev.out.log
-server.log
 
-# env files — NEVER commit real secrets
-.env
+# Environment variables
 .env.local
-.env.*.local
-.env.development
-.env.production
-.env.staging
-!.env.example
+.env.development.local
+.env.test.local
+.env.production.local
 
-# vercel
-.vercel
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# local / agent / tools
-local-*
-.claude
-.z-ai-config
-test
-prompt
-/skills/
-.zscripts/dev.pid
-
-# agent/dev artifacts — not part of the project
-/tool-results/
-/agent-ctx/
-/worklog.md
-/download/
-/main-page-sidebar.png
-
-# SQLite database — generated at runtime, not committed
-/db/*.db
-
-# OS
+# OS generated files
+.DS_Store
 Thumbs.db
+
+# Coverage
+coverage/
+.nyc_output/
+istanbul/
+```

@@ -11,6 +11,7 @@ import ZAI from 'z-ai-web-dev-sdk';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_MODEL = 'google/gemini-2.5-flash-preview';
+const AI_REQUEST_TIMEOUT = 30_000; // 30 seconds timeout for AI requests
 
 // z-ai-web-dev-sdk singleton
 let _zai: Awaited<ReturnType<typeof ZAI.create>> | null = null;
@@ -57,31 +58,39 @@ async function openRouterChat(
   messages: OpenRouterMessage[],
   model = DEFAULT_MODEL,
 ): Promise<string> {
-  const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://kenya-governance-explorer.vercel.app',
-      'X-Title': 'Kenya Governance Explorer',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: 2048,
-      temperature: 0.7,
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), AI_REQUEST_TIMEOUT);
 
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`OpenRouter API error (${res.status}): ${errBody}`);
+  try {
+    const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://kenya-governance-explorer.vercel.app',
+        'X-Title': 'Kenya Governance Explorer',
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        max_tokens: 2048,
+        temperature: 0.7,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      throw new Error(`OpenRouter API error (${res.status}): ${errBody}`);
+    }
+
+    const data: OpenRouterResponse = await res.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error('OpenRouter returned empty response.');
+    return content;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data: OpenRouterResponse = await res.json();
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error('OpenRouter returned empty response.');
-  return content;
 }
 
 // ─── Unified chatCompletion (OpenRouter primary, z-ai fallback) ──
