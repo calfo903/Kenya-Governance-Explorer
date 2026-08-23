@@ -86,5 +86,5 @@ async function staleWhileRevalidate(req, cacheName) {
     if (res.ok) cache.put(req, res.clone());
     return res;
   }).catch(() => cached);
-  return cached || fetchPromise;
+  return cached || fetchPromise || new Response('Offline', { status: 503 });
 }

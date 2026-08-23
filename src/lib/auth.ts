@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, timingSafeEqual, scrypt as scryptCb } from "crypto";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -22,13 +22,13 @@ const SCRYPT_PARALLEL = 1;
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16);
-  return new Promise((resolve, reject) => {
-    const { scrypt } = require("crypto");
-    scrypt(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err: Error, derivedKey: Buffer) => {
+  const derivedKey: Buffer = await new Promise((resolve, reject) => {
+    scryptCb(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err, derived) => {
       if (err) reject(err);
-      resolve(`${salt.toString("hex")}:${derivedKey.toString("hex")}`);
+      else resolve(derived as Buffer);
     });
   });
+  return `${salt.toString("hex")}:${derivedKey.toString("hex")}`;
 }
 
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
@@ -36,17 +36,17 @@ export async function verifyPassword(password: string, stored: string): Promise<
   if (!saltHex || !hashHex) return false;
   const salt = Buffer.from(saltHex, "hex");
   const expected = Buffer.from(hashHex, "hex");
-  return new Promise((resolve, reject) => {
-    const { scrypt } = require("crypto");
-    scrypt(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err: Error, derivedKey: Buffer) => {
+  const derivedKey: Buffer = await new Promise((resolve, reject) => {
+    scryptCb(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST, r: SCRYPT_BLOCK_SIZE, p: SCRYPT_PARALLEL }, (err, derived) => {
       if (err) reject(err);
-      try {
-        resolve(timingSafeEqual(derivedKey, expected));
-      } catch {
-        resolve(false);
-      }
+      else resolve(derived as Buffer);
     });
   });
+  try {
+    return timingSafeEqual(derivedKey, expected);
+  } catch {
+    return false;
+  }
 }
 
 // ─── JWT Token ────────────────────────────────────────────────────────────────
