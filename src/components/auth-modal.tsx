@@ -27,8 +27,6 @@ export default function AuthModal() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  if (!showAuthModal) return null;
-
   const resetForm = useCallback(() => {
     setName("");
     setEmail("");
@@ -76,6 +74,8 @@ export default function AuthModal() {
     },
     [dismissModal],
   );
+
+  if (!showAuthModal) return null;
 
   return (
     <div

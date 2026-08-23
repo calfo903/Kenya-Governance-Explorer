@@ -79,7 +79,12 @@ export default function AISentimentPage() {
       });
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       const data = await res.json();
-      setResult(data);
+      setResult({
+        sentiment: data.sentiment ?? 'Neutral',
+        summary: data.summary ?? '',
+        themes: data.themes ?? [],
+        sources: data.sources ?? [],
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to analyze sentiment');
     } finally {

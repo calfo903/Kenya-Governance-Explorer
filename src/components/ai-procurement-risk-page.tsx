@@ -87,7 +87,12 @@ export default function AIProcurementRiskPage() {
       });
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       const data = await res.json();
-      setResult(data);
+      setResult({
+        riskLevel: data.riskLevel ?? 'Medium',
+        analysis: data.analysis ?? '',
+        redFlags: data.redFlags ?? [],
+        recommendations: data.recommendations ?? [],
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to analyze risks');
     } finally {

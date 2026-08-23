@@ -59,7 +59,12 @@ export default function AIHansardPage() {
       });
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       const data = await res.json();
-      setResult(data);
+      setResult({
+        summary: data.summary ?? '',
+        keyDebates: data.keyDebates ?? [],
+        keyMotions: data.keyMotions ?? [],
+        sources: data.sources ?? [],
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate summary');
     } finally {
