@@ -46,7 +46,11 @@ export async function POST(request: Request) {
     const { secretKey, countyData, auditRecord, budgetRecord } = body;
 
     // Secure token defense (matching database secret key validation)
-    const secureToken = process.env.INGESTION_SECRET_KEY || 'kenya-governance-explorer-secret-ingest-token-2026';
+    const secureToken = process.env.INGESTION_SECRET_KEY;
+    if (!secureToken) {
+      logger.error('INGESTION_SECRET_KEY not configured.');
+      return NextResponse.json({ success: false, error: 'Ingestion endpoint not configured.' }, { status: 503 });
+    }
     if (secretKey !== secureToken) {
       logger.warn('Unauthorized ingestion attempt blocked.', { countyCode: countyData?.code });
       return NextResponse.json({ success: false, error: 'Unauthorized: Invalid Ingestion Secret Key.' }, { status: 401 });
@@ -81,7 +85,7 @@ export async function POST(request: Request) {
     });
 
     // 2. Insert or update Audit Record
-    let upsertedAudit = null;
+    let upsertedAudit: Awaited<ReturnType<typeof db.countyAuditRecord.update>> | null = null;
     if (auditRecord) {
       // Find matching record to avoid duplicate financial year entries
       const existingAudit = await db.countyAuditRecord.findFirst({
@@ -114,7 +118,7 @@ export async function POST(request: Request) {
     }
 
     // 3. Insert or update Budget Record
-    let upsertedBudget = null;
+    let upsertedBudget: Awaited<ReturnType<typeof db.countyBudgetRecord.update>> | null = null;
     if (budgetRecord) {
       const existingBudget = await db.countyBudgetRecord.findFirst({
         where: {

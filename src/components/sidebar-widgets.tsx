@@ -313,7 +313,7 @@ export function AIInsightsWidget() {
         const res = await fetch('/api/news');
         if (!res.ok) throw new Error('Failed to fetch news');
         const data = await res.json();
-        setNews(Array.isArray(data) ? data.slice(0, 3) : []);
+        setNews(Array.isArray(data?.articles) ? data.articles.slice(0, 3) : []);
         setError(null);
       } catch {
         setError('Unable to load insights');
@@ -409,7 +409,7 @@ interface ProjectVelocityChartProps {
 
 function generateVelocityData() {
   const now = new Date();
-  const months = [];
+  const months: Array<{ month: string; events: number }> = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push({

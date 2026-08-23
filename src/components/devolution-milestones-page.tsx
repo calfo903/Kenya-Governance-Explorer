@@ -587,7 +587,9 @@ export default function DevolutionMilestonesPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
                     <XAxis
                       dataKey="name"
-                      tick={{ fontSize: 9, fill: '#78716c', angle: -45, textAnchor: 'end' }}
+                      tick={{ fontSize: 9, fill: '#78716c' }}
+                      angle={-45}
+                      textAnchor="end"
                       height={55}
                     />
                     <YAxis

@@ -1,4 +1,4 @@
-use client;
+'use client';
 
 import React, { useState, Suspense, lazy } from 'react';
 import { Eye, ShieldCheck, Send } from 'lucide-react';

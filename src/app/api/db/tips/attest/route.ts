@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { createLogger } from '@/lib/api-logger';
 import { badRequest, internalError } from '@/lib/api-errors';
 
@@ -121,8 +122,7 @@ export async function POST(request: Request) {
           blockNumberDecimal: parseInt(blockNumberHex, 16),
           blockNumberHex,
           blockHash,
-          attestationWitnessHash: crypto
-            .createHash('sha256')
+          attestationWitnessHash: createHash('sha256')
             .update(merkleHash + blockHash)
             .digest('hex')
         },

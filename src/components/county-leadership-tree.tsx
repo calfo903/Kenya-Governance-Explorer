@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
-import { getAllLeadership, CountyLeadershipData } from '@/data/county-leadership';
+import { getAllLeadership } from '@/data/county-leadership';
 import { getCountyBudget, CountyBudgetRecord } from '@/data/county-budget-data';
 import { getCountyAuditRecords, CountyAuditRecord } from '@/data/county-audit-data';
 import { getAuditColor, AuditOpinion } from '@/data/types';
@@ -184,14 +184,14 @@ function normalizeLeadershipData(raw: any) {
   };
 }
 
-function generateSampleLeadership(countyCode: string, countyName: string): CountyLeadershipData {
+function generateSampleLeadership(countyCode: string, countyName: string) {
   return {
     countyCode,
     countyName,
     region: 'Sample Region',
-    governor: { fullName: 'Hon. Governor (TBD)', politicalParty: '-', coalition: undefined },
-    deputyGovernor: { fullName: 'Deputy Governor (TBD)' },
-    countySecretary: { fullName: 'County Secretary (TBD)' },
+    governor: { name: 'Hon. Governor (TBD)', party: '-', coalition: '', termStart: '', termEnd: '' },
+    deputyGovernor: { name: 'Deputy Governor (TBD)', party: '-' },
+    countySecretary: { name: 'County Secretary (TBD)' },
     cecMembers: [
       { portfolio: 'Finance', fullName: 'CEC Finance (TBD)' },
       { portfolio: 'Health', fullName: 'CEC Health (TBD)' },
@@ -200,25 +200,25 @@ function generateSampleLeadership(countyCode: string, countyName: string): Count
       { portfolio: 'Agriculture', fullName: 'CEC Agriculture (TBD)' },
     ],
     assembly: {
-      speaker: { fullName: 'Speaker (TBD)' },
+      speaker: { name: 'Speaker (TBD)' },
       wardCount: 30,
     },
-    senator: { fullName: 'Senator (TBD)' },
-    womanRep: { fullName: 'Woman Rep (TBD)' },
+    senator: { name: 'Senator (TBD)', party: '-', coalition: '' },
+    womanRep: { name: 'Woman Rep (TBD)', party: '-', coalition: '' },
     constituencies: [
       {
         name: `${countyName} Central`,
-        mp: { fullName: 'MP (TBD)' },
+        mp: { name: 'MP (TBD)', party: '-' },
         wards: [
-          { name: 'Ward A', mca: { fullName: 'MCA (TBD)' } },
-          { name: 'Ward B', mca: { fullName: 'MCA (TBD)' } },
+          { name: 'Ward A', mca: 'MCA (TBD)' },
+          { name: 'Ward B', mca: 'MCA (TBD)' },
         ],
       },
       {
         name: `${countyName} West`,
-        mp: { fullName: 'MP (TBD)' },
+        mp: { name: 'MP (TBD)', party: '-' },
         wards: [
-          { name: 'Ward C', mca: { fullName: 'MCA (TBD)' } },
+          { name: 'Ward C', mca: 'MCA (TBD)' },
         ],
       },
     ],
@@ -490,7 +490,7 @@ export default function CountyLeadershipTreePage() {
     }
   }, []);
 
-  const currentCounty = useMemo(() => {
+  const currentCounty = useMemo((): any => {
     if (!selectedCounty) return null;
     const real = leadershipData.find((c) => c.countyCode === selectedCounty);
     if (real) return normalizeLeadershipData(real);

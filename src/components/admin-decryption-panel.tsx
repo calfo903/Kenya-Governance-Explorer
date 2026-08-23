@@ -286,7 +286,7 @@ export default function AdminDecryptionPanel() {
                   onChange={(e) => setPrivateKeyInput(e.target.value)}
                   placeholder='Paste JWK: { "kty": "RSA", "alg": "RSA-OAEP-256", ... }'
                   className="font-mono text-[11px] leading-normal bg-stone-50 dark:bg-stone-950 h-40 focus:ring-indigo-500"
-                  style={{ WebkitTextSecurity: showKey ? 'none' : 'disc' }}
+                  style={{ ['-webkit-text-security' as string]: showKey ? 'none' : 'disc' } as React.CSSProperties}
                 />
               </div>
 

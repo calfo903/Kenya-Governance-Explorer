@@ -39,7 +39,6 @@ async function main() {
             coalition: governor.coalition,
             termStart: new Date(governor.termStart),
             termEnd: new Date(governor.termEnd),
-            countyCode: governor.code,
           },
         },
       },

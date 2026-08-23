@@ -3,8 +3,12 @@ import { createHash, randomBytes, timingSafeEqual } from "crypto";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+const _rawSecret = process.env.JWT_SECRET;
+if (!_rawSecret && process.env.NODE_ENV === 'production') {
+  console.error('[AUTH] FATAL: JWT_SECRET environment variable is required in production.');
+}
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? randomBytes(32).toString("hex"),
+  _rawSecret ?? 'dev-only-insecure-fallback-do-not-use-in-prod',
 );
 const JWT_ALG = "HS256";
 const TOKEN_EXPIRY = "7d";

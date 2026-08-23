@@ -59,18 +59,18 @@ function topFindings(year: string, limit = 12): string[] {
 }
 
 const OAG_SRC: SourceCitation = {
-  id: 'oag-fy2425',
-  name: 'OAG — County Governments Audit Report FY 2024/25',
+  source: 'Office of the Auditor-General',
+  reportTitle: 'OAG — County Governments Audit Report FY 2024/25',
+  financialYear: 'FY 2024/25',
   url: 'https://www.oagkenya.go.ke/',
-  publisher: 'Office of the Auditor-General',
   accessedDate: '2026-08',
 };
 
 const COB_SRC: SourceCitation = {
-  id: 'cob-fy2425',
-  name: 'Controller of Budget — County Governments Budget Implementation',
+  source: 'Controller of Budget',
+  reportTitle: 'CoB — County Governments Budget Implementation',
+  financialYear: 'FY 2024/25',
   url: 'https://cob.go.ke/',
-  publisher: 'Controller of Budget',
   accessedDate: '2026-08',
 };
 

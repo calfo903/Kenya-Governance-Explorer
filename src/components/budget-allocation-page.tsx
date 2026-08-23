@@ -95,16 +95,17 @@ export default function BudgetAllocationPage() {
   const rows = useMemo<CountyRow[]>(() => {
     const govMap = new Map(all47Governors.map((g) => [g.code, g]));
 
-    return countyBudgetData
-      .filter((r) => r.financialYear === "FY 2025/26" || r.financialYear === "FY 2024/25")
-      .reduce<Map<string, CountyBudgetRecord[]>>((acc, r) => {
-        const existing = acc.get(r.countyCode) || [];
-        existing.push(r);
-        acc.set(r.countyCode, existing);
-        return acc;
-      }, new Map())
-      .entries()
-      .map(([code, records]) => {
+    return Array.from(
+      countyBudgetData
+        .filter((r) => r.financialYear === "FY 2025/26" || r.financialYear === "FY 2024/25")
+        .reduce<Map<string, CountyBudgetRecord[]>>((acc, r) => {
+          const existing = acc.get(r.countyCode) || [];
+          existing.push(r);
+          acc.set(r.countyCode, existing);
+          return acc;
+        }, new Map())
+        .entries()
+    ).map(([code, records]) => {
         const current = records.find((r) => r.financialYear === "FY 2025/26") || records[0];
         const previous = records.find((r) => r.financialYear === "FY 2024/25");
         const gov = govMap.get(code);

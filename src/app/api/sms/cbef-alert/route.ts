@@ -70,13 +70,13 @@ Date: ${date}
 Venue: ${venue}
 Your voice matters. Participate in public finance decisions! - Kenya Governance Explorer`;
 
-    const useRealAPI = !!(process.env.AFRICAS_TAKKING_API_KEY && process.env.AFRICAS_TALKING_USERNAME);
+    const useRealAPI = !!(process.env.AFRICAS_TALKING_API_KEY && process.env.AFRICAS_TALKING_USERNAME);
     let apiResponse = null;
 
     if (useRealAPI) {
       try {
         const username = process.env.AFRICAS_TALKING_USERNAME;
-        const apiKey = process.env.AFRICAS_TAKKING_API_KEY;
+        const apiKey = process.env.AFRICAS_TALKING_API_KEY;
         const recipientList = targetRecipients.map(r => r.phone).join(',');
 
         const res = await fetch('https://api.africastalking.com/version1/messaging', {

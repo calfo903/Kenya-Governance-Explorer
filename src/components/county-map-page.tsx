@@ -521,7 +521,7 @@ export default function CountyMapPage({ onCountyDeepDive }: CountyMapPageProps) 
               </div>
               <div>
                 <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider">Current Filter</p>
-                <p className="text-sm font-bold text-stone-800 dark:text-stone-100">{quickFilter ? QUICK_FILTERS.find(f => f.key === quickFilter)?.label || quickFilter : 'None'}</p>
+                <p className="text-sm font-bold text-stone-800 dark:text-stone-100">{quickFilter ? QUICK_FILTERS.find(f => f.key === quickFilter)?.labelKey || quickFilter : 'None'}</p>
               </div>
             </div>
           </CardContent>

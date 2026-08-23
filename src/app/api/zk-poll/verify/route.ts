@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 import { createLogger } from '@/lib/api-logger';
 import { badRequest, internalError } from '@/lib/api-errors';
+
+const db = new PrismaClient();
 
 const logger = createLogger('/api/zk-poll/verify');
 
@@ -38,7 +41,7 @@ export async function POST(request: Request) {
 
     // 1. Double-Voting Prevention checks (Lookup Nullifier in SQLite database)
     // We search the DB for previous submissions with matching nullifiers
-    const existingBallotWithNullifier = await prisma?.citizenTip.findFirst({
+    const existingBallotWithNullifier = await db.citizenTip.findFirst({
       where: {
         description: {
           contains: `"nullifierHash":"${publicSignals.nullifierHash}"`

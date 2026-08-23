@@ -224,7 +224,7 @@ export async function POST(
     // Sanitize content — strip HTML tags to prevent XSS
     const sanitize = (str: string) => str.replace(/<[^>]*>/g, '').slice(0, 5000);
     proof.content = sanitize(proof.content);
-    proof.caption = sanitize(proof.caption);
+    proof.caption = sanitize(proof.caption || '');
     proof.authorName = sanitize(proof.authorName).slice(0, 100);
     proof.authorLocation = sanitize(proof.authorLocation || '').slice(0, 100);
     existing.unshift(proof); // newest first

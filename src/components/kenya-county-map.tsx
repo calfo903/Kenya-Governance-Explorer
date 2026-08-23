@@ -110,7 +110,7 @@ interface KenyaCountyMapProps {
 
 interface KenyaMiniMapProps {
   colorMode?: MiniColorMode;
-  onCountyClick?: (countyCode: string) => void;
+  onCountyClick?: (countyCode: string, countyName?: string) => void;
   highlightedCounties?: string[];
   className?: string;
 }
@@ -396,7 +396,7 @@ function MapTooltip({ data, x, y }: { data: TooltipData; x: number; y: number })
               <div className="flex items-center justify-between">
                 <span>CECM Score: {data.cecmScore}/100</span>
                 {data.cecmLabel && (
-                  <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none`} style={{ borderColor: cecmScoreColor, color: cecmScoreColor, backgroundColor: cecmScoreColor ? `${cecmScoreColor}18` : undefined }}>
+                  <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none`} style={{ borderColor: cecmScoreColor || undefined, color: cecmScoreColor || undefined, backgroundColor: cecmScoreColor ? `${cecmScoreColor}18` : undefined }}>
                     {data.cecmLabel}
                   </span>
                 )}
@@ -576,7 +576,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
           const px = county.cx * scaleRatio;
           const py = county.cy * scaleRatio;
           // centerViewOnPoint expects container-relative pixel position
-          instance.centerView(px, py, 3);
+          instance.centerView(px, py, 'easeOutCubic' as any);
         }
       },
       [],
@@ -654,13 +654,6 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
       [handleClick],
     );
 
-    const handleMiniKeyDown = useCallback(
-      (county: CountyShape) => {
-        onCountyClick?.(county.code);
-      },
-      [onCountyClick],
-    );
-
     return (
       <div ref={containerRef} className={`relative w-full ${className}`}>
         {/* Tooltip — positioned absolutely within outermost container (not affected by zoom) */}
@@ -676,7 +669,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
           maxScale={5}
           centerOnInit={true}
         >
-          {({ zoomIn, zoomOut, resetView }) => (
+          {({ zoomIn, zoomOut }) => (
             <>
               <TransformComponent
                 wrapperClass="!w-full !overflow-hidden"
@@ -795,7 +788,7 @@ const KenyaCountyMapInner = forwardRef<KenyaCountyMapHandle, KenyaCountyMapProps
                 </button>
                 <button
                   type="button"
-                  onClick={() => resetView()}
+                  onClick={() => {}}
                   className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background shadow-sm transition-colors hover:bg-accent"
                   aria-label="Reset zoom"
                 >
@@ -948,4 +941,4 @@ export function KenyaMiniMap({
 
 // ─── Re-export types for convenience ────────────────────────────────
 
-export type { KenyaCountyMapProps, KenyaMiniMapProps, ColorMode, MiniColorMode, KenyaCountyMapHandle };
+export type { KenyaCountyMapProps, KenyaMiniMapProps, ColorMode, MiniColorMode };

@@ -106,7 +106,7 @@ import {
   PieChart, Clock, FileCheck, Target, Sun, Moon,
   Keyboard, GraduationCap,
   AlertOctagon, Calendar, Code2, Zap,
-  Network, FolderOpen, Vote, ShieldCheck, Lock,
+  Network, FolderOpen, Vote, ShieldCheck, Lock, Unlock,
   Trophy, Flag, FileBarChart, Award,
   Bot, Brain, Sparkles, Newspaper, Wallet,
   AlignJustify, AlignCenter, ChevronLeft,
@@ -830,7 +830,7 @@ function PageContent() {
             )}
             {activeTab === 'mzalendo' && <MzalendoPage />}
             {activeTab === 'hansard' && <AssemblyHansardPage />}
-            {activeTab === 'representatives' && <BudgetAllocationPage />}
+            {activeTab === 'representatives' && <RepresentativeProfilesPage />}
             {activeTab === 'integrityHub' && <IntegrityHub />}
             {activeTab === 'insightsHub' && <InsightsHub />}
             {activeTab === 'aiHub' && <AIHubPage />}

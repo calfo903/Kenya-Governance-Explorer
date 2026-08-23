@@ -10,11 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 import {
   Search, Filter, MapPin, ArrowUpDown, TrendingUp, X, ChevronRight,
   DollarSign, AlertTriangle, CheckCircle2, Clock, Camera, Eye,
   Layers, Building2, Droplets, Heart, GraduationCap, Leaf, Activity,
-  Maximize2, Minimize2,
+  Maximize2, Minimize2, Zap, Send,
 } from 'lucide-react';
 import { getAuditColor } from '@/data/types';
 import { toast } from 'sonner';
