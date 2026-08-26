@@ -518,6 +518,7 @@ function UploadForm({ projectId, onProofAdded, activeType }: {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setCaption('');
     setCommentText('');
     setSelectedFile(null);
@@ -527,8 +528,9 @@ function UploadForm({ projectId, onProofAdded, activeType }: {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
       setSelectedFile(file);
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
       } else {
@@ -583,9 +585,9 @@ function UploadForm({ projectId, onProofAdded, activeType }: {
 
       // Upload the file first
       const formData = new FormData();
-      formData.append('video', selectedFile);
+      formData.append('file', selectedFile);
 
-      const uploadRes = await fetch('/api/upload/video', {
+      const uploadRes = await fetch('/api/upload/media', {
         method: 'POST',
         body: formData,
       });
@@ -690,7 +692,16 @@ function UploadForm({ projectId, onProofAdded, activeType }: {
           {selectedFile ? (
             <div className="space-y-1.5">
               {previewUrl ? (
-                <img src={previewUrl} alt="Preview" className="max-h-32 mx-auto rounded-md" />
+                selectedFile.type.startsWith('video/') ? (
+                  <video
+                    src={previewUrl}
+                    controls
+                    className="max-h-32 mx-auto rounded-md"
+                    muted
+                  />
+                ) : (
+                  <img src={previewUrl} alt="Preview" className="max-h-32 mx-auto rounded-md" />
+                )
               ) : (
                 <div className="flex items-center justify-center gap-2">
                   <FileVideo className="h-8 w-8 text-emerald-600" />
@@ -717,8 +728,9 @@ function UploadForm({ projectId, onProofAdded, activeType }: {
                 Click to select {activeType === 'video' ? 'video' : 'photo'}
               </p>
               <p className="text-[10px] text-stone-400">
-                MP4, WebM, MOV, AVI, MKV up to 50MB
-                {activeType === 'image' ? ' · JPG, PNG, WebP, GIF' : ''}
+                {activeType === 'video'
+                  ? 'MP4, WebM, OGG, MOV up to 25 MB'
+                  : 'JPG, PNG, WebP, GIF up to 5 MB'}
               </p>
             </div>
           )}

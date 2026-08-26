@@ -609,7 +609,7 @@ export default function CountyComparisonEnhanced() {
           <CardContent>
             <div className="max-h-[600px] overflow-y-auto rounded-md border">
               <Table>
-                <TableHeader sticky>
+                <TableHeader className="sticky top-0 z-10 bg-white dark:bg-stone-900">
                   <TableRow>
                     <TableHead className="w-[40px]" />
                     <TableHead
