@@ -127,7 +127,7 @@ export default function CoalitionComparisonPage() {
                   <p className={`text-xs font-bold ${colors.text} mb-2`}>{c.shortName} ({c.count} counties)</p>
                   <div className="space-y-1.5">
                     {[
-                      { label: 'Clean Audits', pct: c.coalition === 'Kenya Kwanza Alliance' ? 2 : c.coalition === 'Azimio' ? 0 : 0 },
+                      { label: 'Clean Audits', pct: c.coalition === 'Kenya Kwanza Alliance' ? 2 : c.coalition?.includes('Azimio') ? 0 : 0 },
                       { label: 'Qualified', pct: c.coalition === 'Kenya Kwanza Alliance' ? 82 : 89 },
                       { label: 'Adverse/Disclaimer', pct: c.coalition === 'Kenya Kwanza Alliance' ? 16 : 11 },
                     ].map(item => (

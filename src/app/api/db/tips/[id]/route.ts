@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import crypto from 'node:crypto';
 import { db } from '@/lib/db';
 import { createLogger } from '@/lib/api-logger';
 import { notFound, internalError, unauthorized, forbidden } from '@/lib/api-errors';
@@ -36,7 +37,7 @@ export async function GET(
     }
 
     const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-    if (token !== secureToken) {
+    if (token.length !== secureToken.length || !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(secureToken))) {
       logger.warn('Access blocked: Invalid credentials token provided.', { id, tokenSnippet: token.slice(0, 5) });
       return forbidden('Access Denied: Invalid Ombudsman token credentials.');
     }

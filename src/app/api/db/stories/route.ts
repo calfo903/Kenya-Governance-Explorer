@@ -56,7 +56,17 @@ export async function GET(request: Request) {
       count: total,
       page,
       limit,
-      stories,
+      stories: stories.map(s => ({
+        id: s.id,
+        countyName: s.countyName,
+        sector: s.sector,
+        title: s.title,
+        rating: s.rating,
+        anonymous: s.anonymous,
+        status: s.status,
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt,
+      })),
     });
   } catch (error) {
     log.error('Failed to fetch stories from DB', { county, sector, status }, Math.round(performance.now() - start));

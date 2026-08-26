@@ -21,9 +21,17 @@ function getClientIp(request: NextRequest): string {
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const timestamps = upvoteRateLimit.get(ip) || [];
-  // Prune old entries
   const recent = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+  if (recent.length === 0) {
+    upvoteRateLimit.delete(ip);
+    return false;
+  }
   upvoteRateLimit.set(ip, recent);
+  if (upvoteRateLimit.size > 10000) {
+    for (const [key, val] of upvoteRateLimit) {
+      if (val.every(t => now - t >= RATE_LIMIT_WINDOW_MS)) upvoteRateLimit.delete(key);
+    }
+  }
   return recent.length >= RATE_LIMIT_MAX_UPVOTES;
 }
 

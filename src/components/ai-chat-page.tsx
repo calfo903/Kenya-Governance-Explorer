@@ -133,6 +133,8 @@ export default function AIChatPage() {
   const [error, setError] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -149,7 +151,7 @@ export default function AIChatPage() {
     setError(null);
 
     try {
-      const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
+      const history = [...messagesRef.current, userMsg].map((m) => ({ role: m.role, content: m.content }));
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,7 +169,7 @@ export default function AIChatPage() {
     } finally {
       setLoading(false);
     }
-  }, [messages, loading]);
+  }, [loading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

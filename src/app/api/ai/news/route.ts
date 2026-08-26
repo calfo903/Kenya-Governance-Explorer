@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
       : `${baseTopic} 2024 2025`;
 
     // First, do a broad web search for recent articles
-    const searchResults = await webSearch(query, num ?? 10);
+    const boundedNum = Math.min(Math.max(Math.floor(num ?? 10), 1), 20);
+    const searchResults = await webSearch(query, boundedNum);
 
     if (searchResults.length === 0) {
       return NextResponse.json({

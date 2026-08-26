@@ -211,12 +211,23 @@ export class P2PDataSyncCoordinator {
     let clockModified = false;
 
     for (const [code, update] of Object.entries(updates)) {
+      // Validate: code must be a string of 3 digits matching county codes
+      if (!code || !/^\d{3}$/.test(code)) continue;
+      // Validate: timestamp must be a positive number within a reasonable range
+      if (typeof update?.timestamp !== 'number' || update.timestamp <= 0 || update.timestamp > Date.now() + 86400000) continue;
+      // Validate: data must be a non-null object
+      if (!update.data || typeof update.data !== 'object' || Array.isArray(update.data)) continue;
+
       const localTime = this.localVector[code] || 0;
       if (update.timestamp > localTime) {
-        localStorage.setItem(`kenya_county_data_${code}`, JSON.stringify(update.data));
-        this.localVector[code] = update.timestamp;
-        clockModified = true;
-        console.log(`✨ [P2P Sync] Merged newer P2P update for County: ${code}`);
+        try {
+          localStorage.setItem(`kenya_county_data_${code}`, JSON.stringify(update.data));
+          this.localVector[code] = update.timestamp;
+          clockModified = true;
+          console.log(`✨ [P2P Sync] Merged newer P2P update for County: ${code}`);
+        } catch {
+          console.error(`Failed to write P2P update for County: ${code}`);
+        }
       }
     }
 

@@ -148,12 +148,14 @@ export async function performBackgroundSync(): Promise<number> {
 }
 
 /** Register automatic network recovery synchronization listener */
-if (typeof window !== 'undefined') {
-  window.addEventListener('online', () => {
-    performBackgroundSync().then((count) => {
-      if (count > 0) {
-        console.log(`🎉 [Sync] Successfully synchronized ${count} cached offline reports to server.`);
-      }
+export function initOfflineSyncListener() {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', () => {
+      performBackgroundSync().then((count) => {
+        if (count > 0) {
+          console.log(`🎉 [Sync] Successfully synchronized ${count} cached offline reports to server.`);
+        }
+      });
     });
-  });
+  }
 }

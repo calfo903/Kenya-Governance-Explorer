@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createLogger } from '@/lib/api-logger';
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
         n: `custom_modulus_for_${county.name.replace(/\s+/g, '_')}_county_ombudsman_keypair_AQAB`,
         e: 'AQAB'
       },
-      fingerprint: `SHA-256: ${Array.from({ length: 20 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase()).join(':')}`
+      fingerprint: `SHA-256: ${crypto.createHash('sha256').update(county.name + countyCode).digest('hex').match(/.{2}/g)!.slice(0, 20).join(':').toUpperCase()}`
     };
 
     logger.info('Public key retrieved from multi-tenant directory', { countyCode, countyName: county.name });

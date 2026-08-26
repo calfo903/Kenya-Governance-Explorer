@@ -62,6 +62,11 @@ import {
   UserRound,
   Brain,
   Wallet,
+  Lock,
+  Unlock,
+  Smartphone,
+  Wifi,
+  Settings,
   type LucideIcon,
 } from "lucide-react"
 
@@ -173,6 +178,72 @@ const SECTIONS: NavSection[] = [
     icon: Brain,
     items: [
       { id: "aiHub", label: "AI Governance Tools", icon: Brain },
+    ],
+  },
+  {
+    heading: "Civic Engagement",
+    icon: ShieldCheck,
+    items: [
+      { id: "whistleblower", label: "Whistleblower Portal", icon: Lock },
+      { id: "adminDecrypt", label: "Admin Decryption", icon: Unlock },
+      { id: "petitions", label: "Petition Builder", icon: PenTool },
+      { id: "rtiLetters", label: "RTI Letter Generator", icon: Send },
+      { id: "smsUssd", label: "SMS/USSD Hub", icon: Smartphone },
+    ],
+  },
+  {
+    heading: "Data & Analytics",
+    icon: ScatterChart,
+    items: [
+      { id: "budgetTracking", label: "Budget Tracking", icon: Layers },
+      { id: "contractors", label: "Contractor Database", icon: Truck },
+      { id: "publicParticipation", label: "Public Participation", icon: Users },
+      { id: "countyHealth", label: "County Health Score", icon: Heart },
+    ],
+  },
+  {
+    heading: "AI & Smart Tools",
+    icon: Brain,
+    items: [
+      { id: "factChecker", label: "AI Fact Checker", icon: Search },
+      { id: "smartAlerts", label: "Smart Alerts", icon: AlertTriangle },
+      { id: "predictiveRisk", label: "Predictive Risk", icon: TrendingUp },
+    ],
+  },
+  {
+    heading: "Maps & Visualization",
+    icon: Map,
+    items: [
+      { id: "countyHeatmap", label: "County Heatmap", icon: Flame },
+      { id: "projectMap", label: "Project Location Map", icon: MapPin },
+      { id: "beforeAfter", label: "Before/After Slider", icon: ArrowLeftRight },
+    ],
+  },
+  {
+    heading: "Community & Social",
+    icon: Users,
+    items: [
+      { id: "forums", label: "Community Forums", icon: MessageSquare },
+      { id: "citizenJournalist", label: "Citizen Journalist", icon: Award },
+      { id: "governorRatings", label: "Governor Ratings", icon: Star },
+    ],
+  },
+  {
+    heading: "Accountability",
+    icon: ShieldCheck,
+    items: [
+      { id: "promiseTracker", label: "Promise Tracker", icon: Milestone },
+      { id: "enhancedCompareNew", label: "Enhanced Compare", icon: GitCompareArrows },
+      { id: "governanceTimeline", label: "Governance Timeline", icon: Clock },
+    ],
+  },
+  {
+    heading: "App & Settings",
+    icon: Settings,
+    items: [
+      { id: "offlineMode", label: "Offline Mode", icon: Wifi },
+      { id: "voiceSearch", label: "Voice Search", icon: Mic },
+      { id: "pwaSettings", label: "PWA Settings", icon: Settings },
     ],
   },
 ]

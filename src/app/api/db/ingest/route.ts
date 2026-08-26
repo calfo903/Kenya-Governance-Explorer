@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import crypto from 'node:crypto';
 import { db } from '@/lib/db';
 import { createLogger } from '@/lib/api-logger';
 
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
       logger.error('INGESTION_SECRET_KEY not configured.');
       return NextResponse.json({ success: false, error: 'Ingestion endpoint not configured.' }, { status: 503 });
     }
-    if (secretKey !== secureToken) {
+    if (secretKey.length !== secureToken.length || !crypto.timingSafeEqual(Buffer.from(secretKey), Buffer.from(secureToken))) {
       logger.warn('Unauthorized ingestion attempt blocked.', { countyCode: countyData?.code });
       return NextResponse.json({ success: false, error: 'Unauthorized: Invalid Ingestion Secret Key.' }, { status: 401 });
     }

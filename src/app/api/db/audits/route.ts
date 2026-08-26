@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     // Parse keyFindings from JSON strings
     const parsed = records.map((r) => ({
       ...r,
-      keyFindings: JSON.parse(r.keyFindings),
+      keyFindings: (() => { try { return JSON.parse(r.keyFindings); } catch { return []; } })(),
     }));
 
     const durationMs = Math.round(performance.now() - start);

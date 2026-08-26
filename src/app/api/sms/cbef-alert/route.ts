@@ -116,7 +116,7 @@ Your voice matters. Participate in public finance decisions! - Kenya Governance 
         content: messageContent,
         county: countyName,
         recipientCount: targetRecipients.length,
-        recipients: targetRecipients.map(r => ({ name: r.name, phone: r.phone.replace(/(\+\d{3})\d{4}(\d{4})/, '$1****$2') })),
+        recipients: targetRecipients.map(r => ({ name: r.name, phone: r.phone.replace(/(\+\d{3})\d{6}(\d{3})/, '$1******$2') })),
         costEstimatedKSh: (targetRecipients.length * 0.8).toFixed(2), // KSh 0.80 per SMS in Kenya
         providerResponse: apiResponse || {
           status: 'Success',

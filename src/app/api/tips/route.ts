@@ -35,11 +35,20 @@ function checkRateLimit(ip: string, limit: number, windowMs: number = 3600000): 
   const now = Date.now();
   const timestamps = postTimestamps.get(ip) || [];
   const recent = timestamps.filter(t => now - t < windowMs);
+  if (recent.length === 0) {
+    postTimestamps.delete(ip);
+  }
   if (recent.length >= limit) {
+    postTimestamps.set(ip, recent);
     return false;
   }
   recent.push(now);
   postTimestamps.set(ip, recent);
+  if (postTimestamps.size > 10000) {
+    for (const [key, val] of postTimestamps) {
+      if (val.every(t => now - t >= windowMs)) postTimestamps.delete(key);
+    }
+  }
   return true;
 }
 

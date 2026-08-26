@@ -82,9 +82,12 @@ async function networkFirst(req, cacheName, maxAge) {
 async function staleWhileRevalidate(req, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(req);
-  const fetchPromise = fetch(req).then((res) => {
+  try {
+    const res = await fetch(req);
     if (res.ok) cache.put(req, res.clone());
     return res;
-  }).catch(() => cached);
-  return cached || fetchPromise || new Response('Offline', { status: 503 });
+  } catch {
+    if (cached) return cached;
+    return new Response('Offline', { status: 503 });
+  }
 }

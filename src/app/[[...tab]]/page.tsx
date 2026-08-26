@@ -33,7 +33,6 @@ import CitizenReportDashboard from '@/components/citizen-report-dashboard';
 import CBEFMeetingPage from '@/components/cbef-meeting-page';
 import EmbedWidgetPage from '@/components/embed-widget-page';
 import MzalendoPage from '@/components/mzalendo-page';
-import BudgetAllocationPage from '@/components/budget-allocation-page';
 import RepresentativeProfilesPage from '@/components/representative-profiles-page';
 
 import CountyLeadershipTreePage from '@/components/county-leadership-tree';
@@ -234,7 +233,6 @@ function PageContent() {
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
   const [filters, setFilters] = useState<FilterState>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [compact, setCompact] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['nav.sections.civicTools', 'nav.sections.citizenAction', 'nav.sections.dataAlerts', 'nav.sections.analytics', 'nav.sections.leadershipProjects', 'nav.sections.insights', 'nav.sections.civicEngagement', 'nav.sections.dataAnalytics', 'nav.sections.aiSmartTools', 'nav.sections.mapsViz', 'nav.sections.communitySocial', 'nav.sections.accountability', 'nav.sections.appSettings']));
   const toggleSection = (sectionKey: string) => {
@@ -360,6 +358,8 @@ function PageContent() {
 
     return [{ id: navItemDefs.find(n => n.sectionKey === navDef.sectionKey)?.id ?? tab, label: parentLabel }, { id: tab, label: tabLabel }];
   };
+
+  const breadcrumbItems = useMemo(() => getBreadcrumbItems(activeTab), [activeTab]);
 
   // Helper: section dot color (lighter version of active color)
   const sectionDotColor = (activeColor: string): string => {
@@ -590,10 +590,10 @@ function PageContent() {
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5">
             <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs">
               <ChevronRight className="h-3 w-3 text-stone-400 rotate-180" />
-              {getBreadcrumbItems(activeTab).map((item, i) => (
+              {breadcrumbItems.map((item, i) => (
                 <React.Fragment key={item.id}>
                   {i > 0 && <ChevronRight className="h-3 w-3 text-stone-400" />}
-                  {i < getBreadcrumbItems(activeTab).length - 1 ? (
+                  {i < breadcrumbItems.length - 1 ? (
                     <button onClick={() => setActiveTab(item.id)} className="text-stone-500 hover:text-emerald-600 transition-colors">
                       {item.label}
                     </button>
@@ -640,6 +640,34 @@ function PageContent() {
               <Separator className="bg-stone-100 dark:bg-stone-700" />
 
               {renderSidebarSection(aiItems, 'nav.sections.aiTools', 'bg-emerald-600')}
+
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
+
+              {renderSidebarSection(civicEngagementItems, 'nav.sections.civicEngagement', 'bg-red-600')}
+
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
+
+              {renderSidebarSection(dataAnalyticsItems, 'nav.sections.dataAnalytics', 'bg-cyan-600')}
+
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
+
+              {renderSidebarSection(aiSmartToolsItems, 'nav.sections.aiSmartTools', 'bg-violet-600')}
+
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
+
+              {renderSidebarSection(mapsVizItems, 'nav.sections.mapsViz', 'bg-lime-600')}
+
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
+
+              {renderSidebarSection(communitySocialItems, 'nav.sections.communitySocial', 'bg-pink-600')}
+
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
+
+              {renderSidebarSection(accountabilityItems, 'nav.sections.accountability', 'bg-orange-600')}
+
+              <Separator className="bg-stone-100 dark:bg-stone-700" />
+
+              {renderSidebarSection(appSettingsItems, 'nav.sections.appSettings', 'bg-stone-600')}
 
               <Separator className="bg-stone-100 dark:bg-stone-700" />
               {sidebarCollapsed ? (
@@ -760,7 +788,7 @@ function PageContent() {
           )}
 
           {/* ══════════ MAIN CONTENT ══════════ */}
-          <main id="main-content" data-compact={compact} className={`flex-1 ${compact ? 'max-w-7xl' : 'max-w-5xl'} mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full`}>
+          <main id="main-content" className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6 w-full">
             {activeTab === 'summary' && <NationalSummaryDashboard onNavigate={setActiveTab} />}
             {activeTab === 'tree' && (
               <GovernorsTreeView

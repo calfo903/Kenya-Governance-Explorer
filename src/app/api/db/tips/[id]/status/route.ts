@@ -74,9 +74,7 @@ export async function PATCH(
       anonymous: updated.anonymous,
       status: updated.status,
       adminNotes: updated.adminNotes,
-      descriptionPreview: updated.description.length > 60
-        ? updated.description.slice(0, 60) + '...'
-        : updated.description,
+      descriptionPreview: (() => { try { const parsed = JSON.parse(updated.description); if (parsed && parsed.iv && parsed.ciphertext) return '[Encrypted Payload]'; } catch {} return updated.description.length > 60 ? updated.description.slice(0, 60) + '...' : updated.description; })(),
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
     };

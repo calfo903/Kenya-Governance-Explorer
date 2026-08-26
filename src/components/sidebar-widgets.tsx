@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -421,7 +421,7 @@ function generateVelocityData() {
 }
 
 export function ProjectVelocityChart({ projectRef }: ProjectVelocityChartProps) {
-  const data = generateVelocityData();
+  const data = useMemo(() => generateVelocityData(), []);
   const first = data[0].events;
   const last = data[data.length - 1].events;
   const isIncreasing = last >= first;
