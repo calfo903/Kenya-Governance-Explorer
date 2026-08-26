@@ -1,0 +1,36 @@
+{
+  "code": 200,
+  "data": {
+    "description": "",
+    "html": "",
+    "httpStatus": 200,
+    "httpStatusText": "OK",
+    "metadata": {
+      "Author": "Ann.Njoga@oagkenya.go.ke",
+      "CreationDate": "D:20260402134449+03'00'",
+      "Creator": "Microsoft® Word LTSC",
+      "EncryptFilterName": null,
+      "IsAcroFormPresent": false,
+      "IsCollectionPresent": false,
+      "IsLinearized": false,
+      "IsSignaturesPresent": false,
+      "IsXFAPresent": false,
+      "Language": "en-US",
+      "ModDate": "D:20260522134002+03'00'",
+      "PDFFormatVersion": "1.7",
+      "Producer": "Microsoft® Word LTSC"
+    },
+    "publishedTime": "Fri, 22 May 2026 16:07:42 GMT",
+    "title": "AUDITOR-GENERALS-SUMMARY-REPORT-ON-COUNTY-GOVERNMENTS-2024-2025.pdf",
+    "url": "https://www.oagkenya.go.ke/wp-content/uploads/2026/05/AUDITOR-GENERALS-SUMMARY-REPORT-ON-COUNTY-GOVERNMENTS-2024-2025.pdf",
+    "usage": {
+      "tokens": 0
+    }
+  },
+  "meta": {
+    "usage": {
+      "tokens": 0
+    }
+  },
+  "status": 20000
+}
