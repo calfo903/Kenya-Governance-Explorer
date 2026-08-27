@@ -19,14 +19,23 @@ interface Window {
 const store = new Map<string, Window>();
 
 // Evict stale keys every 5 minutes to prevent unbounded memory growth.
+const MAX_STORE_ENTRIES = 10_000;
 let lastEvict = Date.now();
 function maybeEvict(windowMs: number) {
   const now = Date.now();
-  if (now - lastEvict < 5 * 60_000) return;
+  // Always evict if store is oversized, otherwise every 5 minutes
+  if (now - lastEvict < 5 * 60_000 && store.size < MAX_STORE_ENTRIES) return;
   lastEvict = now;
   for (const [key, win] of store.entries()) {
     win.timestamps = win.timestamps.filter((t) => now - t < windowMs);
     if (win.timestamps.length === 0) store.delete(key);
+  }
+  // Hard cap: if still too many entries, remove oldest
+  if (store.size > MAX_STORE_ENTRIES) {
+    const entries = Array.from(store.keys());
+    for (let i = 0; i < entries.length - MAX_STORE_ENTRIES + 1000; i++) {
+      store.delete(entries[i]);
+    }
   }
 }
 
@@ -48,7 +57,7 @@ export interface RateLimitResult {
  * Uses x-forwarded-for (set by Vercel/Caddy) then falls back to a constant
  * so local dev always passes without needing a real IP.
  */
-function getKey(request: NextRequest): string {
+function getKey(request: NextRequest | Request): string {
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) return forwarded.split(',')[0].trim();
   const realIp = request.headers.get('x-real-ip');
@@ -57,7 +66,7 @@ function getKey(request: NextRequest): string {
 }
 
 export function rateLimit(
-  request: NextRequest,
+  request: NextRequest | Request,
   options: RateLimitOptions = {},
 ): RateLimitResult {
   const maxRequests = options.maxRequests ?? 20;

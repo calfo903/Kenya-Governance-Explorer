@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to fetch remote file";
-    return NextResponse.json({ error: message }, { status: 502 });
+    console.error('[Download Proxy] Fetch error:', err);
+    return NextResponse.json({ error: "Failed to fetch remote file" }, { status: 502 });
   }
 
   if (!response.ok) {
@@ -95,7 +95,28 @@ export async function GET(request: NextRequest) {
   headers.set("Cache-Control", "no-store");
   headers.set("X-Content-Type-Options", "nosniff");
 
-  return new NextResponse(response.body, {
+  // Guard: if no Content-Length, cap the stream to prevent unbounded downloads
+  let body = response.body;
+  if (!contentLength || contentLength === 0) {
+    const reader = response.body!.getReader();
+    let received = 0;
+    body = new ReadableStream({
+      async pull(controller) {
+        const { done, value } = await reader.read();
+        if (done) { controller.close(); return; }
+        received += value.byteLength;
+        if (received > MAX_RESPONSE_SIZE) {
+          reader.cancel();
+          controller.error(new Error('Response exceeded maximum allowed size'));
+          return;
+        }
+        controller.enqueue(value);
+      },
+      cancel() { reader.cancel(); },
+    });
+  }
+
+  return new NextResponse(body, {
     status: 200,
     headers,
   });

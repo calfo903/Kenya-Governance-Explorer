@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createLogger } from '@/lib/api-logger';
 import { badRequest, internalError } from '@/lib/api-errors';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const logger = createLogger('/api/zk-poll/verify');
 
@@ -27,6 +28,10 @@ interface ZKBallotProof {
  * (e.g. snarkjs) is integrated. Field membership alone is insufficient.
  */
 export async function POST(request: Request) {
+  // Rate limit BigInt parsing on untrusted input
+  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
+
   const start = performance.now();
   try {
     const ballot: ZKBallotProof = await request.json();

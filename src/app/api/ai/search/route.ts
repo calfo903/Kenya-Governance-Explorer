@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { webSearch, chatCompletion } from '@/lib/ai';
 import { db } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiSearchSchema } from '@/lib/api-validation';
 
 interface SearchRequest {
   query: string;
@@ -12,22 +13,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: SearchRequest = await request.json();
-
-    if (!body.query || typeof body.query !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'query is required' },
-        { status: 400 }
-      );
-    }
-
-    const query = body.query.trim();
-    if (query.length < 2) {
-      return NextResponse.json(
-        { success: false, error: 'query must be at least 2 characters' },
-        { status: 400 }
-      );
-    }
+    const parsed = await validateBody(request, AiSearchSchema);
+    if (!parsed.success) return parsed.response;
+    const query = parsed.data.query;
 
     // Run web search and DB queries in parallel
     const [webResults, countyMatches, governorMatches, projectMatches, budgetMatches] =
@@ -124,9 +112,9 @@ export async function POST(request: NextRequest) {
       sources,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[AI Search] Error:', error);
     return NextResponse.json(
-      { success: false, error: `Search failed: ${message}` },
+      { success: false, error: 'Search failed. Please try again.' },
       { status: 500 }
     );
   }

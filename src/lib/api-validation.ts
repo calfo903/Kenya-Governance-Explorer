@@ -266,3 +266,84 @@ export async function validateBody<T extends z.ZodType>(
   }
   return { success: true, data: result.data };
 }
+
+
+// ─── AI Route Schemas ────────────────────────────────────────────────
+
+/** POST /api/ai/sentiment */
+export const AiSentimentSchema = z.object({
+  governorName: z.string().max(100).trim().optional(),
+  countyName: z.string().max(50).trim().optional(),
+}).refine(d => d.governorName || d.countyName, {
+  message: 'Either governorName or countyName is required',
+});
+
+/** POST /api/ai/quiz */
+export const AiQuizSchema = z.object({
+  topic: z.string().max(200).trim().default('Kenyan devolution and county governance'),
+  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
+  count: z.number().int().min(1).max(20).default(5),
+});
+
+/** POST /api/ai/procurement-risk */
+export const AiProcurementRiskSchema = z.object({
+  countyCode: CountyCodeSchema.optional(),
+  category: z.string().max(50).trim().optional(),
+});
+
+/** POST /api/ai/hansard-summary */
+export const AiHansardSchema = z.object({
+  countyName: z.string().min(2).max(50).trim(),
+  topic: z.string().max(100).trim().optional(),
+});
+
+/** POST /api/ai/search */
+export const AiSearchSchema = z.object({
+  query: z.string().min(2).max(500).trim(),
+});
+
+/** POST /api/ai/budget-anomaly */
+export const AiBudgetAnomalySchema = z.object({
+  countyCode: CountyCodeSchema.optional(),
+  financialYear: FinancialYearSchema.optional(),
+});
+
+/** POST /api/ai/news */
+export const AiNewsSchema = z.object({
+  topic: z.string().max(200).trim().optional(),
+  countyName: z.string().max(50).trim().optional(),
+  num: z.number().int().min(1).max(20).optional(),
+});
+
+/** POST /api/ai/chat */
+export const AiChatSchema = z.object({
+  message: z.string().min(1).max(5000).trim(),
+  history: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string().max(5000),
+  })).max(20).optional(),
+  systemContext: z.string().max(2000).optional(),
+  countyCode: CountyCodeSchema.optional(),
+});
+
+/** POST /api/ai/rti-letter */
+export const AiRtiLetterSchema = z.object({
+  countyName: z.string().min(2).max(50).trim(),
+  topic: z.string().min(3).max(500).trim(),
+  recipient: z.string().max(200).trim().optional(),
+  additionalDetails: z.string().max(2000).trim().optional(),
+});
+
+/** POST /api/ai/compare-insights */
+export const AiCompareInsightsSchema = z.object({
+  county1: z.string().min(2).max(50).trim(),
+  county2: z.string().min(2).max(50).trim(),
+  metrics: z.array(z.string().max(50)).max(10).optional(),
+}).refine(d => d.county1 !== d.county2, {
+  message: 'county1 and county2 must be different counties',
+});
+
+/** POST /api/ai/profile */
+export const AiProfileSchema = z.object({
+  countyCode: CountyCodeSchema,
+});

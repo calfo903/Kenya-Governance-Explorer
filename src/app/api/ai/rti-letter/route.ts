@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chatCompletion } from '@/lib/ai';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiRtiLetterSchema } from '@/lib/api-validation';
 
 interface RTILetterRequestBody {
   countyName: string;
@@ -14,21 +15,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: RTILetterRequestBody = await request.json();
-    const { countyName, topic, recipient, additionalDetails } = body;
-
-    if (!countyName || typeof countyName !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'countyName is required.' },
-        { status: 400 }
-      );
-    }
-    if (!topic || typeof topic !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'topic is required.' },
-        { status: 400 }
-      );
-    }
+    const parsed = await validateBody(request, AiRtiLetterSchema);
+    if (!parsed.success) return parsed.response;
+    const { countyName, topic, recipient, additionalDetails } = parsed.data;
 
     const recipientLine = recipient
       ? `The letter should be addressed to: ${recipient}`

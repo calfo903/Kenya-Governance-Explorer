@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createLogger } from '@/lib/api-logger';
 import { badRequest, internalError } from '@/lib/api-errors';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const logger = createLogger('/api/voice/transcribe');
 
@@ -12,6 +13,10 @@ const logger = createLogger('/api/voice/transcribe');
  * dispatches them directly to the OpenAI Whisper API, and commits the transcription to SQLite.
  */
 export async function POST(request: Request) {
+  // Expensive: calls OpenAI Whisper per request
+  const rl = rateLimit(request, { maxRequests: 5, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
+
   const start = performance.now();
   try {
     const formData = await request.formData();

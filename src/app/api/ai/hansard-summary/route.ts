@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { webSearch, chatCompletion } from '@/lib/ai';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiHansardSchema } from '@/lib/api-validation';
 
 interface HansardSummaryRequest {
   countyName: string;
@@ -12,16 +13,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: HansardSummaryRequest = await request.json();
-
-    const { countyName, topic } = body;
-
-    if (!countyName || typeof countyName !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'countyName is required' },
-        { status: 400 }
-      );
-    }
+    const parsed = await validateBody(request, AiHansardSchema);
+    if (!parsed.success) return parsed.response;
+    const { countyName, topic } = parsed.data;
 
     // Build search query for Hansard / assembly transcripts
     const topicSuffix = topic ? ` ${topic}` : '';
@@ -71,9 +65,9 @@ Provide a structured summary with sections for: Key Debates, Motions & Resolutio
       sources,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[AI Hansard] Error:', error);
     return NextResponse.json(
-      { success: false, error: `Failed to generate Hansard summary: ${message}` },
+      { success: false, error: 'Failed to generate Hansard summary. Please try again.' },
       { status: 500 }
     );
   }

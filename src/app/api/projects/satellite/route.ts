@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createLogger } from '@/lib/api-logger';
 import { badRequest, internalError } from '@/lib/api-errors';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const logger = createLogger('/api/projects/satellite');
 
@@ -18,6 +19,10 @@ interface SatelliteQueryRequest {
  * to detect physical terrain transformations (e.g. concrete roads/dams construction progress).
  */
 export async function POST(request: Request) {
+  // Expensive: calls ESA Copernicus API
+  const rl = rateLimit(request, { maxRequests: 15, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
+
   const start = performance.now();
   try {
     const body: SatelliteQueryRequest = await request.json();

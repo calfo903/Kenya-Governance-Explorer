@@ -6,6 +6,7 @@ import { countyProjects } from '@/data/county-projects';
 import { all47Governors } from '@/data/governors';
 import { NATIONAL_OVERSIGHT_SNAPSHOT } from '@/data/oversight-sources';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiChatSchema } from '@/lib/api-validation';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -82,29 +83,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: ChatRequestBody = await request.json();
-    const { message, history, systemContext, countyCode } = body;
-
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'A non-empty message is required.' },
-        { status: 400 },
-      );
-    }
-
-    if (history && !Array.isArray(history)) {
-      return NextResponse.json(
-        { success: false, error: 'history must be an array of {role, content} objects.' },
-        { status: 400 },
-      );
-    }
-
-    const validHistory = (history ?? []).filter(
-      (msg): msg is ChatMessage =>
-        typeof msg.role === 'string' &&
-        typeof msg.content === 'string' &&
-        (msg.role === 'user' || msg.role === 'assistant'),
-    );
+    const parsed = await validateBody(request, AiChatSchema);
+    if (!parsed.success) return parsed.response;
+    const { message, history, systemContext, countyCode } = parsed.data;
 
     let system = systemContext || undefined;
     if (countyCode && typeof countyCode === 'string' && countyCode.trim()) {
@@ -112,8 +93,8 @@ export async function POST(request: NextRequest) {
       system = system ? `${system}\n\n${countyBlock}` : countyBlock;
     }
 
-    const response = await chatCompletion(message.trim(), system, validHistory);
-    const messageCount = validHistory.length + 1;
+    const response = await chatCompletion(message.trim(), system, history ?? []);
+    const messageCount = (history ?? []).length + 1;
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { webSearch, searchAndSummarize } from '@/lib/ai';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiNewsSchema } from '@/lib/api-validation';
 
 interface NewsRequestBody {
   topic?: string;
@@ -13,8 +14,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: NewsRequestBody = await request.json();
-    const { topic, countyName, num } = body;
+    const parsed = await validateBody(request, AiNewsSchema);
+    if (!parsed.success) return parsed.response;
+    const { topic, countyName, num } = parsed.data;
 
     // Build search query
     const baseTopic = topic ?? 'Kenya county governance';

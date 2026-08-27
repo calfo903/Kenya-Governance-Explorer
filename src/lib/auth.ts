@@ -4,8 +4,11 @@ import { createHash, randomBytes, timingSafeEqual, scrypt as scryptCb } from "cr
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const _rawSecret = process.env.JWT_SECRET;
-if (!_rawSecret && process.env.NODE_ENV === 'production') {
-  console.error('[AUTH] FATAL: JWT_SECRET environment variable is required in production.');
+if (!_rawSecret) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[AUTH] FATAL: JWT_SECRET environment variable is required in production. Refusing to start.');
+  }
+  console.warn('[AUTH] WARNING: Using insecure fallback JWT secret. Set JWT_SECRET for production.');
 }
 const JWT_SECRET = new TextEncoder().encode(
   _rawSecret ?? 'dev-only-insecure-fallback-do-not-use-in-prod',
@@ -122,20 +125,51 @@ export function validateDownloadUrl(raw: string): { error: string | null; url: U
     return { error: "Only HTTP(S) URLs allowed", url: null };
   }
 
-  // Block private/internal IPs (SSRF prevention)
+  // Block private/internal IPs (SSRF prevention) — full RFC 1918 + link-local + CGNAT
   const hostname = parsed.hostname;
   if (
     hostname === "localhost" ||
     hostname === "127.0.0.1" ||
     hostname === "0.0.0.0" ||
     hostname === "::1" ||
-    hostname.startsWith("10.") ||
-    hostname.startsWith("192.168.") ||
-    hostname.startsWith("172.16.") ||
     hostname.endsWith(".local") ||
-    hostname.endsWith(".internal")
+    hostname.endsWith(".internal") ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".test") ||
+    hostname.endsWith(".example") ||
+    hostname.endsWith(".invalid")
   ) {
     return { error: "Internal URLs not allowed", url: null };
+  }
+
+  // Parse numeric IPs for range checks
+  const ipMatch = hostname.match(/^(d{1,3}).(d{1,3}).(d{1,3}).(d{1,3})$/);
+  if (ipMatch) {
+    const octets = ipMatch.slice(1).map(Number);
+    const first = octets[0];
+    const second = octets[1];
+    // 10.0.0.0/8
+    if (first === 10) return { error: "Internal URLs not allowed", url: null };
+    // 172.16.0.0/12 (172.16.x.x through 172.31.x.x)
+    if (first === 172 && second >= 16 && second <= 31) return { error: "Internal URLs not allowed", url: null };
+    // 192.168.0.0/16
+    if (first === 192 && second === 168) return { error: "Internal URLs not allowed", url: null };
+    // 169.254.0.0/16 (link-local)
+    if (first === 169 && second === 254) return { error: "Internal URLs not allowed", url: null };
+    // 100.64.0.0/10 (CGNAT)
+    if (first === 100 && second >= 64 && second <= 127) return { error: "Internal URLs not allowed", url: null };
+    // 198.18.0.0/15 (benchmark)
+    if (first === 198 && second >= 18 && second <= 19) return { error: "Internal URLs not allowed", url: null };
+    // 0.0.0.0/8, 127.0.0.0/8 (redundant but explicit)
+    if (first === 0 || first === 127) return { error: "Internal URLs not allowed", url: null };
+  }
+
+  // Block IPv6 private ranges (simplified)
+  if (hostname.startsWith('[') && hostname.endsWith(']')) {
+    const ipv6 = hostname.slice(1, -1);
+    if (ipv6 === '::1' || ipv6.startsWith('fe80:') || ipv6.startsWith('fc') || ipv6.startsWith('fd')) {
+      return { error: "Internal URLs not allowed", url: null };
+    }
   }
 
   return { error: null, url: parsed };

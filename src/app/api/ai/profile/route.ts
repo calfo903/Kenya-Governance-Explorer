@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { chatCompletion } from '@/lib/ai';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiProfileSchema } from '@/lib/api-validation';
 
 interface ProfileRequest {
   countyCode: string;
@@ -12,16 +13,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: ProfileRequest = await request.json();
-
-    if (!body.countyCode || typeof body.countyCode !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'countyCode is required' },
-        { status: 400 }
-      );
-    }
-
-    const countyCode = body.countyCode.trim();
+    const parsed = await validateBody(request, AiProfileSchema);
+    if (!parsed.success) return parsed.response;
+    const countyCode = parsed.data.countyCode;
 
     // Fetch core data in parallel (do NOT reference other Promise results inside the same Promise.all)
     const [
@@ -201,9 +195,9 @@ Use clear, professional language. Format in markdown.`,
       sections,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[AI Profile] Error:', error);
     return NextResponse.json(
-      { success: false, error: `Failed to generate county profile: ${message}` },
+      { success: false, error: 'Failed to generate county profile. Please try again.' },
       { status: 500 }
     );
   }

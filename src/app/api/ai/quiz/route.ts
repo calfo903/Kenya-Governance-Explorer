@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { structuredCompletion } from '@/lib/ai';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiQuizSchema } from '@/lib/api-validation';
 
 interface QuizRequest {
   topic?: string;
@@ -26,15 +27,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: QuizRequest = await request.json();
-
-    const topic = body.topic ?? 'Kenyan devolution and county governance';
-    const difficulty = ['easy', 'medium', 'hard'].includes(body.difficulty ?? '')
-      ? (body.difficulty as 'easy' | 'medium' | 'hard')
-      : 'medium';
-    const count = typeof body.count === 'number' && body.count >= 1 && body.count <= 20
-      ? body.count
-      : 5;
+    const parsed = await validateBody(request, AiQuizSchema);
+    if (!parsed.success) return parsed.response;
+    const { topic, difficulty, count } = parsed.data;
 
     const difficultyGuidance: Record<string, string> = {
       easy: 'Basic factual questions suitable for beginners. Focus on well-known facts about Kenya\'s 47 counties, the 2010 Constitution, and devolution basics.',
@@ -82,9 +77,9 @@ Do not include any text outside the JSON.`;
       difficulty,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[AI Quiz] Error:', error);
     return NextResponse.json(
-      { success: false, error: `Failed to generate quiz: ${message}` },
+      { success: false, error: 'Failed to generate quiz. Please try again.' },
       { status: 500 }
     );
   }

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { chatCompletion } from '@/lib/ai';
 import { createLogger } from '@/lib/api-logger';
 import { badRequest, internalError } from '@/lib/api-errors';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const logger = createLogger('/api/legal/draft-petition');
 
@@ -20,6 +21,10 @@ interface PetitionRequest {
  * Public Interest Litigation (PIL) Petition under Article 22 & 258 of the Constitution of Kenya 2010.
  */
 export async function POST(request: Request) {
+  // Expensive: calls LLM per request
+  const rl = rateLimit(request, { maxRequests: 10, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
+
   const start = performance.now();
   try {
     const body: PetitionRequest = await request.json();

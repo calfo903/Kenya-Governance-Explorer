@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { webSearch, structuredCompletion } from '@/lib/ai';
 import { db } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiSentimentSchema } from '@/lib/api-validation';
 
 interface SentimentRequest {
   governorName?: string;
@@ -19,16 +20,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: SentimentRequest = await request.json();
-
-    const { governorName, countyName } = body;
-
-    if (!governorName && !countyName) {
-      return NextResponse.json(
-        { success: false, error: 'Either governorName or countyName is required' },
-        { status: 400 }
-      );
-    }
+    const parsed = await validateBody(request, AiSentimentSchema);
+    if (!parsed.success) return parsed.response;
+    const { governorName, countyName } = parsed.data;
 
     // Build target description
     const target = governorName
@@ -120,9 +114,9 @@ Be objective. If coverage is balanced, use "mixed". If there is too little to ju
       sources,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[AI Sentiment] Error:', error);
     return NextResponse.json(
-      { success: false, error: `Sentiment analysis failed: ${message}` },
+      { success: false, error: 'Sentiment analysis failed. Please try again.' },
       { status: 500 }
     );
   }

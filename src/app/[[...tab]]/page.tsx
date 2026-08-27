@@ -136,7 +136,6 @@ const navItemDefs: NavItem[] = [
   { id: 'countymap', labelKey: 'nav.items.countymap', icon: Map, sectionKey: 'nav.sections.governance' },
   { id: 'county', labelKey: 'nav.items.county', icon: MapPin, sectionKey: 'nav.sections.governance' },
   { id: 'compare', labelKey: 'nav.items.compare', icon: GitCompare, sectionKey: 'nav.sections.governance' },
-  { id: 'heatmap', labelKey: 'nav.items.heatmap', icon: Thermometer, sectionKey: 'nav.sections.governance' },
   { id: 'sources', labelKey: 'nav.items.sources', icon: Library, sectionKey: 'nav.sections.governance' },
   { id: 'schema', labelKey: 'nav.items.schema', icon: Database, sectionKey: 'nav.sections.governance' },
   { id: 'timeline', labelKey: 'nav.items.timeline', icon: Clock, sectionKey: 'nav.sections.governance' },
@@ -147,8 +146,6 @@ const navItemDefs: NavItem[] = [
   { id: 'xposts', labelKey: 'nav.items.xposts', icon: Volume2, sectionKey: 'nav.sections.civicTools' },
   { id: 'integrityHub', labelKey: 'nav.items.integrityHub', icon: Eye, sectionKey: 'nav.sections.civicTools' },
   // ── Citizen Action ──
-  { id: 'rti', labelKey: 'nav.items.rti', icon: FileCheck, sectionKey: 'nav.sections.citizenAction' },
-  { id: 'petition', labelKey: 'nav.items.petition', icon: ClipboardList, sectionKey: 'nav.sections.citizenAction' },
   { id: 'feedback', labelKey: 'nav.items.feedback', icon: MessageSquare, sectionKey: 'nav.sections.citizenAction' },
   { id: 'reportcard', labelKey: 'nav.items.reportcard', icon: Star, sectionKey: 'nav.sections.citizenAction' },
   { id: 'quiz', labelKey: 'nav.items.quiz', icon: GraduationCap, sectionKey: 'nav.sections.citizenAction' },
@@ -169,7 +166,6 @@ const navItemDefs: NavItem[] = [
   { id: 'representatives', labelKey: 'nav.items.representatives', icon: Wallet, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'mzalendo', labelKey: 'nav.items.mzalendo', icon: Vote, sectionKey: 'nav.sections.leadershipProjects' },
   { id: 'hansard', labelKey: 'nav.items.hansard', icon: BookOpen, sectionKey: 'nav.sections.leadershipProjects' },
-  { id: 'compareEnhanced', labelKey: 'nav.items.compareEnhanced', icon: GitCompare, sectionKey: 'nav.sections.leadershipProjects' },
   // ── Insights ──
   { id: 'insightsHub', labelKey: 'nav.items.insightsHub', icon: Trophy, sectionKey: 'nav.sections.insights' },
   // ── AI Tools ──
@@ -556,10 +552,10 @@ function PageContent() {
                     { id: 'compare' as TabId, icon: GitCompare, labelKey: 'topbar.compare' },
                     { id: 'fiscalHub' as TabId, icon: Zap, labelKey: 'topbar.fiscal' },
                     { id: 'leadership' as TabId, icon: Network, labelKey: 'topbar.leadership' },
-                    { id: 'rti' as TabId, icon: FileCheck, labelKey: 'topbar.rti' },
+                    { id: 'rtiLetters' as TabId, icon: Mail, labelKey: 'topbar.rti' },
                     { id: 'budgetsim' as TabId, icon: PieChart, labelKey: 'topbar.budget' },
                     { id: 'mzalendo' as TabId, icon: Vote, labelKey: 'topbar.mzalendo' },
-                    { id: 'heatmap' as TabId, icon: Thermometer, labelKey: 'topbar.heatmap' },
+                    { id: 'countyHeatmap' as TabId, icon: Thermometer, labelKey: 'topbar.heatmap' },
                     { id: 'countymap' as TabId, icon: Map, labelKey: 'topbar.map' },
                   ].map(item => {
                     const Icon = item.icon;

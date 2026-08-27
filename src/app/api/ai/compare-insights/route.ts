@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { chatCompletion } from '@/lib/ai';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiCompareInsightsSchema } from '@/lib/api-validation';
 
 interface CompareInsightsRequestBody {
   county1: string;
@@ -14,15 +15,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: CompareInsightsRequestBody = await request.json();
-    const { county1, county2, metrics } = body;
-
-    if (!county1 || !county2) {
-      return NextResponse.json(
-        { success: false, error: 'county1 and county2 are required.' },
-        { status: 400 }
-      );
-    }
+    const parsed = await validateBody(request, AiCompareInsightsSchema);
+    if (!parsed.success) return parsed.response;
+    const { county1, county2, metrics } = parsed.data;
 
     const selectedMetrics = metrics ?? ['budget', 'audit', 'leadership', 'projects'];
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createLogger } from '@/lib/api-logger';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const logger = createLogger('/api/sms/cbef-alert');
 
@@ -20,6 +21,10 @@ interface AlertRequest {
  * otherwise runs in high-fidelity simulated mode.
  */
 export async function POST(request: Request) {
+  // Expensive: sends SMS via Africa's Talking
+  const rl = rateLimit(request, { maxRequests: 10, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
+
   try {
     const body: AlertRequest = await request.json();
     const { countyCode, meetingTitle, date, venue, sector } = body;

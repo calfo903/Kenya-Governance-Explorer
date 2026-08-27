@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { webSearch, structuredCompletion } from '@/lib/ai';
 import { db } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateBody, AiProcurementRiskSchema } from '@/lib/api-validation';
 
 interface ProcurementRiskRequest {
   countyCode?: string;
@@ -20,9 +21,9 @@ export async function POST(request: NextRequest) {
   const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
   try {
-    const body: ProcurementRiskRequest = await request.json();
-
-    const { countyCode, category } = body;
+    const parsed = await validateBody(request, AiProcurementRiskSchema);
+    if (!parsed.success) return parsed.response;
+    const { countyCode, category } = parsed.data;
 
     // Determine county name for searches
     let countyName: string | null = null;
@@ -128,9 +129,9 @@ Provide 3-6 red flags and 3-6 actionable recommendations.`;
       recommendations: Array.isArray(result.recommendations) ? result.recommendations.map(String) : [],
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[AI Procurement Risk] Error:', error);
     return NextResponse.json(
-      { success: false, error: `Procurement risk analysis failed: ${message}` },
+      { success: false, error: 'Procurement risk analysis failed. Please try again.' },
       { status: 500 }
     );
   }

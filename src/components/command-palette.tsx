@@ -105,7 +105,6 @@ const SECTIONS: NavSection[] = [
       { id: "countymap", label: "County Map", icon: Map },
       { id: "county", label: "County Deep-Dive", icon: MapPin },
       { id: "compare", label: "Compare", icon: GitCompareArrows },
-      { id: "heatmap", label: "Risk Heatmap", icon: Flame },
       { id: "sources", label: "Sources Hub", icon: Database },
       { id: "schema", label: "JSON Schema", icon: FileJson },
       { id: "timeline", label: "Timeline", icon: Clock },
@@ -126,8 +125,6 @@ const SECTIONS: NavSection[] = [
     heading: "Citizen Action",
     icon: Hand,
     items: [
-      { id: "rti", label: "RTI Generator", icon: FileText },
-      { id: "petition", label: "Petition Builder", icon: PenTool },
       { id: "feedback", label: "Rate Services", icon: Star },
       { id: "reportcard", label: "Report Card", icon: Award },
       { id: "quiz", label: "Devolution Quiz", icon: HelpCircle },
@@ -163,7 +160,6 @@ const SECTIONS: NavSection[] = [
       { id: "representatives", label: "Budget Allocations", icon: Wallet },
       { id: "mzalendo", label: "Mzalendo Profiles", icon: UserCheck },
       { id: "hansard", label: "Hansard Records", icon: Mic },
-      { id: "compareEnhanced", label: "Enhanced Compare", icon: GitCompareArrows },
     ],
   },
   {
