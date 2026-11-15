@@ -340,6 +340,12 @@ function PageContent() {
   // Helper to get localized label for a nav item
   const getItemLabel = (id: TabId) => navItems.find(n => n.id === id)?.label ?? id;
 
+  // Helper to get localized label for a nav section
+  // NOTE: must be defined before getBreadcrumbItems — the bundler inlines + hoists
+  // these helpers in source order; a later definition causes a TDZ error in the
+  // production bundle ("Cannot access 'x' before initialization").
+  const getSectionLabel = (sectionKey: string) => sectionLabels[sectionKey] ?? sectionKey;
+
   // Breadcrumb items generator
   const getBreadcrumbItems = (tab: TabId): { id: TabId; label: string }[] => {
     const navDef = navItemDefs.find(n => n.id === tab);
@@ -377,8 +383,6 @@ function PageContent() {
     };
     return map[activeColor] || 'bg-stone-400';
   };
-
-  const getSectionLabel = (sectionKey: string) => sectionLabels[sectionKey] ?? sectionKey;
 
   // Sidebar section renderer helper
   const renderSidebarSection = (items: NavItem[], sectionKey: string, activeColor: string) => (
