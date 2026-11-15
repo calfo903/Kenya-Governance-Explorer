@@ -4,6 +4,9 @@
  * Reads the JWT from the `auth-token` cookie or Authorization header,
  * verifies it, and returns the decoded payload.
  *
+ * Works with both NextRequest and the standard Web Request — the cookie
+ * header is parsed manually for the plain Request case.
+ *
  * Usage in a route handler:
  *
  *   const auth = await requireAuth(request);
@@ -25,11 +28,47 @@ const UNAUTHORIZED = (message = 'Authentication required') =>
 const FORBIDDEN = (message = 'Insufficient permissions') =>
   NextResponse.json({ success: false, error: message }, { status: 403 });
 
+/**
+ * Extract the JWT from the Authorization header (checked first) or the
+ * `auth-token` cookie. Accepts NextRequest or a standard Request.
+ */
+function extractToken(request: NextRequest | Request): string | null {
+  // Authorization: Bearer <token>
+  const authHeader = request.headers.get('authorization');
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.slice('Bearer '.length).trim();
+    if (token) return token;
+  }
+
+  // NextRequest exposes parsed cookies directly
+  if (typeof (request as NextRequest).cookies?.get === 'function') {
+    const cookieToken = (request as NextRequest).cookies.get('auth-token')?.value;
+    if (cookieToken) return cookieToken;
+  }
+
+  // Standard Request: parse the Cookie header manually
+  const cookieHeader = request.headers.get('cookie');
+  if (cookieHeader) {
+    for (const part of cookieHeader.split(';')) {
+      const eqIdx = part.indexOf('=');
+      if (eqIdx === -1) continue;
+      const name = part.slice(0, eqIdx).trim();
+      if (name === 'auth-token') {
+        try {
+          return decodeURIComponent(part.slice(eqIdx + 1).trim());
+        } catch {
+          return part.slice(eqIdx + 1).trim();
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 /** Require a valid JWT. Returns user payload or a 401 response. */
-export async function requireAuth(request: NextRequest): Promise<AuthResult> {
-  const token =
-    request.cookies.get('auth-token')?.value ??
-    request.headers.get('authorization')?.replace('Bearer ', '');
+export async function requireAuth(request: NextRequest | Request): Promise<AuthResult> {
+  const token = extractToken(request);
 
   if (!token) {
     return { error: UNAUTHORIZED(), user: null };
@@ -49,7 +88,7 @@ export async function requireAuth(request: NextRequest): Promise<AuthResult> {
  *
  * Set ADMIN_EMAIL in your environment to the email you register with.
  */
-export async function requireAdmin(request: NextRequest): Promise<AuthResult> {
+export async function requireAdmin(request: NextRequest | Request): Promise<AuthResult> {
   const auth = await requireAuth(request);
   if (auth.error) return auth;
 

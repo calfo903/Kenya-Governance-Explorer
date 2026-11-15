@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createLogger } from '@/lib/api-logger';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { requireAuth } from '@/lib/require-auth';
 
 const logger = createLogger('/api/sms/cbef-alert');
 
@@ -21,6 +22,10 @@ interface AlertRequest {
  * otherwise runs in high-fidelity simulated mode.
  */
 export async function POST(request: Request) {
+  // Auth: SMS dispatch costs real money — require a valid session
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+
   // Expensive: sends SMS via Africa's Talking
   const rl = rateLimit(request, { maxRequests: 10, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
@@ -141,7 +146,7 @@ Your voice matters. Participate in public finance decisions! - Kenya Governance 
   } catch (error) {
     logger.error('Failed to dispatch CBEF SMS alerts', { error: String(error) });
     return NextResponse.json(
-      { success: false, error: `CBEF Alert Dispatch failed: ${error instanceof Error ? error.message : 'Unknown'}` },
+      { success: false, error: 'CBEF Alert Dispatch failed. Please try again.' },
       { status: 500 }
     );
   }

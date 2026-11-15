@@ -5,7 +5,8 @@
   "description": "Kenya County Governance Explorer — 47 counties, budgets, audits, AI assistant, citizen tools",
   "license": "MIT",
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-old-space-size=1536' next dev -p 3000 --turbopack",
+    "dev": "bash scripts/prod-server.sh",
+    "dev:turbo": "NODE_OPTIONS='--max-old-space-size=1536' next dev -p 3000 --turbopack",
     "build": "next build",
     "start": "NODE_ENV=production NODE_OPTIONS='--max-old-space-size=1536' next start -p 3000",
     "start:standalone": "NODE_ENV=production NODE_OPTIONS='--max-old-space-size=1536' bun .next/standalone/server.js",

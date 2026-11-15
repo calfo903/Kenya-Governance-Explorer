@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import { createLogger } from '@/lib/api-logger';
 import { badRequest, internalError } from '@/lib/api-errors';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { requireAuth } from '@/lib/require-auth';
 
 const logger = createLogger('/api/db/tips/attest');
 
@@ -19,6 +20,10 @@ interface AttestationRequest {
  * - Broadcasts a gasless Witness receipt to an Ethereum Layer-2 (Optimism/Arbitrum) RPC Node.
  */
 export async function POST(request: Request) {
+  // Auth: calls Pinata IPFS + L2 blockchain RPC — require a valid session
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+
   // Expensive: calls Pinata IPFS + L2 blockchain RPC
   const rl = rateLimit(request, { maxRequests: 5, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { createLogger } from '@/lib/api-logger';
 import { badRequest, internalError } from '@/lib/api-errors';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { requireAuth } from '@/lib/require-auth';
 
 const logger = createLogger('/api/voice/transcribe');
 
@@ -13,6 +14,10 @@ const logger = createLogger('/api/voice/transcribe');
  * dispatches them directly to the OpenAI Whisper API, and commits the transcription to SQLite.
  */
 export async function POST(request: Request) {
+  // Auth: Whisper sends audio to OpenAI (real $ cost per call) — require a session
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+
   // Expensive: calls OpenAI Whisper per request
   const rl = rateLimit(request, { maxRequests: 5, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);

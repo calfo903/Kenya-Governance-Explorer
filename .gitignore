@@ -71,3 +71,5 @@ prompt
 # OS
 Thumbs.db
 package-lock.json
+next-service-dist/
+src/app/page.tsx
